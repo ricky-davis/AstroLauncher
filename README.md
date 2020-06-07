@@ -52,6 +52,7 @@
 ## TODO
 1. Create a watcher process to determine if the launcher is closed, to close the Dedicated Server
 2. Implement Save-backups with adjustable intervals
+3. Auto Public IP checking / NAT Loopback detection
 
 
 <!-- GETTING STARTED -->
