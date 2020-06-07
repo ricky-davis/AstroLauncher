@@ -131,7 +131,10 @@ class AstroLauncher():
             rawdata = s.recv(1024)
             parsedData = AstroLauncher.parseData(rawdata)
             #pprint(parsedData)
-            return [x['playerName'] for x in parsedData['playerInfo'] if x['inGame'] == True]
+            try:
+                return [x['playerName'] for x in parsedData['playerInfo'] if x['inGame'] == True]
+            except:
+                return []
 
     def deregister_all_server(self):
         servers_registered = (AstroAPI.get_server(self.ipPortCombo,self.headers))['data']['Games']
