@@ -152,10 +152,10 @@ class AstroLauncher():
     @staticmethod
     @contextmanager
     def session_scope(consolePort : int):
-        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        s.settimeout(1)
-        s.connect(("127.0.0.1", int(consolePort)))
         try:
+            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            s.settimeout(5)
+            s.connect(("127.0.0.1", int(consolePort)))
             yield s
         except:
             raise
