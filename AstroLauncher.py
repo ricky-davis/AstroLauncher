@@ -74,8 +74,9 @@ class AstroLauncher():
         time.sleep(3)
         startTime = time.time()
         cmd = [os.path.join(self.astropath,"AstroServer.exe"), '-log']
-        p = subprocess.Popen(cmd)
-        self.process = p
+        self.process = subprocess.Popen(cmd)
+        daemonCMD =  [os.path.join(self.astropath,"AstroDaemon.exe"), '-l', str(os.getpid()), '-c', str(self.process.pid)]
+        self.watchDogProcess = subprocess.Popen(daemonCMD, shell=True, creationflags=subprocess.DETACHED_PROCESS | subprocess.CREATE_NEW_PROCESS_GROUP)
 
         # Wait for server to finish registering...
         registered = False
