@@ -128,7 +128,7 @@ class AstroLauncher():
     def DSListPlayers(self):
         with AstroLauncher.session_scope(self.settings['consoleport']) as s:
             s.sendall(b"DSListPlayers\n")
-            rawdata = s.recv(1024)
+            rawdata = AstroLauncher.recvall(s)
             parsedData = AstroLauncher.parseData(rawdata)
             #pprint(parsedData)
             try:
@@ -154,13 +154,25 @@ class AstroLauncher():
     def session_scope(consolePort : int):
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         s.settimeout(1)
-        s.connect(("localhost", int(consolePort)))
+        s.connect(("127.0.0.1", int(consolePort)))
         try:
             yield s
         except:
             raise
         finally:
             s.close()
+
+    @staticmethod    
+    def recvall(sock):
+        BUFF_SIZE = 4096 # 4 KiB
+        data = b''
+        while True:
+            part = sock.recv(BUFF_SIZE)
+            data += part
+            if len(part) < BUFF_SIZE:
+                # either 0 or end of data
+                break
+        return data
 
     @staticmethod
     def parseData(rawdata):
