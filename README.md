@@ -80,6 +80,10 @@ pip install requirements.txt
 ```sh
 pipenv install
 ```
+3. At a minimum, you must create AstroDaemon.exe
+```sh
+pyinstaller AstroDaemon.py -F --noconsole
+```
 
 <br />
 
@@ -115,12 +119,13 @@ pip install pyinstaller
 ```sh
 pipenv install -d
 ```
-2. Run pyinstaller with the all-in-one flag
+2. Run pyinstaller with the all-in-one flag and noconsole flag for AstroDaemon
 ```sh
 pyinstaller AstroLauncher.py -F
+pyinstaller AstroDaemon.py -F --noconsole
 ```
-3. Move the executable (in the new `dist` folder) to the directory of your choice. (You can now delete the `dist` and `build` folders, as well as `AstroLauncher.spec`)
-4. Run AstroLauncher.exe
+1. Move the executables (in the new `dist` folder) to the directory of your choice. (You can now delete the `dist` and `build` folders, as well as the `.spec` files)
+2. Run AstroLauncher.exe
 ```sh
 AstroLauncher.exe -p "steamapps\common\ASTRONEER Dedicated Server"
 ```
