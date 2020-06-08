@@ -63,7 +63,7 @@ class AstroLauncher():
         ## Kill all child processes
         try:
             for child in psutil.Process(self.process.pid).children():
-                print(child)
+                #print(child)
                 child.kill()
         except:
             pass
@@ -184,10 +184,13 @@ class AstroLauncher():
 
     
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
-    parser.add_argument("-p", "--path", help = "Set the server folder path", type=str.lower)
-    args = parser.parse_args() 
-    if args.path:
-        AstroLauncher(args.path)
-    else:
-        AstroLauncher(os.getcwd())
+    try:
+        parser = argparse.ArgumentParser()
+        parser.add_argument("-p", "--path", help = "Set the server folder path", type=str.lower)
+        args = parser.parse_args() 
+        if args.path:
+            AstroLauncher(args.path)
+        else:
+            AstroLauncher(os.getcwd())
+    except KeyboardInterrupt:
+        pass
