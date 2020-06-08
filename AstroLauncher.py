@@ -51,14 +51,15 @@ class AstroLauncher():
         self.ipPortCombo = f'{self.settings["publicip"]}:{self.settings["port"]}'
         self.headers['X-Authorization'] = AstroAPI.generate_XAUTH(self.settings['serverguid'])
 
-        atexit.register(self.kill_server)
+        atexit.register(self.kill_server, "Launcher shutting down")
         self.start_server()
 
     def logPrint(self,message):
         logging.info(pformat(message))
 
 
-    def kill_server(self):
+    def kill_server(self, reason):
+        self.logPrint(f"Kill Server: {reason}")
         self.deregister_all_server()
         ## Kill all child processes
         try:
