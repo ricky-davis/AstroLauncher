@@ -154,7 +154,7 @@ class AstroLauncher():
     def session_scope(consolePort : int):
         try:
             s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            s.settimeout(5)
+            #s.settimeout(5)
             s.connect(("127.0.0.1", int(consolePort)))
             yield s
         except:
