@@ -47,10 +47,11 @@
 3. Starts a loop to check for and display players joining/leaving, using the remote console port
 4. Keeps a log of everything in the logs folder
 5. Restarts the server if it closes, unless it closes before it registers.
+6. If the launcher is closed, the Daemon closes the dedicated server
 
 
 ## TODO
-1. Create a watcher process to determine if the launcher is closed, to close the Dedicated Server
+1. ~~Create a watcher process to determine if the launcher is closed, to close the Dedicated Server~~
 2. Implement Save-backups with adjustable intervals
 3. Auto Public IP checking / NAT Loopback detection
 
