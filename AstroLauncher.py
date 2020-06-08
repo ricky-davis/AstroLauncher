@@ -124,14 +124,15 @@ class AstroLauncher():
                 self.logPrint("Server was closed. Restarting..")
                 return self.start_server()
             curPlayers = self.DSListPlayers()
-            if len(curPlayers) > len(self.activePlayers):
-                playerDif = list(set(curPlayers) - set(self.activePlayers))[0]
-                self.activePlayers = curPlayers
-                self.logPrint(f"Player joining: {playerDif}")
-            elif len(curPlayers) < len(self.activePlayers):
-                playerDif = list(set(self.activePlayers) - set(curPlayers))[0]
-                self.activePlayers = curPlayers
-                self.logPrint(f"Player left: {playerDif}")
+            if curPlayers is not None:
+                if len(curPlayers) > len(self.activePlayers):
+                    playerDif = list(set(curPlayers) - set(self.activePlayers))[0]
+                    self.activePlayers = curPlayers
+                    self.logPrint(f"Player joining: {playerDif}")
+                elif len(curPlayers) < len(self.activePlayers):
+                    playerDif = list(set(self.activePlayers) - set(curPlayers))[0]
+                    self.activePlayers = curPlayers
+                    self.logPrint(f"Player left: {playerDif}")
 
             time.sleep(2)
     
@@ -145,7 +146,7 @@ class AstroLauncher():
             try:
                 return [x['playerName'] for x in parsedData['playerInfo'] if x['inGame'] == True]
             except:
-                return []
+                return None
 
     def deregister_all_server(self):
         servers_registered = (AstroAPI.get_server(self.ipPortCombo,self.headers))['data']['Games']
@@ -175,15 +176,18 @@ class AstroLauncher():
 
     @staticmethod    
     def recvall(sock):
-        BUFF_SIZE = 4096 # 4 KiB
-        data = b''
-        while True:
-            part = sock.recv(BUFF_SIZE)
-            data += part
-            if len(part) < BUFF_SIZE:
-                # either 0 or end of data
-                break
-        return data
+        try:
+            BUFF_SIZE = 4096 # 4 KiB
+            data = b''
+            while True:
+                part = sock.recv(BUFF_SIZE)
+                data += part
+                if len(part) < BUFF_SIZE:
+                    # either 0 or end of data
+                    break
+            return data
+        except ConnectionResetError:
+            return None
 
     @staticmethod
     def parseData(rawdata):
