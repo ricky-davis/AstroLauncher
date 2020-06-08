@@ -12,7 +12,7 @@ base_headers = {'Content-Type': 'application/json; charset=utf-8',
            }
 
 def get_current_settings(curPath):
-    config = configparser.ConfigParser()
+    config = configparser.ConfigParser(strict=False)
     AServ_path = r"Astro\Saved\Config\WindowsServer\AstroServerSettings.ini"
     config_path = os.path.join(curPath, AServ_path)
     config.read(config_path)
