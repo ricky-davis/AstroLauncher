@@ -3,13 +3,16 @@ import AstroAPI
 
 import argparse 
 import atexit
+import ctypes
 import json
 import logging
 import os
 import psutil
 import requests
+import signal
 import socket
 import subprocess
+import sys
 import time
 
 from collections import OrderedDict
@@ -76,8 +79,14 @@ class AstroLauncher():
         startTime = time.time()
         cmd = [os.path.join(self.astropath,"AstroServer.exe"), '-log']
         self.process = subprocess.Popen(cmd)
-        daemonCMD =  [os.path.join(self.astropath,"AstroDaemon.exe"), '-l', str(os.getpid()), '-c', str(self.process.pid)]
-        self.watchDogProcess = subprocess.Popen(daemonCMD, shell=True, creationflags=subprocess.DETACHED_PROCESS | subprocess.CREATE_NEW_PROCESS_GROUP)
+
+        if os.path.samefile(sys.executable,sys.argv[0]):
+            daemonCMD = [sys.executable, '--daemon', '-l', str(os.getpid()), '-c', str(self.process.pid)]
+        else:
+            daemonCMD = [sys.executable, sys.argv[0], '--daemon', '-l', str(os.getpid()), '-c', str(self.process.pid)]
+        print(' '.join(daemonCMD))
+
+        self.watchDogProcess = subprocess.Popen(daemonCMD, shell=False, creationflags=subprocess.DETACHED_PROCESS | subprocess.CREATE_NEW_PROCESS_GROUP)
 
         # Wait for server to finish registering...
         registered = False
@@ -184,13 +193,37 @@ class AstroLauncher():
         except:
             return rawdata
 
-    
+
+def watchDog(laucherPID, consolePID):
+    while(psutil.pid_exists(int(laucherPID)) and psutil.pid_exists(int(consolePID))):
+        time.sleep(0.5)
+    try:
+        for child in psutil.Process(int(consolePID)).children():
+            os.kill(child.pid, signal.CTRL_C_EVENT)
+    except Exception as e:
+        print(e)
+        
 if __name__ == "__main__":
     try:
         parser = argparse.ArgumentParser()
         parser.add_argument("-p", "--path", help = "Set the server folder path", type=str.lower)
-        args = parser.parse_args() 
-        if args.path:
+        parser.add_argument("-d", "--daemon", dest="daemon", help = "Set the launcher to run as a Daemon", action='store_true')
+        
+        parser.add_argument("-c", "--consolepid", help = "Set the consolePID for the Daemon", type=str.lower)
+        parser.add_argument("-l", "--launcherpid", help = "Set the launcherPID for the Daemon", type=str.lower)
+        args = parser.parse_args()
+        if args.daemon:
+            if args.consolepid and args.launcherpid:
+                kernel32 = ctypes.WinDLL('kernel32')
+                user32 = ctypes.WinDLL('user32')
+                SW_HIDE = 0
+                hWnd = kernel32.GetConsoleWindow()
+                if hWnd:
+                    user32.ShowWindow(hWnd, SW_HIDE)
+                watchDog(args.launcherpid, args.consolepid)
+            else:
+                print("Insufficient launch options!")
+        elif args.path:
             AstroLauncher(args.path)
         else:
             AstroLauncher(os.getcwd())
