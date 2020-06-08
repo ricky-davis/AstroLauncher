@@ -84,7 +84,7 @@ class AstroLauncher():
             daemonCMD = [sys.executable, '--daemon', '-l', str(os.getpid()), '-c', str(self.process.pid)]
         else:
             daemonCMD = [sys.executable, sys.argv[0], '--daemon', '-l', str(os.getpid()), '-c', str(self.process.pid)]
-        print(' '.join(daemonCMD))
+        #print(' '.join(daemonCMD))
 
         self.watchDogProcess = subprocess.Popen(daemonCMD, shell=False, creationflags=subprocess.DETACHED_PROCESS | subprocess.CREATE_NEW_PROCESS_GROUP)
 
