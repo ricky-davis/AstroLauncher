@@ -12,10 +12,12 @@ from collections import OrderedDict, defaultdict
 from pprint import pprint
 import collections.abc
 
+
 def get_public_ip():
-    url="https://api.ipify.org?format=json"
+    url = "https://api.ipify.org?format=json"
     x = (requests.get(url)).json()
     return x['ip']
+
 
 def updateDict(d, u):
     for k, v in u.items():
@@ -25,6 +27,7 @@ def updateDict(d, u):
             d[k] = v
     return d
 
+
 def read_config(configPath):
     config = configparser.ConfigParser(strict=False)
     pathname = os.path.dirname(configPath)
@@ -33,8 +36,9 @@ def read_config(configPath):
     rawdata = open(configPath, 'ab+').read()
     result = chardet.detect(rawdata)
     charenc = result['encoding']
-    config.read(configPath,encoding=charenc)
+    config.read(configPath, encoding=charenc)
     return config
+
 
 def convert_to_dict(config):
     config_dict = defaultdict(dict)
@@ -43,6 +47,7 @@ def convert_to_dict(config):
             config_dict[section][key] = value
 
     return config_dict
+
 
 def make_config_baseline(configPath, baseDict):
     config = read_config(configPath)
@@ -54,6 +59,7 @@ def make_config_baseline(configPath, baseDict):
         with open(configPath, 'w') as configfile:
             config.write(configfile)
     return config
+
 
 def get_current_settings(curPath):
     baseConfig = {
@@ -80,21 +86,24 @@ def get_current_settings(curPath):
             "consoleport": "1234"
         }
     }
-    config = make_config_baseline(os.path.join(curPath, r"Astro\Saved\Config\WindowsServer\AstroServerSettings.ini"), baseConfig)
+    config = make_config_baseline(os.path.join(
+        curPath, r"Astro\Saved\Config\WindowsServer\AstroServerSettings.ini"), baseConfig)
 
     settings = config._sections['/Script/Astro.AstroServerSettings']
 
-    #2CE7C559471397697B5627AC9FFE7A89
+    # 2CE7C559471397697B5627AC9FFE7A89
     baseConfig = {
         "URL": {
             "port": "8777"
         }
     }
-    config = make_config_baseline(os.path.join(curPath, r"Astro\Saved\Config\WindowsServer\Engine.ini"), baseConfig)
+    config = make_config_baseline(os.path.join(
+        curPath, r"Astro\Saved\Config\WindowsServer\Engine.ini"), baseConfig)
 
     settings.update(config._sections['URL'])
 
     return settings
+
 
 if __name__ == "__main__":
     get_current_settings(r"path")
