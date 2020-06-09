@@ -78,6 +78,9 @@ class AstroLauncher():
                 f"SECURITY ALERT: Your console port ({self.settings['consoleport']}) is Port Forwarded!", "warning")
             self.logPrint(
                 "SECURITY ALERT: This allows anybody to control your server.", "warning")
+            self.logPrint(
+                "SECURITY ALERT: Disable this ASAP to prevent issues.", "warning")
+            time.sleep(5)
 
         self.headers = AstroAPI.base_headers
         self.activePlayers = []
