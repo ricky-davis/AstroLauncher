@@ -1,11 +1,9 @@
 __pycache__
 .vscode
 
-build/
-dist/
-*.spec
-
-
 AstroServerSettings.ini
 
 notes
+/build
+/dist
+*.spec
