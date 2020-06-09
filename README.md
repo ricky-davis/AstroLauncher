@@ -116,7 +116,7 @@ pipenv install -d
 ```
 2. Run pyinstaller with the all-in-one flag and noconsole flag for AstroDaemon
 ```sh
-pyinstaller AstroLauncher.py -F
+pyinstaller AstroLauncher.py -F --add-data="index.html;."
 ```
 1. Move the executable (in the new `dist` folder) to the directory of your choice. (You can now delete the `dist` and `build` folders, as well as the `.spec` file)
 2. Run AstroLauncher.exe
