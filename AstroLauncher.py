@@ -15,13 +15,17 @@ import subprocess
 import sys
 import time
 
+from flask import Flask
+from flask import jsonify
+
 from collections import OrderedDict
 from contextlib import contextmanager
 from logging.handlers import TimedRotatingFileHandler
 from pprint import pprint, pformat
 
 '''
-
+Build: 
+pyinstaller AstroLauncher.py -F --add-data="index.html;."
 '''
 
 class AstroLauncher():
@@ -47,6 +51,9 @@ class AstroLauncher():
         rootLogger.addHandler(fileLogHandler)
 
         self.logPrint("Starting a new session")
+
+        # start http server
+        app.run(port=80)
 
         self.settings = AstroAPI.get_current_settings(astropath)
         self.headers = AstroAPI.base_headers
@@ -206,6 +213,25 @@ def watchDog(laucherPID, consolePID):
             os.kill(child.pid, signal.CTRL_C_EVENT)
     except Exception as e:
         print(e)
+
+
+# set up flask and routing
+app = Flask(__name__,
+            static_url_path='',
+            static_folder=sys._MEIPASS)
+
+
+@app.route('/')
+def index():
+    return app.send_static_file('index.html')
+
+
+@app.route('/api')
+def api():
+    return jsonify(
+        data="test response"
+    )
+
         
 if __name__ == "__main__":
     try:
