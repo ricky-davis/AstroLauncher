@@ -52,7 +52,8 @@ class AstroLauncher():
         self.headers = AstroAPI.base_headers
         self.activePlayers=[]
         self.ipPortCombo = f'{self.settings["publicip"]}:{self.settings["port"]}'
-        self.headers['X-Authorization'] = AstroAPI.generate_XAUTH(self.settings['serverguid'])
+        serverguid = self.settings['serverguid'] if self.settings['serverguid'] != '' else "REGISTER"
+        self.headers['X-Authorization'] = AstroAPI.generate_XAUTH(serverguid)
 
         atexit.register(self.kill_server, "Launcher shutting down")
         self.start_server()
