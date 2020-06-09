@@ -1,5 +1,6 @@
 
 import AstroAPI
+import ValidateSettings
 
 import argparse
 import atexit
@@ -50,19 +51,49 @@ class AstroLauncher():
         rootLogger.addHandler(fileLogHandler)
 
         self.logPrint("Starting a new session")
+        self.settings = ValidateSettings.get_current_settings(astropath)
 
-        self.settings = AstroAPI.get_current_settings(astropath)
+        self.logPrint("Checking the network configuration..")
+
+        networkCorrect = ValidateSettings.test_network(
+            self.settings['publicip'], int(self.settings['port']))
+        if networkCorrect:
+            self.logPrint("Server network configuration good!")
+        else:
+            self.logPrint(
+                "I can't seem to validate your network settings..", "warning")
+            self.logPrint(
+                "Make sure to Port Forwarded and enable NAT Loopback", "warning")
+            self.logPrint(
+                "If nobody can connect, Port Forward.", "warning")
+            self.logPrint(
+                "If others are able to connect, but you aren't, enable NAT Loopback.", "warning")
+
+        rconNetworkCorrect = not (ValidateSettings.test_network(
+            self.settings['publicip'], int(self.settings['consoleport'])))
+        if rconNetworkCorrect:
+            self.logPrint("Remote Console network configuration good!")
+        else:
+            self.logPrint(
+                f"SECURITY ALERT: Your console port ({self.settings['consoleport']}) is Port Forwarded!", "warning")
+            self.logPrint(
+                "SECURITY ALERT: This allows anybody to control your server.", "warning")
+
         self.headers = AstroAPI.base_headers
         self.activePlayers = []
         self.ipPortCombo = f'{self.settings["publicip"]}:{self.settings["port"]}'
+        serverguid = self.settings['serverguid'] if self.settings['serverguid'] != '' else "REGISTER"
         self.headers['X-Authorization'] = AstroAPI.generate_XAUTH(
             self.settings['serverguid'])
 
         atexit.register(self.kill_server, "Launcher shutting down")
         self.start_server()
 
-    def logPrint(self, message):
-        logging.info(pformat(message))
+    def logPrint(self, message, type="info"):
+        if type == "info":
+            logging.info(pformat(message))
+        if type == "warning":
+            logging.warning(pformat(message))
 
     def kill_server(self, reason):
         self.logPrint(f"Kill Server: {reason}")

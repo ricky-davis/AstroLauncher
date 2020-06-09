@@ -12,26 +12,6 @@ base_headers = {'Content-Type': 'application/json; charset=utf-8',
                 }
 
 
-def get_current_settings(curPath):
-    config = configparser.ConfigParser(strict=False)
-    AServ_path = r"Astro\Saved\Config\WindowsServer\AstroServerSettings.ini"
-    config_path = os.path.join(curPath, AServ_path)
-    config.read(config_path)
-
-    if 'ConsolePort' not in config['/Script/Astro.AstroServerSettings']:
-        config['/Script/Astro.AstroServerSettings']['ConsolePort'] = "1234"
-
-    settings = config._sections['/Script/Astro.AstroServerSettings']
-
-    config = configparser.ConfigParser()
-    ENG_path = r"Astro\Saved\Config\WindowsServer\Engine.ini"
-    config_path = os.path.join(curPath, ENG_path)
-    config.read(config_path)
-    settings.update(config._sections['URL'])
-
-    return settings
-
-
 def generate_XAUTH(serverGUID):
     url = "https://5EA1.playfabapi.com/Client/LoginWithCustomID?sdk=UE4MKPL-1.19.190610"
     requestObj = {
