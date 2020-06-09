@@ -50,6 +50,7 @@ class AstroLauncher():
         rootLogger.addHandler(console)
         rootLogger.addHandler(fileLogHandler)
 
+        self.logPrint("Astroneer Dedicated Server Launcher v1.2.1")
         self.logPrint("Starting a new session")
         self.settings = ValidateSettings.get_current_settings(astropath)
 
