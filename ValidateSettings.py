@@ -4,10 +4,13 @@ import configparser
 import json
 import os
 import requests
+import secrets
+import socket
+import threading
 import time
 import uuid
 
-
+from contextlib import contextmanager
 from collections import OrderedDict, defaultdict
 from pprint import pprint
 import collections.abc
@@ -91,7 +94,6 @@ def get_current_settings(curPath):
 
     settings = config._sections['/Script/Astro.AstroServerSettings']
 
-    # 2CE7C559471397697B5627AC9FFE7A89
     baseConfig = {
         "URL": {
             "port": "8777"
@@ -105,5 +107,53 @@ def get_current_settings(curPath):
     return settings
 
 
-if __name__ == "__main__":
-    get_current_settings(r"path")
+def socket_server(port, secret):
+    try:
+        serversocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        serversocket.settimeout(5)
+        # bind the socket to a public host,
+        # and a well-known port
+        serversocket.bind((socket.gethostname(), port))
+        # become a server socket
+        serversocket.listen(1)
+        while 1:
+            # accept connections from outside
+            connection, client_address = serversocket.accept()
+            while True:
+                data = connection.recv(32)
+                # print(data)
+                if data == secret:
+                    connection.close()
+                    return True
+                else:
+                    return False
+    except:
+        return False
+
+
+def socket_client(ip, port, secret):
+    try:
+        with session_scope(ip, port) as s:
+            s.sendall(secret)
+    except:
+        pass
+
+
+@contextmanager
+def session_scope(ip, consolePort: int):
+    try:
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        s.settimeout(5)
+        s.connect((ip, int(consolePort)))
+        yield s
+    except:
+        pass
+    finally:
+        s.close()
+
+
+def test_network(ip, port):
+    secretPhrase = secrets.token_hex(16).encode()
+    x = threading.Thread(target=socket_client, args=(ip, port, secretPhrase))
+    x.start()
+    return socket_server(port, secretPhrase)
