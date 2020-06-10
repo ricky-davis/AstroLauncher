@@ -31,7 +31,7 @@ class AstroLauncher():
 
     def __init__(self, astropath, disable_auto_update=False):
         self.astropath = astropath
-        self.version = "v1.2.1"
+        self.version = "v1.2.3"
         self.latestURL = "https://github.com/ricky-davis/AstroLauncher/releases/latest"
         self.isExecutable = os.path.samefile(sys.executable, sys.argv[0])
         self.disable_auto_update = disable_auto_update
