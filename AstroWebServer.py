@@ -3,18 +3,19 @@ import http.server
 import socketserver
 
 handler = http.server.SimpleHTTPRequestHandler
+launcher = None
 
 class AstroWebServer(threading.Thread):
 
-	def run(self, launcher):
+	def run(self):
 		with socketserver.TCPServer(("", 80), handler) as httpd:
-			#print("Server started at localhost:80")
+			print("Server started at localhost:80")
 			httpd.serve_forever()
 
-def startWebServer(launcher):
+def startWebServer(astroLauncher):
 	try:
-		#print("starting http thread")
+		launcher = astroLauncher
 		server = AstroWebServer()
-		server.start(launcher)
+		server.start()
 	except Exception as e:
-		print("error: %s" % e)
+		print("ERROR: %s" % e)
