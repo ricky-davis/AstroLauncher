@@ -233,6 +233,8 @@ class AstroLauncher():
                     return [x['playerName'] for x in parsedData['playerInfo'] if True]
                 except:
                     return None
+            elif (mode == "raw"):
+                return parsedData
             else:
                 return None
 

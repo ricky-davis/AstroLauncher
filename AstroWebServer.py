@@ -3,6 +3,7 @@ import http.server
 import socketserver
 import sys
 import os
+import json
 
 queue = None
 
@@ -31,15 +32,35 @@ class ServerHttpRequestHandler(http.server.SimpleHTTPRequestHandler):
 
 			launcher = queue.get()
 			queue.put(launcher)
-			print("test val: %s" % launcher.testValue)
-			launcher.logPrint("test test")
 
 			self.send_response(200)
 
 			self.send_header("Content-type", "text/json")
 			self.end_headers()
 
-			self.wfile.write(bytes("{data: 'test'}", "utf8"))
+			s = launcher.settings
+			res = {
+				"settings": {
+					"MaxServerFramerate": s["MaxServerFramerate"],
+					"PublicIP": s["PublicIP"],
+					"ServerName": s["ServerName"],
+					"MaximumPlayerCount": s["MaximumPlayerCount"],
+					"OwnerName": s["OwnerName"],
+					"OwnerGuid": s["OwnerGuid"],
+					"DenyUnlistedPlayers": s["DenyUnlistedPlayers"],
+					"VerbosePlayerProperties": s["VerbosePlayerProperties"],
+					"AutoSaveGameInterval": s["AutoSaveGameInterval"],
+					"BackupSaveGamesInterval": s["BackupSaveGamesInterval"],
+					"ServerGuid": s["ServerGuid"],
+					"ActiveSaveFileDescriptiveName": s["ActiveSaveFileDescriptiveName"],
+					"ServerAdvertisedName": s["ServerAdvertisedName"],
+					"Port": s["Port"]
+				},
+				"players": launcher.DSListPlayers("raw")
+			}
+
+			self.wfile.write(
+				bytes(json.dumps(res, separators=(',', ':')), "utf8"))
 
 		else:
 			# 404
