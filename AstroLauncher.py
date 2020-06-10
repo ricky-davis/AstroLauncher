@@ -1,5 +1,6 @@
 
 import AstroAPI
+import AstroWebServer
 
 import argparse
 import atexit
@@ -14,9 +15,6 @@ import socket
 import subprocess
 import sys
 import time
-
-from flask import Flask
-from flask import jsonify
 
 from collections import OrderedDict
 from contextlib import contextmanager
@@ -56,7 +54,7 @@ class AstroLauncher():
         self.logPrint("Starting a new session")
 
         # start http server
-        app.run(port=80)
+        AstroWebServer.startWebServer(self)
 
         self.settings = AstroAPI.get_current_settings(astropath)
         self.headers = AstroAPI.base_headers
@@ -122,7 +120,7 @@ class AstroLauncher():
                     self.logPrint(
                         "Server was forcefully closed before registration. Exiting....")
                     return False
-            except Exception as e:
+            except Exception:
                 self.logPrint(
                     "Failed to check server. Probably hit rate limit. Backing off and trying again...")
                 apiRateLimit += 1
@@ -226,24 +224,6 @@ def watchDog(laucherPID, consolePID):
             os.kill(child.pid, signal.CTRL_C_EVENT)
     except Exception as e:
         print(e)
-
-
-# set up flask and routing
-app = Flask(__name__,
-            static_url_path='',
-            static_folder=sys._MEIPASS)
-
-
-@app.route('/')
-def index():
-    return app.send_static_file('index.html')
-
-
-@app.route('/api')
-def api():
-    return jsonify(
-        data="test response"
-    )
 
 
 if __name__ == "__main__":
