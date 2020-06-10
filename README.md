@@ -42,18 +42,21 @@
 
 
 ## What does it do?
-1. Checks to see if the IP:Port combo is registered with Playfab, if so, Deregisters it.
-2. Starts the server, and waits for it to register
-3. Starts a loop to check for and display players joining/leaving, using the remote console port
-4. Keeps a log of everything in the logs folder
-5. Restarts the server if it closes, unless it closes before it registers.
-6. If the launcher is closed, the Daemon closes the dedicated server
+1. Verifies your network settings to check for Port Forwarding/NAT Loopback
+2. Automatically sets up the base Config files
+3. Checks to see if the IP:Port combo is registered with Playfab, if so, Deregisters it.
+4. Starts the server, and waits for it to register
+5. Starts a loop to check for and display players joining/leaving, using the remote console port
+6. Keeps a log of everything in the logs folder
+7. Restarts the server if it closes, unless it closes before it registers.
+8. If the launcher is closed, the Daemon closes the dedicated server
 
 
 ## TODO
 1. ~~Create a watcher process to determine if the launcher is closed, to close the Dedicated Server~~
 2. Implement Save-backups with adjustable intervals
-3. Auto Public IP checking / NAT Loopback detection
+3. ~~Auto Public IP checking / NAT Loopback detection~~
+4.  Provide a web management interface
 
 
 <!-- GETTING STARTED -->
