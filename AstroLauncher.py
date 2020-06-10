@@ -57,26 +57,26 @@ class AstroLauncher():
         self.logPrint("Checking the network configuration..")
 
         networkCorrect = ValidateSettings.test_network(
-            self.settings['publicip'], int(self.settings['port']))
+            self.settings['PublicIP'], int(self.settings['Port']))
         if networkCorrect:
             self.logPrint("Server network configuration good!")
         else:
             self.logPrint(
                 "I can't seem to validate your network settings..", "warning")
             self.logPrint(
-                "Make sure to Port Forwarded and enable NAT Loopback", "warning")
+                "Make sure to Port Forward and enable NAT Loopback", "warning")
             self.logPrint(
                 "If nobody can connect, Port Forward.", "warning")
             self.logPrint(
                 "If others are able to connect, but you aren't, enable NAT Loopback.", "warning")
 
         rconNetworkCorrect = not (ValidateSettings.test_network(
-            self.settings['publicip'], int(self.settings['consoleport'])))
+            self.settings['PublicIP'], int(self.settings['ConsolePort'])))
         if rconNetworkCorrect:
             self.logPrint("Remote Console network configuration good!")
         else:
             self.logPrint(
-                f"SECURITY ALERT: Your console port ({self.settings['consoleport']}) is Port Forwarded!", "warning")
+                f"SECURITY ALERT: Your console port ({self.settings['ConsolePort']}) is Port Forwarded!", "warning")
             self.logPrint(
                 "SECURITY ALERT: This allows anybody to control your server.", "warning")
             self.logPrint(
@@ -85,10 +85,10 @@ class AstroLauncher():
 
         self.headers = AstroAPI.base_headers
         self.activePlayers = []
-        self.ipPortCombo = f'{self.settings["publicip"]}:{self.settings["port"]}'
-        serverguid = self.settings['serverguid'] if self.settings['serverguid'] != '' else "REGISTER"
+        self.ipPortCombo = f'{self.settings["PublicIP"]}:{self.settings["Port"]}'
+        serverguid = self.settings['ServerGuid'] if self.settings['ServerGuid'] != '' else "REGISTER"
         self.headers['X-Authorization'] = AstroAPI.generate_XAUTH(
-            self.settings['serverguid'])
+            self.settings['ServerGuid'])
 
         atexit.register(self.kill_server, "Launcher shutting down")
         self.start_server()
@@ -184,7 +184,7 @@ class AstroLauncher():
             time.sleep(2)
 
     def DSListPlayers(self):
-        with AstroLauncher.session_scope(self.settings['consoleport']) as s:
+        with AstroLauncher.session_scope(self.settings['ConsolePort']) as s:
             s.sendall(b"DSListPlayers\n")
             rawdata = AstroLauncher.recvall(s)
             parsedData = AstroLauncher.parseData(rawdata)
