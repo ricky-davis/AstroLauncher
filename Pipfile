@@ -11,6 +11,7 @@ requests = "*"
 pprint = "*"
 psutil = "*"
 pyinstaller = "*"
+chardet = "*"
 
 [requires]
 python_version = "3.7"
