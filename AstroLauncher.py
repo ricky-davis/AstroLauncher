@@ -109,7 +109,7 @@ class AstroLauncher():
         self.headers = AstroAPI.base_headers
         self.activePlayers = []
         self.ipPortCombo = f'{self.settings["PublicIP"]}:{self.settings["Port"]}'
-        serverguid = self.settings['ServerGuid'] if self.settings['ServerGuid'] != '' else "REGISTER"
+        # serverguid = self.settings['ServerGuid'] if self.settings['ServerGuid'] != '' else "REGISTER"
         self.headers['X-Authorization'] = AstroAPI.generate_XAUTH(
             self.settings['ServerGuid'])
 
