@@ -16,6 +16,7 @@ import socket
 import subprocess
 import sys
 import time
+import queue
 
 from collections import OrderedDict
 from contextlib import contextmanager
@@ -96,13 +97,19 @@ class AstroLauncher():
                 "SECURITY ALERT: Disable this ASAP to prevent issues.", "warning")
             time.sleep(5)
 
+        # setup queue for data exchange
+        self.webServerQueue = queue.SimpleQueue()
+        self.webServerQueue.put(self)
+
         # start http server
-        AstroWebServer.startWebServer(self)
+        AstroWebServer.startWebServer(self.webServerQueue)
+        self.logPrint(
+            f"HTTP Server started at {self.settings['PublicIP']}:80")
 
         self.headers = AstroAPI.base_headers
         self.activePlayers = []
         self.ipPortCombo = f'{self.settings["PublicIP"]}:{self.settings["Port"]}'
-        serverguid = self.settings['ServerGuid'] if self.settings['ServerGuid'] != '' else "REGISTER"
+        # serverguid = self.settings['ServerGuid'] if self.settings['ServerGuid'] != '' else "REGISTER"
         self.headers['X-Authorization'] = AstroAPI.generate_XAUTH(
             self.settings['ServerGuid'])
 
@@ -191,7 +198,7 @@ class AstroLauncher():
             if self.process.poll() != None:
                 self.logPrint("Server was closed. Restarting..")
                 return self.start_server()
-            curPlayers = self.DSListPlayers()
+            curPlayers = self.DSListPlayers("online")
             if curPlayers is not None:
                 if len(curPlayers) > len(self.activePlayers):
                     playerDif = list(set(curPlayers) -
@@ -203,19 +210,34 @@ class AstroLauncher():
                         set(self.activePlayers) - set(curPlayers))[0]
                     self.activePlayers = curPlayers
                     self.logPrint(f"Player left: {playerDif}")
+            
+            # update data(self) in queue for webserver
+            self.webServerQueue.get()
+            self.webServerQueue.put(self)
 
             time.sleep(2)
 
-    def DSListPlayers(self):
+    def DSListPlayers(self, mode="online"):
         with AstroLauncher.session_scope(self.settings['ConsolePort']) as s:
             s.sendall(b"DSListPlayers\n")
             rawdata = AstroLauncher.recvall(s)
             parsedData = AstroLauncher.parseData(rawdata)
             # pprint(parsedData)
-            try:
-                return [x['playerName'] for x in parsedData['playerInfo'] if x['inGame'] == True]
-            except:
+            if (mode == "online"):
+                try:
+                    return [x['playerName'] for x in parsedData['playerInfo'] if x['inGame'] == True]
+                except:
+                    return None
+            elif (mode == "all"):
+                try:
+                    return [x['playerName'] for x in parsedData['playerInfo'] if True]
+                except:
+                    return None
+            elif (mode == "raw"):
+                return parsedData
+            else:
                 return None
+
 
     def deregister_all_server(self):
         servers_registered = (AstroAPI.get_server(
