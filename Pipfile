@@ -12,6 +12,7 @@ pprint = "*"
 psutil = "*"
 pyinstaller = "*"
 chardet = "*"
+tornado = "*"
 
 [requires]
 python_version = "3.7"

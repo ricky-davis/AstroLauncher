@@ -1,8 +1,10 @@
 
 import AstroAPI
 import ValidateSettings
+import Webserver
 
 import argparse
+import asyncio
 import atexit
 import ctypes
 import json
@@ -20,6 +22,7 @@ from collections import OrderedDict
 from contextlib import contextmanager
 from logging.handlers import TimedRotatingFileHandler
 from pprint import pprint, pformat
+from threading import Thread
 
 '''
 
@@ -64,7 +67,7 @@ class AstroLauncher():
                 self.autoupdate()
         self.logPrint("Starting a new session")
         self.settings = ValidateSettings.get_current_settings(astropath)
-
+        self.webServer = self.start_WebServer(8888)
         self.logPrint("Checking the network configuration..")
 
         networkCorrect = ValidateSettings.test_network(
@@ -244,6 +247,18 @@ class AstroLauncher():
                              subprocess.CREATE_NEW_PROCESS_GROUP)
         time.sleep(2)
         self.kill_server("Auto-Update")
+
+    def start_WebServer(self, port):
+        ws = Webserver.WebServer(self, port)
+
+        def start_server():
+            asyncio.set_event_loop(asyncio.new_event_loop())
+            ws.run()
+
+        t = Thread(target=start_server, args=())
+        t.daemon = True
+        t.start()
+        return ws
 
     @staticmethod
     def check_for_update():
