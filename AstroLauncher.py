@@ -99,7 +99,6 @@ class AstroLauncher():
         # start http server
         AstroWebServer.startWebServer(self)
 
-        self.settings = AstroAPI.get_current_settings(astropath)
         self.headers = AstroAPI.base_headers
         self.activePlayers = []
         self.ipPortCombo = f'{self.settings["PublicIP"]}:{self.settings["Port"]}'
