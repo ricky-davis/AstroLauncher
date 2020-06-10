@@ -29,10 +29,12 @@ from pprint import pprint, pformat
 class AstroLauncher():
     """ Starts a new instance of the Server Launcher"""
 
-    def __init__(self, astropath):
+    def __init__(self, astropath, disable_auto_update=False):
         self.astropath = astropath
-        self.version = "v1.2.2"
+        self.version = "v1.2.3"
         self.latestURL = "https://github.com/ricky-davis/AstroLauncher/releases/latest"
+        self.isExecutable = os.path.samefile(sys.executable, sys.argv[0])
+        self.disable_auto_update = disable_auto_update
 
         formatter = logging.Formatter(
             '%(asctime)s - %(levelname)-6s %(message)s', datefmt="%Y-%m-%d %H:%M:%S")
@@ -58,6 +60,8 @@ class AstroLauncher():
             self.logPrint(
                 f"UPDATE: There is a newer version of the launcher out! {latestVersion}")
             self.logPrint(f"Download it at {self.latestURL}")
+            if self.isExecutable and not self.disable_auto_update:
+                self.autoupdate()
         self.logPrint("Starting a new session")
         self.settings = ValidateSettings.get_current_settings(astropath)
 
@@ -108,12 +112,19 @@ class AstroLauncher():
 
     def kill_server(self, reason):
         self.logPrint(f"Kill Server: {reason}")
-        self.deregister_all_server()
+        try:
+            self.deregister_all_server()
+        except:
+            pass
         # Kill all child processes
         try:
             for child in psutil.Process(self.process.pid).children():
-                # print(child)
                 child.kill()
+        except:
+            pass
+        # Kill current process
+        try:
+            os.kill(os.getpid(), 9)
         except:
             pass
 
@@ -125,13 +136,13 @@ class AstroLauncher():
         cmd = [os.path.join(self.astropath, "AstroServer.exe"), '-log']
         self.process = subprocess.Popen(cmd)
 
-        if os.path.samefile(sys.executable, sys.argv[0]):
+        if self.isExecutable:
             daemonCMD = [sys.executable, '--daemon', '-l',
                          str(os.getpid()), '-c', str(self.process.pid)]
         else:
             daemonCMD = [sys.executable, sys.argv[0], '--daemon',
                          '-l', str(os.getpid()), '-c', str(self.process.pid)]
-        #print(' '.join(daemonCMD))
+        # print(' '.join(daemonCMD))
 
         self.watchDogProcess = subprocess.Popen(
             daemonCMD, shell=False, creationflags=subprocess.DETACHED_PROCESS | subprocess.CREATE_NEW_PROCESS_GROUP)
@@ -216,6 +227,24 @@ class AstroLauncher():
             return [x['LobbyID'] for x in servers_registered]
         return []
 
+    def autoupdate(self):
+        url = "https://api.github.com/repos/ricky-davis/AstroLauncher/releases/latest"
+        x = (requests.get(url)).json()
+        downloadFolder = os.path.dirname(sys.executable)
+        for fileObj in x['assets']:
+            downloadURL = fileObj['browser_download_url']
+            downloadPath = os.path.join(downloadFolder, fileObj['name'])
+            downloadCMD = ["powershell", '-executionpolicy', 'bypass', '-command',
+                           'Write-Host "Starting download of latest AstroLauncher.exe..";', 'wait-process', str(
+                               os.getpid()), ';',
+                           'Invoke-WebRequest', downloadURL, "-OutFile", downloadPath,
+                           ';', 'Start-Process', '-NoNewWindow', downloadPath]
+            print(' '.join(downloadCMD))
+            subprocess.Popen(downloadCMD, shell=True, creationflags=subprocess.DETACHED_PROCESS |
+                             subprocess.CREATE_NEW_PROCESS_GROUP)
+        time.sleep(2)
+        self.kill_server("Auto-Update")
+
     @staticmethod
     def check_for_update():
         url = "https://api.github.com/repos/ricky-davis/AstroLauncher/releases/latest"
@@ -277,6 +306,8 @@ if __name__ == "__main__":
             "-p", "--path", help="Set the server folder path", type=str.lower)
         parser.add_argument("-d", "--daemon", dest="daemon",
                             help="Set the launcher to run as a Daemon", action='store_true')
+        parser.add_argument("-U", "--noupdate", dest="noautoupdate",
+                            help="Disable autoupdate if running as exe", action='store_true')
 
         parser.add_argument(
             "-c", "--consolepid", help="Set the consolePID for the Daemon", type=str.lower)
@@ -295,8 +326,8 @@ if __name__ == "__main__":
             else:
                 print("Insufficient launch options!")
         elif args.path:
-            AstroLauncher(args.path)
+            AstroLauncher(args.path, disable_auto_update=args.noautoupdate)
         else:
-            AstroLauncher(os.getcwd())
+            AstroLauncher(os.getcwd(), disable_auto_update=args.noautoupdate)
     except KeyboardInterrupt:
         pass
