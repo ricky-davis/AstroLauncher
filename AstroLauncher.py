@@ -16,6 +16,7 @@ import socket
 import subprocess
 import sys
 import time
+import queue
 
 from collections import OrderedDict
 from contextlib import contextmanager
@@ -96,8 +97,14 @@ class AstroLauncher():
                 "SECURITY ALERT: Disable this ASAP to prevent issues.", "warning")
             time.sleep(5)
 
+        # setup queue for data exchange
+        self.webServerQueue = queue.SimpleQueue()
+        self.webServerQueue.put(self)
+
+        self.testValue = "test_69"
+
         # start http server
-        AstroWebServer.startWebServer(self)
+        AstroWebServer.startWebServer(self.webServerQueue)
 
         self.headers = AstroAPI.base_headers
         self.activePlayers = []
@@ -203,6 +210,10 @@ class AstroLauncher():
                         set(self.activePlayers) - set(curPlayers))[0]
                     self.activePlayers = curPlayers
                     self.logPrint(f"Player left: {playerDif}")
+            
+            # update data(self) in queue for webserver
+            self.webServerQueue.get()
+            self.webServerQueue.put(self)
 
             time.sleep(2)
 
