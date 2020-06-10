@@ -105,6 +105,8 @@ class AstroLauncher():
 
         # start http server
         AstroWebServer.startWebServer(self.webServerQueue)
+        self.logPrint(
+            f"HTTP Server started at {self.settings['PublicIP']}:80")
 
         self.headers = AstroAPI.base_headers
         self.activePlayers = []

@@ -11,14 +11,10 @@ class ServerHttpRequestHandler(http.server.SimpleHTTPRequestHandler):
 
 	def do_GET(self):
 		if self.path == '/':
-			global queue
+			# home page
 
 			htmlFile = open(os.path.join(sys._MEIPASS, 'index.html'), 'r')
 			html = htmlFile.read()
-
-			launcher = queue.get()
-			queue.put(launcher)
-			print("test val: %s" % launcher.testValue)
 
 			self.send_response(200)
 
@@ -26,10 +22,40 @@ class ServerHttpRequestHandler(http.server.SimpleHTTPRequestHandler):
 			self.end_headers()
 
 			self.wfile.write(bytes(html, "utf8"))
-			
+
 			htmlFile.close()
+
+		elif self.path == '/api':
+			# api
+			global queue
+
+			launcher = queue.get()
+			queue.put(launcher)
+			print("test val: %s" % launcher.testValue)
+			launcher.logPrint("test test")
+
+			self.send_response(200)
+
+			self.send_header("Content-type", "text/json")
+			self.end_headers()
+
+			self.wfile.write(bytes("{data: 'test'}", "utf8"))
+
+		else:
+			# 404
+			self.send_response(404)
+
+			self.send_header("Content-type", "text/html")
+			self.end_headers()
+
+			self.wfile.write(bytes("<html><head><title>Not Found</title></head><body>Not Found</body></html>", "utf8"))
+
 		return
 		#http.server.SimpleHTTPRequestHandler.do_GET(self)
+
+	def log_message(self, format, *args):
+		return
+		
 
 
 #handler = http.server.SimpleHTTPRequestHandler
@@ -46,7 +72,6 @@ class AstroWebServer(threading.Thread):
 		queue = self.queue
 
 		with socketserver.TCPServer(("", 80), handler) as httpd:
-			print("Server started at localhost:80")
 			httpd.serve_forever()
 
 def startWebServer(exchangeQueue):
