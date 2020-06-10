@@ -1,6 +1,5 @@
 
 import chardet
-import configparser
 import json
 import os
 import requests
@@ -13,7 +12,6 @@ import uuid
 from contextlib import contextmanager
 from collections import OrderedDict, defaultdict
 from pprint import pprint
-import collections.abc
 
 
 def get_public_ip():
@@ -22,88 +20,132 @@ def get_public_ip():
     return x['ip']
 
 
-def updateDict(d, u):
-    for k, v in u.items():
-        if isinstance(v, collections.abc.Mapping):
-            d[k] = updateDict(d.get(k, {}), v)
-        else:
-            d[k] = v
-    return d
+class CustomConfig(defaultdict):
+    """ Apparently nobody has a use-case for an ini file with duplicate keys, go figure. Somebody please make this better.
+    """
 
+    def getdict(self):
+        return self.__dict__
 
-def read_config(configPath):
-    config = configparser.ConfigParser(strict=False)
-    pathname = os.path.dirname(configPath)
-    if not os.path.exists(pathname):
-        os.makedirs(pathname)
-    rawdata = open(configPath, 'ab+').read()
-    result = chardet.detect(rawdata)
-    charenc = result['encoding']
-    config.read(configPath, encoding=charenc)
-    return config
+    def read_dict(self, configDict):
+        self.__dict__ = configDict
 
+    def read(self, configPath):
+        encoding = CustomConfig.get_encoding(configPath)
+        with open(configPath, "r", encoding=encoding) as f:
+            lines = [l.strip() for l in f.read().split("\n")]
+            section = None
+            properties = [x.split("=", 1) for x in lines]
+            for p in properties:
+                key = p[0].strip()
+                if isinstance(p, list) and len(p) > 1:
+                    value = p[1].strip()
+                    if key in self.__dict__[section]:
+                        if isinstance(self.__dict__[section][key], str):
+                            self.__dict__[section][key] = [
+                                self.__dict__[section][key], value]
+                        else:
+                            self.__dict__[section][key].append(value)
+                    else:
+                        self.__dict__[section][key] = value
+                else:
+                    if len(key) > 0:
+                        section = key[1: len(key)-1]
+                        self.__dict__[section] = {}
 
-def convert_to_dict(config):
-    config_dict = defaultdict(dict)
-    for section in config.sections():
-        for key, value in config.items(section):
-            config_dict[section][key] = value
+    def write(self, configFile):
+        for section in self.__dict__.keys():
+            configFile.write(f"[{section}]\n")
+            properties = self.__dict__[section]
+            for p, v in properties.items():
+                if isinstance(v, list):
+                    for item in v:
+                        configFile.write(f"{p}={item}\n")
+                else:
+                    configFile.write(f"{p}={v}\n")
 
-    return config_dict
+    @staticmethod
+    def get_encoding(filePath):
+        pathname = os.path.dirname(filePath)
+        if not os.path.exists(pathname):
+            os.makedirs(pathname)
+        with open(filePath, 'a+'):
+            pass
+        rawdata = open(filePath, 'rb').read()
+        result = chardet.detect(rawdata)
+        charenc = result['encoding']
+        return charenc
+
+    @staticmethod
+    def updateTo(baseDict, updateWithDict):
+        tDict = {}
+        for key, value in baseDict.items():
+            tDict[key] = value
+            if key in updateWithDict.keys():
+                if isinstance(value, dict):
+                    tDict[key] = CustomConfig.updateTo(
+                        value, updateWithDict[key])
+                else:
+                    tDict[key] = updateWithDict[key]
+
+        tDict.update({k: v for k, v in updateWithDict.items()
+                      if k not in tDict.keys()})
+        return tDict
 
 
 def make_config_baseline(configPath, baseDict):
-    config = read_config(configPath)
-    dictConfig = dict(convert_to_dict(config))
-    newConfig = updateDict(baseDict, dictConfig)
-    config = configparser.ConfigParser(strict=False)
-    config.read_dict(newConfig)
-    if newConfig != dictConfig:
-        with open(configPath, 'w') as configfile:
-            config.write(configfile)
-    return config
+    config = CustomConfig()
+    config.read(configPath)
+    baseConfig = CustomConfig()
+    baseConfig.read_dict(baseDict)
+    newConfig = CustomConfig()
+    newConfig.read_dict(CustomConfig.updateTo(
+        baseConfig.getdict(), config.getdict()))
+    with open(configPath, 'w') as configfile:
+        newConfig.write(configfile)
+    return newConfig.getdict()
 
 
 def get_current_settings(curPath):
     baseConfig = {
         "/Script/Astro.AstroServerSettings": {
-            "bloadautosave": "True",
-            "maxserverframerate": "30.000000",
-            "maxserveridleframerate": "3.000000",
-            "bwaitforplayersbeforeshutdown": "False",
-            "publicip": get_public_ip(),
-            "servername": "Astroneer Dedicated Server",
-            "maximumplayercount": "12",
-            "ownername": "",
-            "ownerguid": "",
-            "playeractivitytimeout": "0",
-            "serverpassword": "",
-            "bdisableservertravel": "False",
-            "denyunlistedplayers": "False",
-            "verboseplayerproperties": "False",
-            "autosavegameinterval": "900",
-            "backupsavegamesinterval": "7200",
-            "serverguid": uuid.uuid4().hex,
-            "activesavefiledescriptivename": "SAVE_1",
-            "serveradvertisedname": "",
-            "consoleport": "1234"
+            "bLoadAutoSave": "True",
+            "MaxServerFramerate": "30.000000",
+            "MaxServerIdleFramerate": "3.000000",
+            "bWaitForPlayersBeforeShutdown": "False",
+            "PublicIP": get_public_ip(),
+            "ServerName": "Astroneer Dedicated Server",
+            "MaximumPlayerCount": "12",
+            "OwnerName": "",
+            "OwnerGuid": "",
+            "PlayerActivityTimeout": "0",
+            "ServerPassword": "",
+            "bDisableServerTravel": "False",
+            "DenyUnlistedPlayers": "False",
+            "VerbosePlayerProperties": "True",
+            "AutoSaveGameInterval": "900",
+            "BackupSaveGamesInterval": "7200",
+            "ServerGuid": uuid.uuid4().hex,
+            "ActiveSaveFileDescriptiveName": "SAVE_1",
+            "ServerAdvertisedName": "",
+            "ConsolePort": "1234"
         }
     }
     config = make_config_baseline(os.path.join(
         curPath, r"Astro\Saved\Config\WindowsServer\AstroServerSettings.ini"), baseConfig)
 
-    settings = config._sections['/Script/Astro.AstroServerSettings']
+    settings = config['/Script/Astro.AstroServerSettings']
 
     baseConfig = {
         "URL": {
-            "port": "8777"
+            "Port": "8777"
         }
     }
     config = make_config_baseline(os.path.join(
         curPath, r"Astro\Saved\Config\WindowsServer\Engine.ini"), baseConfig)
-
-    settings.update(config._sections['URL'])
-
+    # print(settings)
+    settings.update(config['URL'])
+    # print(settings)
     return settings
 
 
@@ -139,7 +181,7 @@ def socket_client(ip, port, secret):
         pass
 
 
-@contextmanager
+@ contextmanager
 def session_scope(ip, consolePort: int):
     try:
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
