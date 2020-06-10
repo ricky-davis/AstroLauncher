@@ -31,6 +31,8 @@ class AstroLauncher():
 
     def __init__(self, astropath):
         self.astropath = astropath
+        self.version = "v1.2.2"
+        self.latestURL = "https://github.com/ricky-davis/AstroLauncher/releases/latest"
 
         formatter = logging.Formatter(
             '%(asctime)s - %(levelname)-6s %(message)s', datefmt="%Y-%m-%d %H:%M:%S")
@@ -50,7 +52,12 @@ class AstroLauncher():
         rootLogger.addHandler(console)
         rootLogger.addHandler(fileLogHandler)
 
-        self.logPrint("Astroneer Dedicated Server Launcher v1.2.1")
+        self.logPrint(f"Astroneer Dedicated Server Launcher {self.version}")
+        latestVersion = AstroLauncher.check_for_update()
+        if latestVersion != self.version:
+            self.logPrint(
+                f"UPDATE: There is a newer version of the launcher out! {latestVersion}")
+            self.logPrint(f"Download it at {self.latestURL}")
         self.logPrint("Starting a new session")
         self.settings = ValidateSettings.get_current_settings(astropath)
 
@@ -208,6 +215,13 @@ class AstroLauncher():
             time.sleep(1)
             return [x['LobbyID'] for x in servers_registered]
         return []
+
+    @staticmethod
+    def check_for_update():
+        url = "https://api.github.com/repos/ricky-davis/AstroLauncher/releases/latest"
+
+        x = (requests.get(url)).json()
+        return x['tag_name']
 
     @staticmethod
     @contextmanager
