@@ -1,0 +1,51 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Astronner Server Status</title>
+
+    <link
+      rel="icon"
+      type="image/png"
+      href="https://cdn.glitch.com/32489c62-94fa-4379-9489-35240c55c26e%2Ficon-server-white.png?v=1591901290332"
+    />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+
+  <body>
+    <h1>Dedicated Server Status for <span id="titleIP">[IP]</span></h1>
+    <p id="msg" class="error"></p>
+
+    <div id="main">
+      <div id="stats">
+        <h3>
+          Statistics
+        </h3>
+        <p>Server Name: <span id="serverName"></span></p>
+        <p>Owner: <span id="owner"></span></p>
+        <p>Max Server Framerate: <span id="maxFramerate"></span></p>
+        <p>Maxium PLayers: <span id="maxPLayers"></span></p>
+        <p>Players online: <span id="onlinePLayers"></span></p>
+        <br />
+      </div>
+
+      <div></div>
+
+      <div id="player">
+        <h3>
+          Players
+        </h3>
+        <table id="players">
+          <tr>
+            <th>Name</th>
+            <th>Role</th>
+            <th>In Game</th>
+          </tr>
+        </table>
+      </div>
+    </div>
+  </body>
+
+  <script src="script.js"></script>
+</html>
