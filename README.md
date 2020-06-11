@@ -35,7 +35,7 @@
 
 ## Overview
 
-This tool is perfect if you are hosting your own dedicated server for Astroneer. It has many features to make hosting a lot easier like automatic restarts, advanced logging and a webinterface.
+This tool is perfect for you if you are hosting your own dedicated server for Astroneer. It has many features to make hosting a lot easier like automatic restarts, advanced logging and a webinterface.
 
 ## What does it do?
 
@@ -47,7 +47,7 @@ This tool is perfect if you are hosting your own dedicated server for Astroneer.
 6. Keeps a log of everything in the logs folder
 7. Restarts the server if it closes, unless it closes before it registers.
 8. If the launcher is closed, the Daemon closes the dedicated server
-9. A webinterface which allows you to monitor players without having to start Astroneer.
+9. Runs a webinterface which allows you to monitor players without having to start Astroneer.
 
 ## TODO
 
