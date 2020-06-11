@@ -1,12 +1,11 @@
 console.log("Hi there! Feel to explore the code!");
 
 $ = document.querySelector.bind(document);
-let data = {};
 
 const init = async () => {
   try {
     let res = await fetch("/api");
-    data = await res.json();
+    const data = await res.json();
 
     console.log(data);
 
@@ -16,7 +15,7 @@ const init = async () => {
 
     $("#serverName").innerHTML = s.ServerName;
     $("#owner").innerHTML = s.OwnerName;
-    $("#maxFramerate").innerHTML = s.MaxServerFramerate;
+    $("#maxFramerate").innerHTML = parseFloat(s.MaxServerFramerate);
 
     $("#maxPlayers").innerHTML = s.MaximumPlayerCount;
     $("#onlinePlayers").innerHTML = data.players.playerInfo.filter(
@@ -37,6 +36,7 @@ const init = async () => {
     }
   } catch (e) {
     $("#msg").innerHTML = "ERROR! Try again in 10s";
+    $("#msg").style.display = "block";
   }
 };
 
