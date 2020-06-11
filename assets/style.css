@@ -1,0 +1,17 @@
+* {
+  font-family: Arial;
+}
+
+table,
+tr,
+td,
+th {
+  border: 1px solid black;
+  border-collapse: collapse;
+  text-align: left;
+  padding: 3px;
+}
+
+.error {
+  color: red;
+}

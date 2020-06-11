@@ -1,13 +1,8 @@
-
-
 [![Contributors][contributors-shield]][contributors-url]
 [![Forks][forks-shield]][forks-url]
 [![Stargazers][stars-shield]][stars-url]
 [![Issues][issues-shield]][issues-url]
 [![MIT License][license-shield]][license-url]
-
-
-
 
 <br />
 <p align="center">
@@ -20,9 +15,8 @@
   </p>
 </p>
 
-
-
 <!-- TABLE OF CONTENTS -->
+
 ## Table of Contents
 
 - [Table of Contents](#table-of-contents)
@@ -38,10 +32,8 @@
 - [License](#license)
 - [Contact](#contact)
 
-
-
-
 ## What does it do?
+
 1. Verifies your network settings to check for Port Forwarding/NAT Loopback
 2. Automatically sets up the base Config files
 3. Checks to see if the IP:Port combo is registered with Playfab, if so, Deregisters it.
@@ -51,15 +43,15 @@
 7. Restarts the server if it closes, unless it closes before it registers.
 8. If the launcher is closed, the Daemon closes the dedicated server
 
-
 ## TODO
+
 1. ~~Create a watcher process to determine if the launcher is closed, to close the Dedicated Server~~
 2. Implement Save-backups with adjustable intervals
 3. ~~Auto Public IP checking / NAT Loopback detection~~
-4.  Provide a web management interface
-
+4. Provide a web management interface
 
 <!-- GETTING STARTED -->
+
 ## Getting Started
 
 To get a local copy up and running follow these simple steps.
@@ -67,31 +59,40 @@ To get a local copy up and running follow these simple steps.
 ### Prerequisites
 
 This is an example of how to list things you need to use the software and how to install them.
-* Python 3.7
-* pip / pipenv
+
+- Python 3.7
+- pip / pipenv
 
 ### Installation
- 
+
 1. Clone the AstroLauncher repository
+
 ```sh
 git clone https://github.com/ricky-davis/AstroLauncher.git
 ```
+
 2. Install python modules using pip or pipenv
+
 ```sh
 pip install requirements.txt
 ```
+
 ```sh
 pipenv install
 ```
+
 <br />
 
 <!-- USAGE EXAMPLES -->
+
 ## Usage
 
 Run the server launcher using one of the following commands
+
 ```sh
 python Run-Server.py
 ```
+
 ```sh
 pipenv run python AstroLauncher.py
 ```
@@ -102,6 +103,7 @@ If not placed in the same directory as the server files, you can specify a serve
 ```sh
 python AstroLauncher.py --path "steamapps\common\ASTRONEER Dedicated Server"
 ```
+
 ```sh
 pipenv run python AstroLauncher.py -p "steamapps\common\ASTRONEER Dedicated Server"
 ```
@@ -111,33 +113,36 @@ pipenv run python AstroLauncher.py -p "steamapps\common\ASTRONEER Dedicated Serv
 ### Building an EXE
 
 1. If you want to turn this project into an executable, make sure to install pyinstaller using one of the following methods
+
 ```sh
 pip install pyinstaller
 ```
+
 ```sh
 pipenv install -d
 ```
+
 2. Run pyinstaller with the all-in-one flag and noconsole flag for AstroDaemon
+
 ```sh
-pyinstaller AstroLauncher.py -F --add-data="index.html;."
+pyinstaller AstroLauncher.py -F --add-data "assets/*;."
 ```
+
 1. Move the executable (in the new `dist` folder) to the directory of your choice. (You can now delete the `dist` and `build` folders, as well as the `.spec` file)
 2. Run AstroLauncher.exe
+
 ```sh
 AstroLauncher.exe -p "steamapps\common\ASTRONEER Dedicated Server"
 ```
 
-
-
-
 <!-- ROADMAP -->
+
 ## Roadmap
 
 See the [open issues](https://github.com/ricky-davis/AstroLauncher/issues) for a list of proposed features (and known issues).
 
-
-
 <!-- CONTRIBUTING -->
+
 ## Contributing
 
 Contributions are what make the open source community such an amazing place to be learn, inspire, and create. Any contributions you make are **greatly appreciated**.
@@ -148,27 +153,23 @@ Contributions are what make the open source community such an amazing place to b
 4. Push to the Branch (`git push origin feature/AmazingFeature`)
 5. Open a Pull Request
 
-
-
 <!-- LICENSE -->
+
 ## License
 
 Distributed under the MIT License. See `LICENSE` for more information.
 
-
-
 <!-- CONTACT -->
+
 ## Contact
 
 Ricky Davis - Discord: @Spyci#0001
 
 Project Link: [https://github.com/ricky-davis/AstroLauncher](https://github.com/ricky-davis/AstroLauncher)
 
-
-
-
 <!-- MARKDOWN LINKS & IMAGES -->
 <!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
+
 [contributors-shield]: https://img.shields.io/github/contributors/ricky-davis/AstroLauncher.svg?style=flat-square
 [contributors-url]: https://github.com/ricky-davis/AstroLauncher/graphs/contributors
 [forks-shield]: https://img.shields.io/github/forks/ricky-davis/AstroLauncher.svg?style=flat-square

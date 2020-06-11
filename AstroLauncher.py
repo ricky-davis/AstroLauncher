@@ -25,7 +25,7 @@ from pprint import pprint, pformat
 
 '''
 Build: 
-pyinstaller AstroLauncher.py -F --add-data="index.html;."
+pyinstaller AstroLauncher.py -F --add-data "assets/*;."
 '''
 
 
@@ -210,12 +210,12 @@ class AstroLauncher():
                         set(self.activePlayers) - set(curPlayers))[0]
                     self.activePlayers = curPlayers
                     self.logPrint(f"Player left: {playerDif}")
-            
+
             # update data(self) in queue for webserver
             self.webServerQueue.get()
             self.webServerQueue.put(self)
 
-            time.sleep(2)
+        time.sleep(2)
 
     def DSListPlayers(self, mode="online"):
         with AstroLauncher.session_scope(self.settings['ConsolePort']) as s:
@@ -237,7 +237,6 @@ class AstroLauncher():
                 return parsedData
             else:
                 return None
-
 
     def deregister_all_server(self):
         servers_registered = (AstroAPI.get_server(

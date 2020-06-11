@@ -1,0 +1,42 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Astronner Server Status</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+
+  <body>
+    <h1>Dedicated Server Status for <span id="titleIP">[IP]</span></h1>
+    <p id="msg" class="error"></p>
+
+    <h3>
+      Statistics
+    </h3>
+    <p>Server Name: <span id="serverName"></span></p>
+    <p>Owner: <span id="owner"></span></p>
+    <p>Max Server Framerate: <span id="maxFramerate"></span></p>
+    <p>Maxium PLayers: <span id="maxPLayers"></span></p>
+    <p>Players online: <span id="onlinePLayers"></span></p>
+    <br />
+
+    <h3>
+      Players
+    </h3>
+    <table id="players">
+      <tr>
+        <th>Name</th>
+        <th>Role</th>
+        <th>In Game</th>
+      </tr>
+    </table>
+
+    <!--<p>
+      : <span id=""></span>
+    </p>-->
+  </body>
+
+  <script src="script.js"></script>
+</html>
