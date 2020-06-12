@@ -1,9 +1,8 @@
 
+import json
 import os
 
 import chardet
-import json
-
 
 _default_dict = dict
 
