@@ -1,7 +1,7 @@
-
 import argparse
 import atexit
 import ctypes
+import dataclasses
 import os
 import subprocess
 import sys
@@ -14,6 +14,7 @@ import cogs.ValidateSettings as ValidateSettings
 from cogs.AstroDaemon import AstroDaemon
 from cogs.AstroDedicatedServer import AstroDedicatedServer
 from cogs.AstroLogging import AstroLogging
+from cogs.MultiConfig import MultiConfig
 
 
 """
@@ -27,9 +28,24 @@ python BuildEXE.py
 class AstroLauncher():
     """ Starts a new instance of the Server Launcher"""
 
-    def __init__(self, astroPath, disable_auto_update=False):
+    @dataclasses.dataclass
+    class LauncherConfig():
+        DisableAutoUpdate: bool = False
+        ServerStatusFrequency: int = 2
+        PlayfabAPIFrequency: int = 2
+
+        def __post_init__(self):
+            # pylint: disable=no-member
+            for field, data in self.__dataclass_fields__.items():
+                self.__dict__[field] = data.type(self.__dict__[field])
+
+    def __init__(self, astroPath, launcherINI="Launcher.ini", disable_auto_update=None):
         self.astroPath = astroPath
-        self.disable_auto_update = disable_auto_update
+        self.launcherINI = launcherINI
+        self.launcherConfig = self.LauncherConfig()
+        self.refresh_launcher_config()
+        if disable_auto_update is not None:
+            self.launcherConfig.DisableAutoUpdate = disable_auto_update
         self.version = "v1.2.3"
         self.latestURL = "https://github.com/ricky-davis/AstroLauncher/releases/latest"
         self.isExecutable = os.path.samefile(sys.executable, sys.argv[0])
@@ -47,13 +63,26 @@ class AstroLauncher():
         AstroLogging.logPrint("Starting a new session")
 
         AstroLogging.logPrint("Checking the network configuration..")
-        self.checkNetworkConfig()
+        self.check_network_config()
         self.headers['X-Authorization'] = AstroAPI.generate_XAUTH(
             self.DedicatedServer.settings.ServerGuid)
 
         atexit.register(self.DedicatedServer.kill_server,
                         "Launcher shutting down")
         self.start_server()
+
+    def refresh_launcher_config(self):
+        self.launcherConfig = dataclasses.replace(
+            self.launcherConfig, **self.get_launcher_config())
+
+    def get_launcher_config(self):
+        baseConfig = {
+            "AstroLauncher": dataclasses.asdict(self.LauncherConfig())
+        }
+        config = MultiConfig().baseline(self.launcherINI, baseConfig)
+        # print(settings)
+        settings = config.getdict()['AstroLauncher']
+        return settings
 
     def check_for_update(self):
         url = "https://api.github.com/repos/ricky-davis/AstroLauncher/releases/latest"
@@ -62,7 +91,7 @@ class AstroLauncher():
             AstroLogging.logPrint(
                 f"UPDATE: There is a newer version of the launcher out! {latestVersion}")
             AstroLogging.logPrint(f"Download it at {self.latestURL}")
-            if self.isExecutable and not self.disable_auto_update:
+            if self.isExecutable and not self.launcherConfig.DisableAutoUpdate:
                 self.autoupdate()
 
     def autoupdate(self):
@@ -71,13 +100,18 @@ class AstroLauncher():
         downloadFolder = os.path.dirname(sys.executable)
         for fileObj in x['assets']:
             downloadURL = fileObj['browser_download_url']
-            downloadPath = os.path.join(downloadFolder, fileObj['name'])
+            fileName = (os.path.splitext(fileObj['name'])[0])
+            downloadPath = os.path.join(downloadFolder, fileName)
+
             downloadCMD = ["powershell", '-executionpolicy', 'bypass', '-command',
                            'Write-Host "Starting download of latest AstroLauncher.exe..";', 'wait-process', str(
                                os.getpid()), ';',
-                           'Invoke-WebRequest', downloadURL, "-OutFile", downloadPath,
-                           ';', 'Start-Process', '-NoNewWindow', downloadPath]
-            print(' '.join(downloadCMD))
+                           'Invoke-WebRequest', downloadURL, "-OutFile", downloadPath + "_new.exe", ';',
+                           "Remove-Item", "-path", downloadPath + ".exe", ';',
+                           "Rename-Item", "-path", downloadPath + "_new.exe",
+                           "-NewName", fileName + ".exe", ";",
+                           'Start-Process', downloadPath]
+            #print(' '.join(downloadCMD))
             subprocess.Popen(downloadCMD, shell=True, creationflags=subprocess.DETACHED_PROCESS |
                              subprocess.CREATE_NEW_PROCESS_GROUP)
         time.sleep(2)
@@ -97,7 +131,6 @@ class AstroLauncher():
             executable=self.isExecutable, consolePID=self.DedicatedServer.process.pid)
 
         # Wait for server to finish registering...
-        apiRateLimit = 2
         while not self.DedicatedServer.registered:
             try:
                 serverData = (AstroAPI.get_server(
@@ -105,7 +138,7 @@ class AstroLauncher():
                 serverData = serverData['data']['Games']
                 lobbyIDs = [x['LobbyID'] for x in serverData]
                 if len(set(lobbyIDs) - set(oldLobbyIDs)) == 0:
-                    time.sleep(apiRateLimit)
+                    time.sleep(self.launcherConfig.PlayfabAPIFrequency)
                 else:
                     self.DedicatedServer.registered = True
                     del oldLobbyIDs
@@ -118,8 +151,8 @@ class AstroLauncher():
             except:
                 AstroLogging.logPrint(
                     "Failed to check server. Probably hit rate limit. Backing off and trying again...")
-                apiRateLimit += 1
-                time.sleep(apiRateLimit)
+                self.launcherConfig.PlayfabAPIFrequency += 1
+                time.sleep(self.launcherConfig.PlayfabAPIFrequency)
 
         doneTime = time.time()
         elapsed = doneTime - startTime
@@ -128,7 +161,7 @@ class AstroLauncher():
         self.DedicatedServer.ready = True
         self.DedicatedServer.server_loop()
 
-    def checkNetworkConfig(self):
+    def check_network_config(self):
         networkCorrect = ValidateSettings.test_network(
             self.DedicatedServer.settings.PublicIP, int(self.DedicatedServer.settings.Port))
         if networkCorrect:
@@ -159,12 +192,16 @@ class AstroLauncher():
 
 if __name__ == "__main__":
     try:
+        os.system("title AstroLauncher - Dedicated Server Launcher")
+    except:
+        pass
+    try:
         parser = argparse.ArgumentParser()
         parser.add_argument(
             "-p", "--path", help="Set the server folder path", type=str.lower)
         parser.add_argument("-d", "--daemon", dest="daemon",
                             help="Set the launcher to run as a Daemon", action='store_true')
-        parser.add_argument("-U", "--noupdate", dest="noautoupdate",
+        parser.add_argument("-U", "--noupdate", dest="noautoupdate", default=None,
                             help="Disable autoupdate if running as exe", action='store_true')
 
         parser.add_argument(
