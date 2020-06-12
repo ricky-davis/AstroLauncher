@@ -13,7 +13,7 @@ from cogs.AstroRCON import AstroRCON
 
 class AstroDedicatedServer():
     """
-        The Dedicated Server Class
+        The Dedicated Server Class.
     """
     @dataclasses.dataclass
     class ServerSettings():
