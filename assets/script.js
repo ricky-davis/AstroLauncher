@@ -1,13 +1,13 @@
 console.log("Hi there! Feel to explore the code!");
 
 $ = document.querySelector.bind(document);
-
+let playersTableOriginal = $("#players").innerHTML
 const init = async () => {
   try {
     let res = await fetch("/api");
     const data = await res.json();
 
-    console.log(data);
+    //console.log(data);
 
     s = data.settings;
 
@@ -23,6 +23,7 @@ const init = async () => {
     ).length;
 
     if (data.players) {
+      $("#players").innerHTML = playersTableOriginal
       data.players.playerInfo.forEach((p) => {
         let row = document.createElement("tr");
         row.innerHTML = `<td>${p.playerName}</td>
@@ -39,5 +40,5 @@ const init = async () => {
     $("#msg").style.display = "block";
   }
 };
-
-init();
+setInterval(init, 2000);
+init()
