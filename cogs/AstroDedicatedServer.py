@@ -33,6 +33,13 @@ class AstroDedicatedServer():
         ActiveSaveFileDescriptiveName: str = None
         ServerGuid: str = None
         ServerAdvertisedName: str = None
+        bLoadAutoSave: str = None
+        MaxServerFramerate: str = None
+        MaxServerIdleFramerate: str = None
+        bWaitForPlayersBeforeShutdown: str = None
+        ConsolePort: str = None
+        ExitSemaphore: str = None
+        HeartbeatInterval: str = None
 
     def __init__(self, astroPath, launcher):
         self.astroPath = astroPath
