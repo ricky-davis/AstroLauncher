@@ -22,7 +22,8 @@ from logging.handlers import TimedRotatingFileHandler
 from pprint import pprint, pformat
 
 '''
-
+Build: 
+pyinstaller AstroLauncher.py -F --add-data "assets/*;." --icon=assets/astrolauncherlogo.ico
 '''
 
 
