@@ -6,6 +6,7 @@
 
 <br />
 <p align="center">
+  <img src="https://raw.githubusercontent.com/ricky-davis/AstroLauncher/master/assets/astrolauncherlogo.ico" width="128px">
   <h3 align="center">AstroLauncher - Dedicated Server Launcher</h3>
 
   <p align="center">
@@ -41,19 +42,17 @@ This tool is perfect for you if you are hosting your own dedicated server for As
 
 1. Verifies your network settings to check for Port Forwarding/NAT Loopback
 2. Automatically sets up the base Config files
-3. Checks to see if the IP:Port combo is registered with Playfab, if so, Deregisters it.
-4. Starts the server, and waits for it to register
-5. Starts a loop to check for and display players joining/leaving, using the remote console port
+3. Fixes the double server problem in the server list
+4. Starts, and automatically restarts the server
+5. Displays when users join/leave the server
 6. Keeps a log of everything in the logs folder
-7. Restarts the server if it closes, unless it closes before it registers.
-8. If the launcher is closed, the Daemon closes the dedicated server
-9. Runs a webinterface which allows you to monitor players without having to start Astroneer.
+7. Runs a webinterface to monitor server data.
 
 ## TODO
 
-1. ~~Create a watcher process to determine if the launcher is closed, to close the Dedicated Server~~
-2. Implement Save-backups with adjustable intervals
-3. ~~Auto Public IP checking / NAT Loopback detection~~
+1. Implement Save-backups with adjustable intervals
+2. Implement Auto-Restart timers
+3. Launcher.INI file
 4. Provide a web management interface
 
 <!-- GETTING STARTED -->
@@ -131,7 +130,11 @@ pipenv install -d
 2. Run pyinstaller with the all-in-one flag
 
 ```sh
-pyinstaller AstroLauncher.py -F
+pyinstaller AstroLauncher.py -F --add-data "assets/*;." --icon=assets/astrolauncherlogo.ico
+```
+or just run the BuildEXE.py which automatically cleans up afterwards
+```sh
+python BuildEXE.py
 ```
 
 1. Move the executable (in the new `dist` folder) to the directory of your choice. (If you want you can now delete the `dist` and `build` folders, as well as the `.spec` file)
