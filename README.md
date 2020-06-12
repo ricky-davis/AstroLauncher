@@ -23,13 +23,13 @@
 - [Table of Contents](#table-of-contents)
 - [Overview](#overview)
 - [What does it do?](#what-does-it-do)
+- [Coming soon](#coming-soon)
 - [TODO](#todo)
 - [Getting Started](#getting-started)
   - [Prerequisites](#prerequisites)
   - [Installation](#installation)
 - [Usage](#usage)
   - [Building an EXE](#building-an-exe)
-- [Roadmap](#roadmap)
 - [Contributing](#contributing)
 - [License](#license)
 - [Contact](#contact)
@@ -46,7 +46,11 @@ This tool is perfect for you if you are hosting your own dedicated server for As
 4. Starts, and automatically restarts the server
 5. Displays when users join/leave the server
 6. Keeps a log of everything in the logs folder
-7. Runs a webinterface to monitor server data.
+
+
+
+## Coming soon
+1. Web Interface to monitor server data.
 
 ## TODO
 
@@ -143,12 +147,6 @@ python BuildEXE.py
 ```sh
 AstroLauncher.exe -p "steamapps\common\ASTRONEER Dedicated Server"
 ```
-
-<!-- ROADMAP -->
-
-## Roadmap
-
-See the [open issues](https://github.com/ricky-davis/AstroLauncher/issues) for a list of proposed features (and known issues).
 
 <!-- CONTRIBUTING -->
 
