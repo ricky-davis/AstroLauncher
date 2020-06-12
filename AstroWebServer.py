@@ -26,9 +26,6 @@ class ServerHttpRequestHandler(http.server.SimpleHTTPRequestHandler):
             self.end_headers()
 
             global players
-            newPlayers = launcher.DSListPlayers("raw")
-            if newPlayers is not None:
-                players = newPlayers
 
             s = launcher.settings
             res = {
@@ -48,7 +45,7 @@ class ServerHttpRequestHandler(http.server.SimpleHTTPRequestHandler):
                     "ServerAdvertisedName": s["ServerAdvertisedName"],
                     "Port": s["Port"]
                 },
-                "players": players
+                "players": launcher.playerList
             }
 
             self.wfile.write(
@@ -56,13 +53,15 @@ class ServerHttpRequestHandler(http.server.SimpleHTTPRequestHandler):
 
         elif self.path in routes:
             # static files
-
             self.send_response(200)
-
-            self.send_header('Content-type', 'text/html')
-            self.end_headers()
-
-            self.wfile.write(bytes(routes[self.path]['content'], 'utf8'))
+            if routes[self.path]['type'] == "text":
+                self.send_header('Content-type', 'text/html')
+                self.end_headers()
+                self.wfile.write(routes[self.path]['content'])
+            elif routes[self.path]['type'] == "image":
+                self.send_header('Content-type', 'image/png')
+                self.end_headers()
+                self.wfile.write(routes[self.path]['content'])
 
         else:
             # 404
@@ -99,21 +98,26 @@ class AstroWebServer(threading.Thread):
         global routes
         routes = {
             "/": {
-                "path": "index.html"
+                "path": "index.html",
+                "type": "text"
             },
             "/script.js": {
-                "path": "script.js"
+                "path": "script.js",
+                "type": "text"
             },
             "/style.css": {
-                "path": "style.css"
+                "path": "style.css",
+                "type": "text"
+            },
+            "/astrolauncherlogo.ico": {
+                "path": "astrolauncherlogo.ico",
+                "type": "image"
             }
         }
 
         for key in routes:
-            contentFile = open(os.path.join(
-                sys._MEIPASS, routes[key]['path']), 'r')
-            routes[key]['content'] = contentFile.read()
-            contentFile.close()
+            with open(os.path.join(sys._MEIPASS, routes[key]['path']), 'rb') as contentFile:
+                routes[key]['content'] = contentFile.read()
 
         with socketserver.TCPServer(("", 80), handler) as httpd:
             httpd.serve_forever()
@@ -122,6 +126,7 @@ class AstroWebServer(threading.Thread):
 def startWebServer(exchangeQueue):
     try:
         server = AstroWebServer(exchangeQueue)
+        server.daemon = True
         server.start()
     except Exception as e:
         print("ERROR: %s" % e)

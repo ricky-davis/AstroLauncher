@@ -25,7 +25,7 @@ from pprint import pprint, pformat
 
 '''
 Build: 
-pyinstaller AstroLauncher.py -F --add-data "assets/*;."
+pyinstaller AstroLauncher.py -F --add-data "assets/*;." --icon=assets/astrolauncherlogo.ico
 '''
 
 
@@ -37,7 +37,18 @@ class AstroLauncher():
         self.version = "v1.2.3"
         self.latestURL = "https://github.com/ricky-davis/AstroLauncher/releases/latest"
         self.isExecutable = os.path.samefile(sys.executable, sys.argv[0])
+        self.headers = AstroAPI.base_headers
         self.disable_auto_update = disable_auto_update
+        self.playerList = {}
+        self.activePlayers = []
+        self.process = None
+        self.serverReady = False
+        self.watchDogProcess = None
+
+        self.settings = None
+        self.ipPortCombo = None
+        self.LobbyID = None
+        self.webServerQueue = None
 
         formatter = logging.Formatter(
             '%(asctime)s - %(levelname)-6s %(message)s', datefmt="%Y-%m-%d %H:%M:%S")
@@ -106,8 +117,6 @@ class AstroLauncher():
         self.logPrint(
             f"HTTP Server started at {self.settings['PublicIP']}:80")
 
-        self.headers = AstroAPI.base_headers
-        self.activePlayers = []
         self.ipPortCombo = f'{self.settings["PublicIP"]}:{self.settings["Port"]}'
         # serverguid = self.settings['ServerGuid'] if self.settings['ServerGuid'] != '' else "REGISTER"
         self.headers['X-Authorization'] = AstroAPI.generate_XAUTH(
@@ -160,9 +169,8 @@ class AstroLauncher():
             daemonCMD, shell=False, creationflags=subprocess.DETACHED_PROCESS | subprocess.CREATE_NEW_PROCESS_GROUP)
 
         # Wait for server to finish registering...
-        registered = False
         apiRateLimit = 2
-        while registered == False:
+        while self.serverReady == False:
             try:
                 serverData = (AstroAPI.get_server(
                     self.ipPortCombo, self.headers))
@@ -172,7 +180,7 @@ class AstroLauncher():
                 if len(set(lobbyIDs) - set(oldLobbyIDs)) == 0:
                     time.sleep(apiRateLimit)
                 else:
-                    registered = True
+                    self.serverReady = True
                     del oldLobbyIDs
                     self.LobbyID = serverData[0]['LobbyID']
 
@@ -198,8 +206,13 @@ class AstroLauncher():
             if self.process.poll() != None:
                 self.logPrint("Server was closed. Restarting..")
                 return self.start_server()
-            curPlayers = self.DSListPlayers("online")
-            if curPlayers is not None:
+
+            playerList = self.DSListPlayers()
+            if playerList is not None:
+                self.playerList = playerList
+                curPlayers = [x['playerName']
+                              for x in self.playerList['playerInfo'] if x['inGame'] == True]
+
                 if len(curPlayers) > len(self.activePlayers):
                     playerDif = list(set(curPlayers) -
                                      set(self.activePlayers))[0]
@@ -214,29 +227,18 @@ class AstroLauncher():
             # update data(self) in queue for webserver
             self.webServerQueue.get()
             self.webServerQueue.put(self)
+            time.sleep(2)
 
-        time.sleep(2)
-
-    def DSListPlayers(self, mode="online"):
-        with AstroLauncher.session_scope(self.settings['ConsolePort']) as s:
-            s.sendall(b"DSListPlayers\n")
-            rawdata = AstroLauncher.recvall(s)
-            parsedData = AstroLauncher.parseData(rawdata)
-            # pprint(parsedData)
-            if (mode == "online"):
-                try:
-                    return [x['playerName'] for x in parsedData['playerInfo'] if x['inGame'] == True]
-                except:
-                    return None
-            elif (mode == "all"):
-                try:
-                    return [x['playerName'] for x in parsedData['playerInfo'] if True]
-                except:
-                    return None
-            elif (mode == "raw"):
+    def DSListPlayers(self):
+        try:
+            with AstroLauncher.session_scope(self.settings['ConsolePort']) as s:
+                s.sendall(b"DSListPlayers\n")
+                rawdata = AstroLauncher.recvall(s)
+                parsedData = AstroLauncher.parseData(rawdata)
+                # pprint(parsedData)
                 return parsedData
-            else:
-                return None
+        except:
+            return None
 
     def deregister_all_server(self):
         servers_registered = (AstroAPI.get_server(
