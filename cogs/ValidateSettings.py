@@ -1,17 +1,15 @@
 
-import chardet
-import json
+
 import os
-import requests
 import secrets
 import socket
 import threading
-import time
 import uuid
-
+from collections import defaultdict
 from contextlib import contextmanager
-from collections import OrderedDict, defaultdict
-from pprint import pprint
+
+import chardet
+import requests
 
 
 def get_public_ip():
@@ -160,7 +158,7 @@ def socket_server(port, secret):
         serversocket.listen(1)
         while 1:
             # accept connections from outside
-            connection, client_address = serversocket.accept()
+            connection, _client_address = serversocket.accept()
             while True:
                 data = connection.recv(32)
                 # print(data)
@@ -181,7 +179,7 @@ def socket_client(ip, port, secret):
         pass
 
 
-@ contextmanager
+@contextmanager
 def session_scope(ip, consolePort: int):
     try:
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)

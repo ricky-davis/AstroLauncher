@@ -1,10 +1,6 @@
 
-import configparser
-import os
 import requests
-import time
 
-from collections import OrderedDict
 
 base_headers = {'Content-Type': 'application/json; charset=utf-8',
                 'X-PlayFabSDK': 'UE4MKPL-1.19.190610',
