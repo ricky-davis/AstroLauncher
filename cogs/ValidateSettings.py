@@ -5,103 +5,17 @@ import secrets
 import socket
 import threading
 import uuid
-from collections import defaultdict
 from contextlib import contextmanager
 
-import chardet
 import requests
+
+from cogs.MultiConfig import MultiConfig
 
 
 def get_public_ip():
     url = "https://api.ipify.org?format=json"
     x = (requests.get(url)).json()
     return x['ip']
-
-
-class CustomConfig(defaultdict):
-    """ Apparently nobody has a use-case for an ini file with duplicate keys, go figure. Somebody please make this better.
-    """
-
-    def getdict(self):
-        return self.__dict__
-
-    def read_dict(self, configDict):
-        self.__dict__ = configDict
-
-    def read(self, configPath):
-        encoding = CustomConfig.get_encoding(configPath)
-        with open(configPath, "r", encoding=encoding) as f:
-            lines = [l.strip() for l in f.read().split("\n")]
-            section = None
-            properties = [x.split("=", 1) for x in lines]
-            for p in properties:
-                key = p[0].strip()
-                if isinstance(p, list) and len(p) > 1:
-                    value = p[1].strip()
-                    if key in self.__dict__[section]:
-                        if isinstance(self.__dict__[section][key], str):
-                            self.__dict__[section][key] = [
-                                self.__dict__[section][key], value]
-                        else:
-                            self.__dict__[section][key].append(value)
-                    else:
-                        self.__dict__[section][key] = value
-                else:
-                    if len(key) > 0:
-                        section = key[1: len(key)-1]
-                        self.__dict__[section] = {}
-
-    def write(self, configFile):
-        for section in self.__dict__.keys():
-            configFile.write(f"[{section}]\n")
-            properties = self.__dict__[section]
-            for p, v in properties.items():
-                if isinstance(v, list):
-                    for item in v:
-                        configFile.write(f"{p}={item}\n")
-                else:
-                    configFile.write(f"{p}={v}\n")
-
-    @staticmethod
-    def get_encoding(filePath):
-        pathname = os.path.dirname(filePath)
-        if not os.path.exists(pathname):
-            os.makedirs(pathname)
-        with open(filePath, 'a+'):
-            pass
-        rawdata = open(filePath, 'rb').read()
-        result = chardet.detect(rawdata)
-        charenc = result['encoding']
-        return charenc
-
-    @staticmethod
-    def updateTo(baseDict, updateWithDict):
-        tDict = {}
-        for key, value in baseDict.items():
-            tDict[key] = value
-            if key in updateWithDict.keys():
-                if isinstance(value, dict):
-                    tDict[key] = CustomConfig.updateTo(
-                        value, updateWithDict[key])
-                else:
-                    tDict[key] = updateWithDict[key]
-
-        tDict.update({k: v for k, v in updateWithDict.items()
-                      if k not in tDict.keys()})
-        return tDict
-
-
-def make_config_baseline(configPath, baseDict):
-    config = CustomConfig()
-    config.read(configPath)
-    baseConfig = CustomConfig()
-    baseConfig.read_dict(baseDict)
-    newConfig = CustomConfig()
-    newConfig.read_dict(CustomConfig.updateTo(
-        baseConfig.getdict(), config.getdict()))
-    with open(configPath, 'w') as configfile:
-        newConfig.write(configfile)
-    return newConfig.getdict()
 
 
 def get_current_settings(curPath):
@@ -129,20 +43,20 @@ def get_current_settings(curPath):
             "ConsolePort": "1234"
         }
     }
-    config = make_config_baseline(os.path.join(
+    config = MultiConfig().baseline(os.path.join(
         curPath, r"Astro\Saved\Config\WindowsServer\AstroServerSettings.ini"), baseConfig)
 
-    settings = config['/Script/Astro.AstroServerSettings']
+    settings = config.getdict()['/Script/Astro.AstroServerSettings']
 
     baseConfig = {
         "URL": {
             "Port": "8777"
         }
     }
-    config = make_config_baseline(os.path.join(
+    config = MultiConfig().baseline(os.path.join(
         curPath, r"Astro\Saved\Config\WindowsServer\Engine.ini"), baseConfig)
     # print(settings)
-    settings.update(config['URL'])
+    settings.update(config.getdict()['URL'])
     # print(settings)
     return settings
 

@@ -75,7 +75,7 @@ class AstroDedicatedServer():
             if playerList is not None:
                 self.players = playerList
                 curPlayers = [x['playerName']
-                              for x in self.players['playerInfo'] if x['inGame'] == True]
+                              for x in self.players['playerInfo'] if x['inGame']]
 
                 if len(curPlayers) > len(self.onlinePlayers):
                     playerDif = list(set(curPlayers) -
@@ -87,7 +87,7 @@ class AstroDedicatedServer():
                         set(self.onlinePlayers) - set(curPlayers))[0]
                     self.onlinePlayers = curPlayers
                     AstroLogging.logPrint(f"Player left: {playerDif}")
-            time.sleep(2)
+            time.sleep(self.launcher.launcherConfig.ServerStatusFrequency)
 
     def deregister_all_server(self):
         servers_registered = (AstroAPI.get_server(
