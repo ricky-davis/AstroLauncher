@@ -118,6 +118,10 @@ class AstroLauncher():
         AstroLogging.logPrint(
             f"Astroneer Dedicated Server Launcher {self.version}")
         AstroLogging.logPrint(
+            "If you encounter any bugs please open a new issue at:")
+        AstroLogging.logPrint(
+            "https://github.com/ricky-davis/AstroLauncher/issues")
+        AstroLogging.logPrint(
             "To safely stop the launcher and server press CTRL+C")
         self.check_for_update()
 
@@ -132,8 +136,9 @@ class AstroLauncher():
 
         if not self.launcherConfig.DisableBackupRetention:
             self.saveObserver = Observer()
+            saveGamePath = r"Astro\Saved\Backup\SaveGames"
             watchPath = os.path.join(
-                self.astroPath, r"Astro\Saved\Backup\SaveGames")
+                self.astroPath, saveGamePath)
             try:
                 if not os.path.exists(watchPath):
                     os.makedirs(watchPath)
@@ -142,7 +147,8 @@ class AstroLauncher():
             self.saveObserver.schedule(
                 self.BackupHandler(self), watchPath)
             self.saveObserver.start()
-            AstroLogging.logPrint(f"Backup retention started for {watchPath}")
+            AstroLogging.logPrint(
+                f"Backup retention started")
 
         atexit.register(self.DedicatedServer.kill_server,
                         reason="Launcher shutting down",
