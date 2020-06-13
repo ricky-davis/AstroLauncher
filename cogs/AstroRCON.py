@@ -19,6 +19,30 @@ class AstroRCON():
             return None
 
     @staticmethod
+    def DSSaveGame(consolePort):
+        try:
+            with AstroRCON.session_scope(consolePort) as s:
+                s.sendall(b"DSSaveGame\n")
+                rawdata = AstroRCON.recvall(s)
+                parsedData = AstroRCON.parseData(rawdata)
+                # pprint(parsedData)
+                return parsedData
+        except:
+            return None
+
+    @staticmethod
+    def DSServerShutdown(consolePort):
+        try:
+            with AstroRCON.session_scope(consolePort) as s:
+                s.sendall(b"DSServerShutdown\n")
+                rawdata = AstroRCON.recvall(s)
+                parsedData = AstroRCON.parseData(rawdata)
+                # pprint(parsedData)
+                return parsedData
+        except:
+            return None
+
+    @staticmethod
     @contextmanager
     def session_scope(consolePort: int):
         try:

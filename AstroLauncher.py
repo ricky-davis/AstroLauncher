@@ -39,6 +39,10 @@ class AstroLauncher():
         DisableBackupRetention: bool = False
         BackupRetentionPeriodHours: int = 76
         BackupFolderLocation: str = r"Astro\Saved\Backup\LauncherBackups"
+        EnableAutoRestart: bool = False
+        AutoRestartEveryHours: int = 24
+        AutoRestartFirst24HTimestamp: str = "00:00"
+        DisableNetworkCheck: bool = False
 
         def __post_init__(self):
             # pylint: disable=no-member
@@ -113,13 +117,16 @@ class AstroLauncher():
 
         AstroLogging.logPrint("Starting a new session")
 
-        AstroLogging.logPrint("Checking the network configuration..")
-        self.check_network_config()
+        if not self.launcherConfig.DisableNetworkCheck:
+            AstroLogging.logPrint("Checking the network configuration..")
+            self.check_network_config()
+
         self.headers['X-Authorization'] = AstroAPI.generate_XAUTH(
             self.DedicatedServer.settings.ServerGuid)
 
         atexit.register(self.DedicatedServer.kill_server,
-                        "Launcher shutting down")
+                        reason="Launcher shutting down",
+                        save=True)
         self.start_server()
 
     def refresh_launcher_config(self):
@@ -175,6 +182,9 @@ class AstroLauncher():
         self.DedicatedServer.ready = False
         oldLobbyIDs = self.DedicatedServer.deregister_all_server()
         AstroLogging.logPrint("Starting Server process...")
+        if self.launcherConfig.EnableAutoRestart:
+            AstroLogging.logPrint(
+                f"Next restart is at {self.DedicatedServer.nextRestartTime}")
         time.sleep(5)
         startTime = time.time()
         self.DedicatedServer.start()
@@ -191,14 +201,18 @@ class AstroLauncher():
                 if len(set(lobbyIDs) - set(oldLobbyIDs)) == 0:
                     time.sleep(self.launcherConfig.PlayfabAPIFrequency)
                 else:
-                    self.DedicatedServer.registered = True
-                    del oldLobbyIDs
-                    self.DedicatedServer.LobbyID = serverData[0]['LobbyID']
+                    now = time.time()
+                    if now - startTime > 15:
+                        self.DedicatedServer.registered = True
+                        del oldLobbyIDs
+                        self.DedicatedServer.LobbyID = serverData[0]['LobbyID']
 
                 if self.DedicatedServer.process.poll() is not None:
                     AstroLogging.logPrint(
                         "Server was forcefully closed before registration. Exiting....")
                     return False
+            except KeyboardInterrupt:
+                self.DedicatedServer.kill_server("Launcher shutting down")
             except:
                 AstroLogging.logPrint(
                     "Failed to check server. Probably hit rate limit. Backing off and trying again...")

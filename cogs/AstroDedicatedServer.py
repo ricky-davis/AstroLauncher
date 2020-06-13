@@ -1,4 +1,5 @@
 import dataclasses
+import datetime
 import os
 import subprocess
 import time
@@ -52,7 +53,28 @@ class AstroDedicatedServer():
         self.registered = False
         self.LobbyID = None
         self.serverGUID = self.settings.ServerGuid if self.settings.ServerGuid != '' else "REGISTER"
+        if self.launcher.launcherConfig.EnableAutoRestart:
+            self.firstRestartTime = self.launcher.launcherConfig.AutoRestartFirst24HTimestamp
+            self.nextRestartTime = None
+            self.lastRestart = datetime.datetime.now()
 
+            if self.firstRestartTime != "False":
+                if self.firstRestartTime == "midnight":
+                    self.firstRestartTime = "00:00"
+                dt = datetime.datetime.today()
+                timestamp = datetime.datetime.strptime(
+                    self.firstRestartTime, '%H:%M')
+                restartTime = datetime.datetime.combine(dt, datetime.datetime.min.time())+datetime.timedelta(
+                    hours=timestamp.hour, minutes=timestamp.minute)
+                RestartCooldown = bool(
+                    (dt - restartTime).total_seconds() < 30 and (dt - restartTime).total_seconds() > -30)
+                if timestamp.hour == 0 or (dt > restartTime) or RestartCooldown:
+                    restartTime += datetime.timedelta(days=1)
+                self.nextRestartTime = restartTime
+            else:
+                self.nextRestartTime = self.lastRestart + \
+                    datetime.timedelta(
+                        hours=self.launcher.launcherConfig.AutoRestartEveryHours)
         self.ready = False
         self.refresh_settings()
 
@@ -65,8 +87,25 @@ class AstroDedicatedServer():
         cmd = [os.path.join(self.astroPath, "AstroServer.exe"), '-log']
         self.process = subprocess.Popen(cmd)
 
+    def save_and_shutdown(self):
+        if self.launcher.launcherConfig.EnableAutoRestart:
+            self.lastRestart = datetime.datetime.now()
+            self.nextRestartTime = self.lastRestart + \
+                datetime.timedelta(
+                    hours=self.launcher.launcherConfig.AutoRestartEveryHours)
+        AstroLogging.logPrint("Saving the current game...")
+        AstroRCON.DSSaveGame(self.settings.ConsolePort)
+        time.sleep(1)
+        AstroRCON.DSServerShutdown(self.settings.ConsolePort)
+        AstroLogging.logPrint("Server shutdown.")
+
     def server_loop(self):
         while True:
+            if self.launcher.launcherConfig.EnableAutoRestart:
+                if (((datetime.datetime.now() - self.lastRestart).total_seconds() > 60) and ((self.nextRestartTime - datetime.datetime.now()).total_seconds() < 10)):
+                    AstroLogging.logPrint("Preparing to shutdown the server.")
+                    self.save_and_shutdown()
+
             if self.process.poll() is not None:
                 AstroLogging.logPrint("Server was closed. Restarting..")
                 return self.launcher.start_server()
@@ -92,6 +131,8 @@ class AstroDedicatedServer():
     def deregister_all_server(self):
         servers_registered = (AstroAPI.get_server(
             self.ipPortCombo, self.launcher.headers))['data']['Games']
+
+        self.registered = False
         if (len(servers_registered)) > 0:
             AstroLogging.logPrint(
                 f"Attemping to deregister all ({len(servers_registered)}) servers as {self.ipPortCombo}")
@@ -105,8 +146,13 @@ class AstroDedicatedServer():
             return [x['LobbyID'] for x in servers_registered]
         return []
 
-    def kill_server(self, reason):
+    def kill_server(self, reason, save=False):
         AstroLogging.logPrint(f"Kill Server: {reason}")
+        try:
+            if save:
+                self.save_and_shutdown()
+        except:
+            pass
         try:
             self.deregister_all_server()
         except:
