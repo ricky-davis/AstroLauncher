@@ -70,13 +70,14 @@ DisableBackupRetention = False
 BackupRetentionPeriodHours= 76
 
 # Location to backup the save files to
-BackupFolderLocation = Astro\Saved\Backup\LauncherBackups
+BackupRetentionFolderLocation = Astro\Saved\Backup\LauncherBackups
 
 # Enable auto restart
 EnableAutoRestart = False
 
-# What time do you want the next restart to be? 24 Hour time. 00:00 or "midnight" work for midnight. Disable with "False". No quotes.
-AutoRestartFirst24HTimestamp = 00:00
+# Timestamp you want to synchronize with. 00:00 or "midnight" work for midnight. Disable with "False". No quotes.
+# Example: If set to 03:35, with AutoRestartEveryHours set to 6, it will restart at 03:35, 09:35, 15:35, and 21:35 every day
+AutoRestartSyncTimestamp = 00:00
 
 # After the first restart specified above, how often do you want to restart?
 AutoRestartEveryHours = 24

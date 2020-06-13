@@ -34,62 +34,75 @@ class AstroLauncher():
     @dataclasses.dataclass
     class LauncherConfig():
         DisableAutoUpdate: bool = False
-        ServerStatusFrequency: int = 2
-        PlayfabAPIFrequency: int = 2
+        ServerStatusFrequency: float = 2
+        PlayfabAPIFrequency: float = 2
         DisableBackupRetention: bool = False
-        BackupRetentionPeriodHours: int = 76
-        BackupFolderLocation: str = r"Astro\Saved\Backup\LauncherBackups"
+        BackupRetentionPeriodHours: float = 76
+        BackupRetentionFolderLocation: str = r"Astro\Saved\Backup\LauncherBackups"
         EnableAutoRestart: bool = False
-        AutoRestartEveryHours: int = 24
-        AutoRestartFirst24HTimestamp: str = "00:00"
+        AutoRestartEveryHours: float = 24
+        AutoRestartSyncTimestamp: str = "00:00"
         DisableNetworkCheck: bool = False
 
         def __post_init__(self):
             # pylint: disable=no-member
+            hasError = False
             for field, data in self.__dataclass_fields__.items():
-                self.__dict__[field] = data.type(self.__dict__[field])
+                try:
+                    self.__dict__[field] = data.type(self.__dict__[field])
+                except ValueError:
+                    hasError = True
+                    AstroLogging.logPrint(
+                        f"INI error: {field} must be of type {data.type.__name__}", "critical")
+            if hasError:
+                AstroLogging.logPrint(
+                    f"Fix your launcher config file!", "critical")
+                sys.exit()
 
     class BackupHandler(FileSystemEventHandler):
         def __init__(self, launcher):
             self.launcher = launcher
             self.astroPath = self.launcher.astroPath
-            self.moveToPath = self.launcher.launcherConfig.BackupFolderLocation
+            self.moveToPath = self.launcher.launcherConfig.BackupRetentionFolderLocation
             self.retentionPeriodHours = self.launcher.launcherConfig.BackupRetentionPeriodHours
-            self.last_modified = None
-            self.cancelLast = False
             super().__init__()
 
         def on_modified(self, event):
-            if self.last_modified == event.src_path:
-                self.cancelLast = True
+            AstroLogging.logPrint("Server made backup.")
             path = os.path.join(self.astroPath, self.moveToPath)
             try:
                 if not os.path.exists(path):
                     os.makedirs(path)
-            except:
-                pass
+            except Exception as e:
+                AstroLogging.logPrint(e, "error")
             now = time.time()
             try:
                 for f in os.listdir(path):
                     fpath = os.path.join(path, f)
                     if(os.stat(fpath).st_mtime < (now - (self.retentionPeriodHours * 60 * 60))):
                         os.remove(fpath)
-            except:
-                pass
+            except Exception as e:
+                AstroLogging.logPrint(e, "error")
             time.sleep(1)
-            if not self.cancelLast:
+            try:
+                AstroLogging.logPrint("Copying backup to retention folder.")
+                shutil.copy2(event.src_path, path)
+            except:
                 try:
-                    shutil.copy2(event.src_path, path)
-                    self.last_modified = event.src_path
-                    AstroLogging.logPrint("Creating backup.")
-                    self.cancelLast = False
-                except:
-                    pass
-            else:
-                self.cancelLast = False
+                    dirName = os.path.dirname(event.src_path)
+                    newFile = os.path.join(dirName, [f for f in os.listdir(
+                        dirName) if os.path.isfile(os.path.join(dirName, f))][0])
+                    AstroLogging.logPrint(newFile, "debug")
+                    copiedFile = shutil.copy2(newFile, path)
+                    AstroLogging.logPrint(copiedFile, "debug")
+                except FileNotFoundError as e:
+                    AstroLogging.logPrint(e, "error")
+                except Exception as e:
+                    AstroLogging.logPrint(e, "error")
 
     def __init__(self, astroPath, launcherINI="Launcher.ini", disable_auto_update=None):
         self.astroPath = astroPath
+        AstroLogging.setup_logging(self.astroPath)
         self.launcherINI = launcherINI
         self.launcherConfig = self.LauncherConfig()
         self.refresh_launcher_config()
@@ -100,19 +113,13 @@ class AstroLauncher():
         self.isExecutable = os.path.samefile(sys.executable, sys.argv[0])
         self.headers = AstroAPI.base_headers
         self.DaemonProcess = None
-        if not self.launcherConfig.DisableBackupRetention:
-            self.saveObserver = Observer()
-            self.saveObserver.schedule(
-                self.BackupHandler(self),
-                os.path.join(self.astroPath, r"Astro\Saved\Backup\SaveGames"))
-            self.saveObserver.start()
         self.DedicatedServer = AstroDedicatedServer(
             self.astroPath, self)
 
-        AstroLogging.setup_logging(self.astroPath)
-
         AstroLogging.logPrint(
             f"Astroneer Dedicated Server Launcher {self.version}")
+        AstroLogging.logPrint(
+            "To safely stop the launcher and server press CTRL+C")
         self.check_for_update()
 
         AstroLogging.logPrint("Starting a new session")
@@ -124,14 +131,38 @@ class AstroLauncher():
         self.headers['X-Authorization'] = AstroAPI.generate_XAUTH(
             self.DedicatedServer.settings.ServerGuid)
 
+        if not self.launcherConfig.DisableBackupRetention:
+            self.saveObserver = Observer()
+            watchPath = os.path.join(
+                self.astroPath, r"Astro\Saved\Backup\SaveGames")
+            try:
+                if not os.path.exists(watchPath):
+                    os.makedirs(watchPath)
+            except Exception as e:
+                AstroLogging.logPrint(e)
+                pass
+            self.saveObserver.schedule(
+                self.BackupHandler(self), watchPath)
+            self.saveObserver.start()
+            AstroLogging.logPrint(f"Backup retention started for {watchPath}")
+
         atexit.register(self.DedicatedServer.kill_server,
                         reason="Launcher shutting down",
                         save=True)
         self.start_server()
 
     def refresh_launcher_config(self):
+        field_names = set(
+            f.name for f in dataclasses.fields(self.LauncherConfig))
+        cleaned_config = {k: v for k,
+                          v in self.get_launcher_config().items() if k in field_names}
         self.launcherConfig = dataclasses.replace(
-            self.launcherConfig, **self.get_launcher_config())
+            self.launcherConfig, **cleaned_config)
+
+        config = MultiConfig()
+        config.read_dict({"AstroLauncher": cleaned_config})
+        with open(self.launcherINI, 'w') as configfile:
+            config.write(configfile)
 
     def get_launcher_config(self):
         baseConfig = {

@@ -54,16 +54,16 @@ class AstroDedicatedServer():
         self.LobbyID = None
         self.serverGUID = self.settings.ServerGuid if self.settings.ServerGuid != '' else "REGISTER"
         if self.launcher.launcherConfig.EnableAutoRestart:
-            self.firstRestartTime = self.launcher.launcherConfig.AutoRestartFirst24HTimestamp
+            self.syncRestartTime = self.launcher.launcherConfig.AutoRestartSyncTimestamp
             self.nextRestartTime = None
             self.lastRestart = datetime.datetime.now()
 
-            if self.firstRestartTime != "False":
-                if self.firstRestartTime == "midnight":
-                    self.firstRestartTime = "00:00"
+            if self.syncRestartTime != "False":
+                if self.syncRestartTime == "midnight":
+                    self.syncRestartTime = "00:00"
                 dt = datetime.datetime.today()
                 timestamp = datetime.datetime.strptime(
-                    self.firstRestartTime, '%H:%M')
+                    self.syncRestartTime, '%H:%M')
                 restartTime = datetime.datetime.combine(dt, datetime.datetime.min.time())+datetime.timedelta(
                     hours=timestamp.hour, minutes=timestamp.minute)
                 RestartCooldown = bool(
@@ -98,9 +98,8 @@ class AstroDedicatedServer():
     def save_and_shutdown(self):
         if self.launcher.launcherConfig.EnableAutoRestart:
             self.lastRestart = datetime.datetime.now()
-            self.nextRestartTime = self.lastRestart + \
-                datetime.timedelta(
-                    hours=self.launcher.launcherConfig.AutoRestartEveryHours)
+            self.nextRestartTime += datetime.timedelta(
+                hours=self.launcher.launcherConfig.AutoRestartEveryHours)
         AstroLogging.logPrint("Saving the current game...")
         AstroRCON.DSSaveGame(self.settings.ConsolePort)
         time.sleep(1)
@@ -110,7 +109,7 @@ class AstroDedicatedServer():
     def server_loop(self):
         while True:
             if self.launcher.launcherConfig.EnableAutoRestart:
-                if (((datetime.datetime.now() - self.lastRestart).total_seconds() > 60) and ((self.nextRestartTime - datetime.datetime.now()).total_seconds() < 10)):
+                if (((datetime.datetime.now() - self.lastRestart).total_seconds() > 60) and ((self.nextRestartTime - datetime.datetime.now()).total_seconds() < 0)):
                     AstroLogging.logPrint("Preparing to shutdown the server.")
                     self.save_and_shutdown()
 

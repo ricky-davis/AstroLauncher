@@ -10,10 +10,16 @@ class AstroLogging():
 
     @staticmethod
     def logPrint(message, msgType="info"):
+        if msgType == "debug":
+            logging.debug(pformat(message))
         if msgType == "info":
             logging.info(pformat(message))
         if msgType == "warning":
             logging.warning(pformat(message))
+        if msgType == "error":
+            logging.error(pformat(message))
+        if msgType == "critical":
+            logging.critical(pformat(message))
 
     @staticmethod
     def setup_logging(astroPath):
