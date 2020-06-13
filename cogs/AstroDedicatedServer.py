@@ -67,9 +67,17 @@ class AstroDedicatedServer():
                 restartTime = datetime.datetime.combine(dt, datetime.datetime.min.time())+datetime.timedelta(
                     hours=timestamp.hour, minutes=timestamp.minute)
                 RestartCooldown = bool(
-                    (dt - restartTime).total_seconds() < 30 and (dt - restartTime).total_seconds() > -30)
-                if timestamp.hour == 0 or (dt > restartTime) or RestartCooldown:
+                    (dt - restartTime).total_seconds() < 300 and (dt - restartTime).total_seconds() > -300)
+                if timestamp.hour == 0:
                     restartTime += datetime.timedelta(days=1)
+                if dt > restartTime or RestartCooldown:
+                    restartTime += \
+                        datetime.timedelta(
+                            hours=self.launcher.launcherConfig.AutoRestartEveryHours)
+                    while dt >= restartTime:
+                        restartTime += \
+                            datetime.timedelta(
+                                hours=self.launcher.launcherConfig.AutoRestartEveryHours)
                 self.nextRestartTime = restartTime
             else:
                 self.nextRestartTime = self.lastRestart + \
