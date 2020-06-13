@@ -23,6 +23,7 @@
 - [Table of Contents](#table-of-contents)
 - [Overview](#overview)
 - [What does it do?](#what-does-it-do)
+- [INI File options](#ini-file-options)
 - [Coming soon](#coming-soon)
 - [TODO](#todo)
 - [Getting Started](#getting-started)
@@ -46,18 +47,50 @@ This tool is perfect for you if you are hosting your own dedicated server for As
 4. Starts, and automatically restarts the server
 5. Displays when users join/leave the server
 6. Keeps a log of everything in the logs folder
+7. Auto Restart every X hours
+8. Backup Retention for X hours
 
+## INI File options
 
+Below are the descriptions and defaults for the INI file options. Do not copy/paste this into the INI file, allow the INI file to be automatically generated. Every option must be present and set, and there must be no comments or extra options.
+```python
+# Disables Auto Update -- Notifies but does not download
+DisableAutoUpdate = False
+
+# Specifies how often the launcher will check for players joining/leaving
+ServerStatusFrequency = 2
+
+# Specifies how often the launcher will check for server registration status
+PlayfabAPIFrequency = 2
+
+# Disable Backup Retention
+DisableBackupRetention = False
+
+# How many hours of saves should the launcher retain
+BackupRetentionPeriodHours= 76
+
+# Location to backup the save files to
+BackupFolderLocation = Astro\Saved\Backup\LauncherBackups
+
+# Enable auto restart
+EnableAutoRestart = False
+
+# What time do you want the next restart to be? 24 Hour time. 00:00 or "midnight" work for midnight. Disable with "False". No quotes.
+AutoRestartFirst24HTimestamp = 00:00
+
+# After the first restart specified above, how often do you want to restart?
+AutoRestartEveryHours = 24
+
+# Disable the Port Forward / NAT Loopback check on startup
+DisableNetworkCheck = False
+```
 
 ## Coming soon
 1. Web Interface to monitor server data.
 
 ## TODO
 
-1. Implement Save-backups with adjustable intervals
-2. Implement Auto-Restart timers
-3. Launcher.INI file
-4. Provide a web management interface
+1. Provide a web management interface
 
 <!-- GETTING STARTED -->
 
