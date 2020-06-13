@@ -56,7 +56,7 @@ class AstroLauncher():
                         f"INI error: {field} must be of type {data.type.__name__}", "critical")
             if hasError:
                 AstroLogging.logPrint(
-                    f"Fix your launcher config file!", "critical")
+                    "Fix your launcher config file!", "critical")
                 sys.exit()
 
     class BackupHandler(FileSystemEventHandler):
@@ -140,7 +140,6 @@ class AstroLauncher():
                     os.makedirs(watchPath)
             except Exception as e:
                 AstroLogging.logPrint(e)
-                pass
             self.saveObserver.schedule(
                 self.BackupHandler(self), watchPath)
             self.saveObserver.start()
