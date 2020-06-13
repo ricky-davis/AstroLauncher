@@ -68,7 +68,6 @@ class AstroLauncher():
             super().__init__()
 
         def on_modified(self, event):
-            AstroLogging.logPrint("Server made backup.")
             path = os.path.join(self.astroPath, self.moveToPath)
             try:
                 if not os.path.exists(path):
