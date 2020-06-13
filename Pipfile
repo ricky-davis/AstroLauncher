@@ -13,6 +13,7 @@ pprint = "*"
 psutil = "*"
 pyinstaller = "*"
 chardet = "*"
+watchdog = "*"
 
 [requires]
 python_version = "3.7"

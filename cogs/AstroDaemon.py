@@ -24,7 +24,7 @@ class AstroDaemon():
                                 subprocess.CREATE_NEW_PROCESS_GROUP)
 
     @staticmethod
-    def watchDog(laucherPID, consolePID):
+    def daemon(laucherPID, consolePID):
         while(psutil.pid_exists(int(laucherPID)) and psutil.pid_exists(int(consolePID))):
             time.sleep(0.5)
         try:

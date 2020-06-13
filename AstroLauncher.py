@@ -4,10 +4,13 @@ import ctypes
 import dataclasses
 import os
 import subprocess
+import shutil
 import sys
 import time
 
 import requests
+from watchdog.events import FileSystemEventHandler
+from watchdog.observers import Observer
 
 import cogs.AstroAPI as AstroAPI
 import cogs.ValidateSettings as ValidateSettings
@@ -33,11 +36,52 @@ class AstroLauncher():
         DisableAutoUpdate: bool = False
         ServerStatusFrequency: int = 2
         PlayfabAPIFrequency: int = 2
+        BackupRetentionPeriodHours: int = 76
+        BackupFolderLocation: str = r"Astro\Saved\Backup\LauncherBackups"
 
         def __post_init__(self):
             # pylint: disable=no-member
             for field, data in self.__dataclass_fields__.items():
                 self.__dict__[field] = data.type(self.__dict__[field])
+
+    class BackupHandler(FileSystemEventHandler):
+        def __init__(self, launcher):
+            self.launcher = launcher
+            self.astroPath = self.launcher.astroPath
+            self.moveToPath = self.launcher.launcherConfig.BackupFolderLocation
+            self.retentionPeriodHours = self.launcher.launcherConfig.BackupRetentionPeriodHours
+            self.last_modified = None
+            self.cancelLast = False
+            super().__init__()
+
+        def on_modified(self, event):
+            if self.last_modified == event.src_path:
+                self.cancelLast = True
+            path = os.path.join(self.astroPath, self.moveToPath)
+            try:
+                if not os.path.exists(path):
+                    os.makedirs(path)
+            except:
+                pass
+            now = time.time()
+            try:
+                for f in os.listdir(path):
+                    fpath = os.path.join(path, f)
+                    if(os.stat(fpath).st_mtime < (now - (self.retentionPeriodHours * 60 * 60))):
+                        os.remove(fpath)
+            except:
+                pass
+            time.sleep(1)
+            if not self.cancelLast:
+                try:
+                    shutil.copy2(event.src_path, path)
+                    self.last_modified = event.src_path
+                    AstroLogging.logPrint("Creating backup.")
+                    self.cancelLast = False
+                except:
+                    pass
+            else:
+                self.cancelLast = False
 
     def __init__(self, astroPath, launcherINI="Launcher.ini", disable_auto_update=None):
         self.astroPath = astroPath
@@ -51,6 +95,11 @@ class AstroLauncher():
         self.isExecutable = os.path.samefile(sys.executable, sys.argv[0])
         self.headers = AstroAPI.base_headers
         self.DaemonProcess = None
+        self.saveObserver = Observer()
+        self.saveObserver.schedule(
+            self.BackupHandler(self),
+            os.path.join(self.astroPath, r"Astro\Saved\Backup\SaveGames"))
+        self.saveObserver.start()
         self.DedicatedServer = AstroDedicatedServer(
             self.astroPath, self)
 
@@ -111,7 +160,7 @@ class AstroLauncher():
                            "Rename-Item", "-path", downloadPath + "_new.exe",
                            "-NewName", fileName + ".exe", ";",
                            'Start-Process', downloadPath]
-            #print(' '.join(downloadCMD))
+            # print(' '.join(downloadCMD))
             subprocess.Popen(downloadCMD, shell=True, creationflags=subprocess.DETACHED_PROCESS |
                              subprocess.CREATE_NEW_PROCESS_GROUP)
         time.sleep(2)
@@ -124,7 +173,7 @@ class AstroLauncher():
         self.DedicatedServer.ready = False
         oldLobbyIDs = self.DedicatedServer.deregister_all_server()
         AstroLogging.logPrint("Starting Server process...")
-        time.sleep(3)
+        time.sleep(5)
         startTime = time.time()
         self.DedicatedServer.start()
         self.DaemonProcess = AstroDaemon.launch(
@@ -218,7 +267,7 @@ if __name__ == "__main__":
                 if hWnd:
                     user32.ShowWindow(hWnd, SW_HIDE)
 
-                AstroDaemon().watchDog(args.launcherpid, args.consolepid)
+                AstroDaemon().daemon(args.launcherpid, args.consolepid)
             else:
                 print("Insufficient launch options!")
         elif args.path:
