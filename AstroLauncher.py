@@ -51,31 +51,37 @@ class AstroLauncher():
             self.moveToPath = self.launcher.launcherConfig.BackupFolderLocation
             self.retentionPeriodHours = self.launcher.launcherConfig.BackupRetentionPeriodHours
             self.last_modified = None
+            self.cancelLast = False
             super().__init__()
 
         def on_modified(self, event):
-            if self.last_modified != event.src_path:
-                path = os.path.join(self.astroPath, self.moveToPath)
-                try:
-                    if not os.path.exists(path):
-                        os.makedirs(path)
-                except:
-                    pass
-                now = time.time()
-                try:
-                    for f in os.listdir(path):
-                        fpath = os.path.join(path, f)
-                        if(os.stat(fpath).st_mtime < (now - (self.retentionPeriodHours * 60 * 60))):
-                            os.remove(fpath)
-                except:
-                    pass
-                time.sleep(1)
+            if self.last_modified == event.src_path:
+                self.cancelLast = True
+            path = os.path.join(self.astroPath, self.moveToPath)
+            try:
+                if not os.path.exists(path):
+                    os.makedirs(path)
+            except:
+                pass
+            now = time.time()
+            try:
+                for f in os.listdir(path):
+                    fpath = os.path.join(path, f)
+                    if(os.stat(fpath).st_mtime < (now - (self.retentionPeriodHours * 60 * 60))):
+                        os.remove(fpath)
+            except:
+                pass
+            time.sleep(1)
+            if not self.cancelLast:
                 try:
                     shutil.copy2(event.src_path, path)
                     self.last_modified = event.src_path
                     AstroLogging.logPrint("Creating backup.")
+                    self.cancelLast = False
                 except:
                     pass
+            else:
+                self.cancelLast = False
 
     def __init__(self, astroPath, launcherINI="Launcher.ini", disable_auto_update=None):
         self.astroPath = astroPath
@@ -92,7 +98,7 @@ class AstroLauncher():
         self.saveObserver = Observer()
         self.saveObserver.schedule(
             self.BackupHandler(self),
-            os.path.join(self.astroPath, r"Astro\Saved\SaveGames"))
+            os.path.join(self.astroPath, r"Astro\Saved\Backup\SaveGames"))
         self.saveObserver.start()
         self.DedicatedServer = AstroDedicatedServer(
             self.astroPath, self)
