@@ -36,6 +36,7 @@ class AstroLauncher():
         DisableAutoUpdate: bool = False
         ServerStatusFrequency: int = 2
         PlayfabAPIFrequency: int = 2
+        DisableBackupRetention: bool = False
         BackupRetentionPeriodHours: int = 76
         BackupFolderLocation: str = r"Astro\Saved\Backup\LauncherBackups"
 
@@ -95,11 +96,12 @@ class AstroLauncher():
         self.isExecutable = os.path.samefile(sys.executable, sys.argv[0])
         self.headers = AstroAPI.base_headers
         self.DaemonProcess = None
-        self.saveObserver = Observer()
-        self.saveObserver.schedule(
-            self.BackupHandler(self),
-            os.path.join(self.astroPath, r"Astro\Saved\Backup\SaveGames"))
-        self.saveObserver.start()
+        if not self.launcherConfig.DisableBackupRetention:
+            self.saveObserver = Observer()
+            self.saveObserver.schedule(
+                self.BackupHandler(self),
+                os.path.join(self.astroPath, r"Astro\Saved\Backup\SaveGames"))
+            self.saveObserver.start()
         self.DedicatedServer = AstroDedicatedServer(
             self.astroPath, self)
 
