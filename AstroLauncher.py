@@ -45,6 +45,8 @@ class AstroLauncher():
         AutoRestartEveryHours: float = 24
         AutoRestartSyncTimestamp: str = "00:00"
         DisableNetworkCheck: bool = False
+        DisableWebServer: bool = False
+        WebServerPort: int = 5000
 
         def __post_init__(self):
             # pylint: disable=no-member
@@ -158,12 +160,14 @@ class AstroLauncher():
             self.backup_retention()
             AstroLogging.logPrint("Backup retention started")
         # setup queue for data exchange
-        self.webServerQueue = queue.SimpleQueue()
-        self.webServerQueue.put(self.DedicatedServer)
+        if not self.launcherConfig.DisableWebServer:
+            self.webServerQueue = queue.SimpleQueue()
+            self.webServerQueue.put(self.DedicatedServer)
 
-        # start http server
-        AstroWebServer.startWebServer(self.webServerQueue)
-        AstroLogging.logPrint("HTTP Server started at 127.0.0.1:80")
+            # start http server
+            AstroWebServer.startWebServer(self.webServerQueue, self)
+            AstroLogging.logPrint(
+                f"HTTP Server started at 127.0.0.1:{self.launcherConfig.WebServerPort}")
 
         atexit.register(self.DedicatedServer.kill_server,
                         reason="Launcher shutting down",
@@ -269,7 +273,8 @@ class AstroLauncher():
         """
             Starts the Dedicated Server process and waits for it to be registered
         """
-        self.DedicatedServer.ready = False
+        self.DedicatedServer.status = "starting"
+        self.DedicatedServer.busy = False
         oldLobbyIDs = self.DedicatedServer.deregister_all_server()
         AstroLogging.logPrint("Starting Server process...")
         if self.launcherConfig.EnableAutoRestart:
@@ -313,7 +318,7 @@ class AstroLauncher():
         elapsed = doneTime - startTime
         AstroLogging.logPrint(
             f"Server ready with ID {self.DedicatedServer.LobbyID}. Took {round(elapsed,2)} seconds to register.")
-        self.DedicatedServer.ready = True
+        self.DedicatedServer.status = "ready"
         self.DedicatedServer.server_loop()
 
     def check_network_config(self):

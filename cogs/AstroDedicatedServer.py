@@ -83,7 +83,8 @@ class AstroDedicatedServer():
                 self.nextRestartTime = self.lastRestart + \
                     datetime.timedelta(
                         hours=self.launcher.launcherConfig.AutoRestartEveryHours)
-        self.ready = False
+        self.status = "off"
+        self.busy = False
         self.refresh_settings()
 
     def refresh_settings(self):
@@ -95,14 +96,16 @@ class AstroDedicatedServer():
         cmd = [os.path.join(self.astroPath, "AstroServer.exe"), '-log']
         self.process = subprocess.Popen(cmd)
 
-    def save_and_shutdown(self):
-        if self.launcher.launcherConfig.EnableAutoRestart:
-            self.lastRestart = datetime.datetime.now()
-            self.nextRestartTime += datetime.timedelta(
-                hours=self.launcher.launcherConfig.AutoRestartEveryHours)
+    def saveGame(self):
+        self.status = "saving"
+        self.busy = True
         AstroLogging.logPrint("Saving the current game...")
         AstroRCON.DSSaveGame(self.settings.ConsolePort)
-        time.sleep(1)
+        self.busy = False
+
+    def shutdownServer(self):
+        self.status = "shutdown"
+        self.busy = True
         AstroRCON.DSServerShutdown(self.settings.ConsolePort)
         AstroLogging.logPrint("Server shutdown.")
 
@@ -115,11 +118,18 @@ class AstroDedicatedServer():
             if self.launcher.launcherConfig.EnableAutoRestart:
                 if (((datetime.datetime.now() - self.lastRestart).total_seconds() > 60) and ((self.nextRestartTime - datetime.datetime.now()).total_seconds() < 0)):
                     AstroLogging.logPrint("Preparing to shutdown the server.")
-                    self.save_and_shutdown()
+                    self.lastRestart = datetime.datetime.now()
+                    self.nextRestartTime += datetime.timedelta(
+                        hours=self.launcher.launcherConfig.AutoRestartEveryHours)
+                    time.sleep(1)
+                    self.saveGame()
+                    self.shutdownServer()
 
             if self.process.poll() is not None:
                 AstroLogging.logPrint("Server was closed. Restarting..")
                 return self.launcher.start_server()
+            if not self.busy:
+                self.status = "ready"
 
             playerList = AstroRCON.DSListPlayers(self.settings.ConsolePort)
             if playerList is not None:
@@ -137,9 +147,10 @@ class AstroDedicatedServer():
                         set(self.onlinePlayers) - set(curPlayers))[0]
                     self.onlinePlayers = curPlayers
                     AstroLogging.logPrint(f"Player left: {playerDif}")
-            # update data(self) in queue for webserver
-            self.launcher.webServerQueue.get()
-            self.launcher.webServerQueue.put(self)
+            if not self.launcher.launcherConfig.DisableWebServer:
+                # update data(self) in queue for webserver
+                self.launcher.webServerQueue.get()
+                self.launcher.webServerQueue.put(self)
             time.sleep(self.launcher.launcherConfig.ServerStatusFrequency)
 
     def deregister_all_server(self):
@@ -162,9 +173,13 @@ class AstroDedicatedServer():
 
     def kill_server(self, reason, save=False):
         AstroLogging.logPrint(f"Kill Server: {reason}")
+        self.busy = True
+        self.status = "shutdown"
         try:
             if save:
-                self.save_and_shutdown()
+                self.saveGame()
+                time.sleep(1)
+                self.shutdownServer()
         except:
             pass
         try:
@@ -177,6 +192,7 @@ class AstroDedicatedServer():
                 child.kill()
         except:
             pass
+        self.status = "off"
         # Kill current process
         try:
             os.kill(os.getpid(), 9)

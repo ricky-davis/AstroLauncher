@@ -1,9 +1,4 @@
 @font-face {
-  font-family: AstroLight;
-  src: url(https://cdn.glitch.com/32489c62-94fa-4379-9489-35240c55c26e%2FNDAstroneer-Light.ttf?v=1591893618814);
-}
-
-@font-face {
   font-family: AstroRegular;
   src: url(https://cdn.glitch.com/32489c62-94fa-4379-9489-35240c55c26e%2FNDAstroneer-Regular.ttf?v=1591893620396);
 }
@@ -13,25 +8,17 @@
   src: url(https://cdn.glitch.com/32489c62-94fa-4379-9489-35240c55c26e%2FNDAstroneer-Bold.ttf?v=1591893619015);
 }
 
-html {
-  background: #17142f;
-}
-
 * {
   color: #fff;
 }
 
 body {
-  background-image: url(https://cdn.glitch.com/32489c62-94fa-4379-9489-35240c55c26e%2Fastroneer-key-art.jpg?v=1591893618736);
-  background-repeat: no-repeat;
-  background-position: center -500px;
-  margin: 0;
-  overflow: hidden;
+  background-color:rgba(50,50,50,1);
 }
 
 h1 {
   background: #17142f;
-  font-size: 50px;
+  font-size: 3em;
   text-align: center;
   box-shadow: 0 0 30px #17142f;
   padding: 20px;
@@ -39,76 +26,39 @@ h1 {
   white-space: nowrap;
   font-family: AstroRegular;
 }
-
-#msg {
-  background: #17142f;
-  box-shadow: 0 0 30px #17142f;
-  font-size: 40px;
-  padding: 10px;
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  z-index: 100;
-  display: none;
-}
-
-#main {
-  width: 100%;
-  height: 100%;
-  display: grid;
-  grid-template-columns: 30% auto 30%;
-  grid-gap: 0;
-  position: relative;
-  margin: 0;
-}
-
-#stats,
-#player {
-  margin: 0;
-  position: relative;
-  z-index: 1;
-  background: inherit;
-  overflow: hidden;
-  font-family: AstroRegular;
-  font-size: 1.7em;
-  padding: 2vh;
-}
-
-#stats:before,
-#player:before {
-  content: "";
-  position: absolute;
-  background: inherit;
-  z-index: -1;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  box-shadow: inset 0 0 2000px rgba(25, 25, 25, 0.5);
-  filter: blur(8px);
-  background-color:rgba(25,25,25,0.9);
-  backdrop-filter: blur(5px);
-  margin: -20px;
-}
-
 h3 {
   font-family: AstroBold;
   margin-top: 0;
 }
 
+h5 {
+    margin:0;
+    line-height:200%;
+}
+#msg{
+    width:100%;
+    position: absolute;
+    transition: all 1s ease;
+}
+
+.astroCard {
+    z-index: 1;
+    font-family: AstroRegular;
+    font-size: 1em;
+    border-radius: 15px;
+    background-color:rgba(25,25,25,0.9);
+    -webkit-box-shadow: 3px 3px 10px 0px rgba(0,0,0,0.75);
+    -moz-box-shadow: 3px 3px 10px 0px rgba(0,0,0,0.75);
+    box-shadow: 3px 3px 10px 0px rgba(0,0,0,0.75);
+}
+
+
 table,
-tr,
 td,
-th {
+th{
   border: 1px solid #fff;
   border-collapse: collapse;
   text-align: left;
   padding: 3px;
   font-size: 1em;
-}
-
-.error {
-  color: red;
-  font-family: AstroBold;
 }

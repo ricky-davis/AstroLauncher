@@ -1,49 +1,100 @@
 <html>
 
 <head>
-  <meta charset="utf-8" />
-  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Astroneer Server Status</title>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Astroneer Server Status</title>
+    <link rel="icon" type="image/ico" href="astrolauncherlogo.ico" />
 
-  <link rel="icon" type="image/ico" href="astrolauncherlogo.ico" />
-  <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="bootstrap.min.css" />
+    <link rel="stylesheet" href="style.css" />
 </head>
 
 <body>
-  <h1>Dedicated Server Status for <span id="titleIP">[IP]</span></h1>
-  <p id="msg" class="error"></p>
-
-  <div id="main">
-    <div id="stats">
-      <h3>
-        Statistics
-      </h3>
-      <p>Server Name: <span id="serverName"></span></p>
-      <p>Owner: <span id="owner"></span></p>
-      <p>Max Server Framerate: <span id="maxFramerate"></span></p>
-      <p>Maximum Players: <span id="maxPLayers"></span></p>
-      <p>Players online: <span id="onlinePLayers"></span></p>
-      <br />
+    <h1>Dedicated Server Status for <span id="titleIP">[IP]</span></h1>
+    <div id="msg" class="bg-danger text-center collapse">
+        <h5></h5>
     </div>
 
-    <div></div>
+    <div id="main" class="container-fluid">
+        <div class="row mt-5">
+            <div id="left" class="col-4 mx-4">
+                <div class="row">
+                    <div id="stats" class="col p-4 astroCard">
+                        <h3>
+                            Statistics <span id="serverStatus" class="float-right text-danger">Offline</span>
+                        </h3>
+                        <p>Server Name: <span id="serverName"></span></p>
+                        <p>Owner: <span id="owner"></span></p>
+                        <p>Max Server Framerate: <span id="maxFramerate"></span></p>
+                        <p>Maximum Players: <span id="maxPlayers"></span></p>
+                        <p>Players online: <span id="onlinePlayers"></span></p>
+                        <br />
+                        <button id="saveGameBtn" type="button" class="btn btn-success mr-2">Save Game</button>
+                        <button id="stopLauncherBtn" type="button" class="btn btn-danger ml-1 float-right">Stop Launcher
+                            & Server</button>
+                        <button id="rebootServerBtn" type="button"
+                            class="btn btn-warning mx-1 float-right">Reboot</button>
+                    </div>
+                </div>
+            </div>
 
-    <div id="player">
-      <h3>
-        Players
-      </h3>
-      <table id="players">
-        <tr>
-          <th>Name</th>
-          <th>Role</th>
-          <th>In Game</th>
-        </tr>
-      </table>
+
+            <div id="right" class="col mr-4 px-5">
+                <div id="onlinePlayersRow" class="row p-4 astroCard">
+                    <div class="col">
+                        <h3>
+                            Online Players
+                        </h3>
+                        <table id="onlinePlayersTable" class="table table-dark table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Role</th>
+                                    <th>In Game</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+                <div id="offinePlayersRow" class="row p-4 my-4 astroCard">
+                    <div class="col">
+                        <h3>
+                            Offline Players
+                        </h3>
+                        <table id="offlinePlayersTable" class="table table-dark table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Role</th>
+                                    <th>In Game</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div id="below" class="col mr-4 px-5">
+                <div id="console" class="row p-4 astroCard">
+                    <div class="col">
+                        <h3>Console</h3>
+                        <div id="consoleText">
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
-  </div>
 </body>
 
+<script src="jquery-3.5.1.min.js"></script>
+<script src="bootstrap.bundle.min.js"></script>
 <script src="script.js"></script>
 
 </html>
