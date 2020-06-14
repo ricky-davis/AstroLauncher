@@ -6,7 +6,8 @@
 
 <br />
 <p align="center">
-  <h3 align="center">AstroLauncher Dedicated Server Launcher</h3>
+  <img src="https://raw.githubusercontent.com/ricky-davis/AstroLauncher/master/assets/astrolauncherlogo.ico" width="128px">
+  <h3 align="center">AstroLauncher - Dedicated Server Launcher</h3>
 
   <p align="center">
     <a href="https://github.com/ricky-davis/AstroLauncher/issues">AstroLauncher Bugs</a>
@@ -20,41 +21,83 @@
 ## Table of Contents
 
 - [Table of Contents](#table-of-contents)
+- [Overview](#overview)
 - [What does it do?](#what-does-it-do)
+- [INI File options](#ini-file-options)
+- [Coming soon](#coming-soon)
 - [TODO](#todo)
 - [Getting Started](#getting-started)
   - [Prerequisites](#prerequisites)
   - [Installation](#installation)
 - [Usage](#usage)
   - [Building an EXE](#building-an-exe)
-- [Roadmap](#roadmap)
 - [Contributing](#contributing)
 - [License](#license)
 - [Contact](#contact)
+
+## Overview
+
+This tool is perfect for you if you are hosting your own dedicated server for Astroneer. It has many features to make hosting a lot easier like automatic restarts, advanced logging and a webinterface.
 
 ## What does it do?
 
 1. Verifies your network settings to check for Port Forwarding/NAT Loopback
 2. Automatically sets up the base Config files
-3. Checks to see if the IP:Port combo is registered with Playfab, if so, Deregisters it.
-4. Starts the server, and waits for it to register
-5. Starts a loop to check for and display players joining/leaving, using the remote console port
+3. Fixes the double server problem in the server list
+4. Starts, and automatically restarts the server
+5. Displays when users join/leave the server
 6. Keeps a log of everything in the logs folder
-7. Restarts the server if it closes, unless it closes before it registers.
-8. If the launcher is closed, the Daemon closes the dedicated server
+7. Auto Restart every X hours
+8. Backup Retention for X hours
+
+## INI File options
+
+Below are the descriptions and defaults for the INI file options. Do not copy/paste this into the INI file, allow the INI file to be automatically generated. Every option must be present and set, and there must be no comments or extra options.
+```python
+# Disables Auto Update -- Notifies but does not download
+DisableAutoUpdate = False
+
+# Specifies how often the launcher will check for players joining/leaving
+ServerStatusFrequency = 2
+
+# Specifies how often the launcher will check for server registration status
+PlayfabAPIFrequency = 2
+
+# Disable Backup Retention
+DisableBackupRetention = False
+
+# How many hours of saves should the launcher retain
+BackupRetentionPeriodHours= 76
+
+# Location to backup the save files to
+BackupRetentionFolderLocation = Astro\Saved\Backup\LauncherBackups
+
+# Enable auto restart
+EnableAutoRestart = False
+
+# Timestamp you want to synchronize with. 00:00 or "midnight" work for midnight. Disable with "False". No quotes.
+# Example: If set to 03:35, with AutoRestartEveryHours set to 6, it will restart at 03:35, 09:35, 15:35, and 21:35 every day
+AutoRestartSyncTimestamp = 00:00
+
+# After the first restart specified above, how often do you want to restart?
+AutoRestartEveryHours = 24
+
+# Disable the Port Forward / NAT Loopback check on startup
+DisableNetworkCheck = False
+```
+
+## Coming soon
+1. Web Interface to monitor server data.
 
 ## TODO
 
-1. ~~Create a watcher process to determine if the launcher is closed, to close the Dedicated Server~~
-2. Implement Save-backups with adjustable intervals
-3. ~~Auto Public IP checking / NAT Loopback detection~~
-4. Provide a web management interface
+1. Provide a web management interface
 
 <!-- GETTING STARTED -->
 
 ## Getting Started
 
-To get a local copy up and running follow these simple steps.
+To get a local copy up and running follow these simple steps or check the [Latest Release](https://github.com/ricky-davis/AstroLauncher/releases/latest) for a download of the executable.
 
 ### Prerequisites
 
@@ -122,24 +165,22 @@ pip install pyinstaller
 pipenv install -d
 ```
 
-2. Run pyinstaller with the all-in-one flag and noconsole flag for AstroDaemon
+2. Run pyinstaller with the all-in-one flag
 
 ```sh
-pyinstaller AstroLauncher.py -F --add-data "assets/*;."
+pyinstaller AstroLauncher.py -F --add-data "assets/*;." --icon=assets/astrolauncherlogo.ico
+```
+or just run the BuildEXE.py which automatically cleans up afterwards
+```sh
+python -OO BuildEXE.py
 ```
 
-1. Move the executable (in the new `dist` folder) to the directory of your choice. (You can now delete the `dist` and `build` folders, as well as the `.spec` file)
+1. Move the executable (in the new `dist` folder) to the directory of your choice. (If you want you can now delete the `dist` and `build` folders, as well as the `.spec` file)
 2. Run AstroLauncher.exe
 
 ```sh
 AstroLauncher.exe -p "steamapps\common\ASTRONEER Dedicated Server"
 ```
-
-<!-- ROADMAP -->
-
-## Roadmap
-
-See the [open issues](https://github.com/ricky-davis/AstroLauncher/issues) for a list of proposed features (and known issues).
 
 <!-- CONTRIBUTING -->
 

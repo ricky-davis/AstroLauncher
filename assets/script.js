@@ -40,5 +40,5 @@ const init = async () => {
     $("#msg").style.display = "block";
   }
 };
-setInterval(init, 2000);
+setInterval(init, 10000);
 init()
