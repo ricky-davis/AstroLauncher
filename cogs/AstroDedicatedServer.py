@@ -108,6 +108,10 @@ class AstroDedicatedServer():
 
     def server_loop(self):
         while True:
+            if not self.launcher.launcherConfig.DisableBackupRetention:
+                self.launcher.backup_retention()
+
+            self.launcher.save_reporting()
             if self.launcher.launcherConfig.EnableAutoRestart:
                 if (((datetime.datetime.now() - self.lastRestart).total_seconds() > 60) and ((self.nextRestartTime - datetime.datetime.now()).total_seconds() < 0)):
                     AstroLogging.logPrint("Preparing to shutdown the server.")

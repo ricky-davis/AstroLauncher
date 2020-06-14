@@ -37,6 +37,7 @@ class AstroLogging():
         fileLogHandler = TimedRotatingFileHandler(os.path.join(
             astroPath, 'logs', "server.log"), 'midnight', 1)
         fileLogHandler.setFormatter(formatter)
+        fileLogHandler.setLevel(logging.DEBUG)
 
         rootLogger.addHandler(console)
         rootLogger.addHandler(fileLogHandler)
