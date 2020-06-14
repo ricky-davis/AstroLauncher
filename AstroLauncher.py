@@ -59,6 +59,21 @@ class AstroLauncher():
                     "Fix your launcher config file!", "critical")
                 sys.exit()
 
+    class SaveHandler(FileSystemEventHandler):
+        def __init__(self, launcher):
+            self.launcher = launcher
+            self.astroPath = self.launcher.astroPath
+            self.moveToPath = self.launcher.launcherConfig.BackupRetentionFolderLocation
+            super().__init__()
+
+        def on_modified(self, event):
+            time.sleep(1)
+            dirName = os.path.dirname(event.src_path)
+            fileName = [f for f in os.listdir(
+                dirName) if os.path.isfile(os.path.join(dirName, f))][0]
+            AstroLogging.logPrint(f"Server saved. {fileName}")
+            self.launcher.saveObserver.stop()
+
     class BackupHandler(FileSystemEventHandler):
         def __init__(self, launcher):
             self.launcher = launcher
@@ -68,6 +83,7 @@ class AstroLauncher():
             super().__init__()
 
         def on_modified(self, event):
+            #AstroLogging.logPrint("File in save directory changed")
             path = os.path.join(self.astroPath, self.moveToPath)
             try:
                 if not os.path.exists(path):
@@ -78,26 +94,24 @@ class AstroLauncher():
             try:
                 for f in os.listdir(path):
                     fpath = os.path.join(path, f)
-                    if(os.stat(fpath).st_mtime < (now - (self.retentionPeriodHours * 60 * 60))):
+                    if os.stat(fpath).st_mtime < (now - (self.retentionPeriodHours * 60 * 60)):
                         os.remove(fpath)
             except Exception as e:
                 AstroLogging.logPrint(e, "error")
+            AstroLogging.logPrint("Copying backup to retention folder.")
             time.sleep(1)
             try:
-                AstroLogging.logPrint("Copying backup to retention folder.")
-                shutil.copy2(event.src_path, path)
-            except:
-                try:
-                    dirName = os.path.dirname(event.src_path)
-                    newFile = os.path.join(dirName, [f for f in os.listdir(
-                        dirName) if os.path.isfile(os.path.join(dirName, f))][0])
-                    AstroLogging.logPrint(newFile, "debug")
-                    copiedFile = shutil.copy2(newFile, path)
-                    AstroLogging.logPrint(copiedFile, "debug")
-                except FileNotFoundError as e:
-                    AstroLogging.logPrint(e, "error")
-                except Exception as e:
-                    AstroLogging.logPrint(e, "error")
+                dirName = os.path.dirname(event.src_path)
+                newFile = os.path.join(dirName, [f for f in os.listdir(
+                    dirName) if os.path.isfile(os.path.join(dirName, f))][0])
+                #AstroLogging.logPrint(newFile, "debug")
+                shutil.copy2(newFile, path)
+                #AstroLogging.logPrint(copiedFile, "debug")
+            except FileNotFoundError as e:
+                AstroLogging.logPrint(e, "error")
+            except Exception as e:
+                AstroLogging.logPrint(e, "error")
+            self.launcher.backupObserver.stop()
 
     def __init__(self, astroPath, launcherINI="Launcher.ini", disable_auto_update=None):
         self.astroPath = astroPath
@@ -112,6 +126,8 @@ class AstroLauncher():
         self.isExecutable = os.path.samefile(sys.executable, sys.argv[0])
         self.headers = AstroAPI.base_headers
         self.DaemonProcess = None
+        self.saveObserver = None
+        self.backupObserver = None
         self.DedicatedServer = AstroDedicatedServer(
             self.astroPath, self)
 
@@ -134,9 +150,25 @@ class AstroLauncher():
         self.headers['X-Authorization'] = AstroAPI.generate_XAUTH(
             self.DedicatedServer.settings.ServerGuid)
 
+        self.save_reporting()
+
         if not self.launcherConfig.DisableBackupRetention:
+            self.backup_retention()
+            AstroLogging.logPrint("Backup retention started")
+
+        atexit.register(self.DedicatedServer.kill_server,
+                        reason="Launcher shutting down",
+                        save=True)
+        self.start_server()
+
+    def save_reporting(self):
+        if self.saveObserver:
+            if not self.saveObserver.is_alive():
+                self.saveObserver = None
+                self.save_reporting()
+        else:
             self.saveObserver = Observer()
-            saveGamePath = r"Astro\Saved\Backup\SaveGames"
+            saveGamePath = r"Astro\Saved\SaveGames"
             watchPath = os.path.join(
                 self.astroPath, saveGamePath)
             try:
@@ -145,15 +177,29 @@ class AstroLauncher():
             except Exception as e:
                 AstroLogging.logPrint(e)
             self.saveObserver.schedule(
-                self.BackupHandler(self), watchPath)
+                self.SaveHandler(self), watchPath)
             self.saveObserver.start()
-            AstroLogging.logPrint(
-                f"Backup retention started")
 
-        atexit.register(self.DedicatedServer.kill_server,
-                        reason="Launcher shutting down",
-                        save=True)
-        self.start_server()
+    def backup_retention(self):
+        if self.backupObserver:
+            if not self.backupObserver.is_alive():
+                self.backupObserver = None
+                self.backup_retention()
+        else:
+            self.backupObserver = Observer()
+            backupSaveGamePath = r"Astro\Saved\Backup\SaveGames"
+            watchPath = os.path.join(
+                self.astroPath, backupSaveGamePath)
+            try:
+                if not os.path.exists(watchPath):
+                    os.makedirs(watchPath)
+            except Exception as e:
+                AstroLogging.logPrint(e)
+            self.backupObserver.daemon = True
+
+            self.backupObserver.schedule(
+                self.BackupHandler(self), watchPath)
+            self.backupObserver.start()
 
     def refresh_launcher_config(self):
         field_names = set(
