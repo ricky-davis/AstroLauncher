@@ -142,16 +142,19 @@ $("#rebootServerBtn").click(function (e) {
 $("#stopLauncherBtn").click(function (e) {
     e.preventDefault();
     statusMsg("shutdown")
-    serverBusy = true
-    setTimeout(() => { serverBusy = false; statusMsg("off") }, 2000)
-    $.ajax({
-        type: "POST",
-        url: apiURL + "/shutdown",
-        dataType: 'json',
-        success: function (result) {
-        },
-        error: function (result) {
-            console.log(result)
-        }
-    });
+    let reallyShutdown = confirm("Are you sure you want to shut down the launcher? It will have to be manually restarted.")
+    if (reallyShutdown == true) {
+        serverBusy = true
+        setTimeout(() => { serverBusy = false; statusMsg("off") }, 2000)
+        $.ajax({
+            type: "POST",
+            url: apiURL + "/shutdown",
+            dataType: 'json',
+            success: function (result) {
+            },
+            error: function (result) {
+                console.log(result)
+            }
+        });
+    }
 });
