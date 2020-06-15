@@ -1,37 +1,36 @@
+
+*{
+    color: #fff;
+}
 @font-face {
   font-family: AstroRegular;
   src: url(https://cdn.glitch.com/32489c62-94fa-4379-9489-35240c55c26e%2FNDAstroneer-Regular.ttf?v=1591893620396);
 }
-
-@font-face {
-  font-family: AstroBold;
-  src: url(https://cdn.glitch.com/32489c62-94fa-4379-9489-35240c55c26e%2FNDAstroneer-Bold.ttf?v=1591893619015);
+table,
+td,
+th{
+  border: 1px solid #fff;
+  border-collapse: collapse;
+  text-align: left;
+  padding: 3px;
+  font-size: 1em;
 }
-
-* {
-  color: #fff;
-}
-
 body {
   background-color:rgba(50,50,50,1);
 }
 
 h1 {
-  background: #17142f;
-  font-size: 3em;
-  text-align: center;
-  box-shadow: 0 0 30px #17142f;
-  padding: 20px;
-  margin: 0;
-  white-space: nowrap;
-  font-family: AstroRegular;
+    background: #17142f;
+    font-size: 1em;
+    text-align: center;
+    box-shadow: 0 0 30px #17142f;
+    padding: 20px;
+    margin: 0;
+    white-space: nowrap;
+    font-family: AstroRegular;
 }
-h3 {
-  font-family: AstroBold;
-  margin-top: 0;
-}
-
 h5 {
+    font-size: 1em;
     margin:0;
     line-height:200%;
 }
@@ -40,7 +39,6 @@ h5 {
     position: absolute;
     transition: all 1s ease;
 }
-
 .astroCard {
     z-index: 1;
     font-family: AstroRegular;
@@ -53,12 +51,41 @@ h5 {
 }
 
 
-table,
-td,
-th{
-  border: 1px solid #fff;
-  border-collapse: collapse;
-  text-align: left;
-  padding: 3px;
-  font-size: 1em;
+@media (min-width: 576px) {
+    h1 {
+      background: #17142f;
+      font-size: 1.5em;
+      text-align: center;
+      box-shadow: 0 0 30px #17142f;
+      padding: 20px;
+      margin: 0;
+      white-space: nowrap;
+      font-family: AstroRegular;
+    }
+}
+
+@media (min-width: 768px) {
+    h1 {
+      background: #17142f;
+      font-size: 2em;
+      text-align: center;
+      box-shadow: 0 0 30px #17142f;
+      padding: 20px;
+      margin: 0;
+      white-space: nowrap;
+      font-family: AstroRegular;
+    }
+}
+
+@media (min-width: 1200px) {
+    h1 {
+      background: #17142f;
+      font-size: 3em;
+      text-align: center;
+      box-shadow: 0 0 30px #17142f;
+      padding: 20px;
+      margin: 0;
+      white-space: nowrap;
+      font-family: AstroRegular;
+    }
 }

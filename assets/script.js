@@ -1,5 +1,5 @@
 console.log("Hi there! Feel to explore the code!");
-//let apiURL = 'http://127.0.0.1:5000/api'
+//let apiURL = 'http://127.0.0.1:80/api'
 let apiURL = '/api'
 let playersTableOriginal = $("#onlinePlayersTable").html()
 
