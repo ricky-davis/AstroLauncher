@@ -125,7 +125,7 @@ class AstroLauncher():
         self.refresh_launcher_config()
         if disable_auto_update is not None:
             self.launcherConfig.DisableAutoUpdate = disable_auto_update
-        self.version = "v1.4.1"
+        self.version = "v1.4.0"
         self.latestURL = "https://github.com/ricky-davis/AstroLauncher/releases/latest"
         self.isExecutable = os.path.samefile(sys.executable, sys.argv[0])
         self.headers = AstroAPI.base_headers
@@ -237,18 +237,21 @@ class AstroLauncher():
         return settings
 
     def check_for_update(self):
-        url = "https://api.github.com/repos/ricky-davis/AstroLauncher/releases/latest"
-        latestVersion = ((requests.get(url)).json())['tag_name']
-        if latestVersion != self.version:
-            AstroLogging.logPrint(
-                f"UPDATE: There is a newer version of the launcher out! {latestVersion}")
-            AstroLogging.logPrint(f"Download it at {self.latestURL}")
-            if self.isExecutable and not self.launcherConfig.DisableAutoUpdate:
-                self.autoupdate()
+        try:
+            url = "https://api.github.com/repos/ricky-davis/AstroLauncher/releases/latest"
+            data = ((requests.get(url)).json())
+            latestVersion = data['tag_name']
+            if latestVersion != self.version:
+                AstroLogging.logPrint(
+                    f"UPDATE: There is a newer version of the launcher out! {latestVersion}")
+                AstroLogging.logPrint(f"Download it at {self.latestURL}")
+                if self.isExecutable and not self.launcherConfig.DisableAutoUpdate:
+                    self.autoupdate(data)
+        except:
+            pass
 
-    def autoupdate(self):
-        url = "https://api.github.com/repos/ricky-davis/AstroLauncher/releases/latest"
-        x = (requests.get(url)).json()
+    def autoupdate(self, data):
+        x = data
         downloadFolder = os.path.dirname(sys.executable)
         for fileObj in x['assets']:
             downloadURL = fileObj['browser_download_url']
@@ -260,10 +263,8 @@ class AstroLauncher():
                                os.getpid()), ';',
                            '[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12;',
                            'Invoke-WebRequest', f"'{downloadURL}'", "-OutFile", f"'{downloadPath + '_new.exe'}'", ';',
-                           "Remove-Item", "-path", f"'{downloadPath + '.exe'}'", ';',
-                           "Rename-Item", "-path", f"'{downloadPath + '_new.exe'}'",
-                           "-NewName", f"'{fileName + '.exe'}'", ";",
-                           'Start-Process', f"'{downloadPath}'"]
+                           "Move-Item", "-path", f"'{downloadPath + '_new.exe'}'", "-destination", f"'{downloadPath + '.exe'}'", "-Force;",
+                           'Start-Process', f"'{downloadPath + '.exe'}' --noupdate"]
             # print(' '.join(downloadCMD))
             subprocess.Popen(downloadCMD, shell=True, creationflags=subprocess.DETACHED_PROCESS |
                              subprocess.CREATE_NEW_PROCESS_GROUP)
