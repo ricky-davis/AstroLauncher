@@ -73,14 +73,14 @@ const init = async () => {
         $("#maxFramerate").html(parseFloat(s.MaxServerFramerate));
 
         $("#maxPlayers").html(s.MaximumPlayerCount);
+        $("#onlinePlayersTable").html(playersTableOriginal);
+        $("#offlinePlayersTable").html(playersTableOriginal);
         if (data.players.hasOwnProperty('playerInfo')) {
             $("#onlinePlayers").text(data.players.playerInfo.filter(
                 (p) => p.inGame
             ).length);
 
             if (data.players) {
-                $("#onlinePlayersTable").html(playersTableOriginal);
-                $("#offlinePlayersTable").html(playersTableOriginal);
                 data.players.playerInfo.forEach((p) => {
                     let row = document.createElement("tr");
                     row.innerHTML = `<td>${p.playerName}</td>

@@ -48,75 +48,80 @@ class ServerHttpRequestHandler(http.server.SimpleHTTPRequestHandler):
         return
 
     def do_GET(self):
-        self.webServer = ServerHttpRequestHandler.webServer
-        if self.path == '/api':
-            # api
-            queue = self.webServer.queue
-            dedicatedServer = queue.get()
-            queue.put(dedicatedServer)
+        try:
+            self.webServer = ServerHttpRequestHandler.webServer
+            if self.path == '/api':
+                # api
+                queue = self.webServer.queue
+                dedicatedServer = queue.get()
+                queue.put(dedicatedServer)
 
-            self.send_response(200)
+                self.send_response(200)
 
-            self.send_header("Content-type", "application/json")
-            self.send_header('Access-Control-Allow-Origin', '*')
-            self.end_headers()
-
-            logs = AstroLogging.log_stream.getvalue()
-
-            n = 21
-            groups = logs.split('\n')
-            logs = '\n'.join(groups[-n:])
-
-            s = dedicatedServer.settings
-            res = {
-                "status": dedicatedServer.status,
-                "busy": dedicatedServer.busy,
-                "settings": {
-                    "MaxServerFramerate": s.MaxServerFramerate,
-                    "PublicIP": s.PublicIP,
-                    "ServerName": s.ServerName,
-                    "MaximumPlayerCount": s.MaximumPlayerCount,
-                    "OwnerName": s.OwnerName,
-                    "OwnerGuid": s.OwnerGuid,
-                    "DenyUnlistedPlayers": s.DenyUnlistedPlayers,
-                    "VerbosePlayerProperties": s.VerbosePlayerProperties,
-                    "AutoSaveGameInterval": s.AutoSaveGameInterval,
-                    "BackupSaveGamesInterval": s.BackupSaveGamesInterval,
-                    "ServerGuid": s.ServerGuid,
-                    "ActiveSaveFileDescriptiveName": s.ActiveSaveFileDescriptiveName,
-                    "ServerAdvertisedName": s.ServerAdvertisedName,
-                    "Port": s.Port
-                },
-                "players": dedicatedServer.players,
-                "logs": logs
-            }
-
-            self.wfile.write(
-                bytes(json.dumps(res, separators=(',', ':')), "utf8"))
-
-        elif self.path in self.webServer.routes:
-            # static files
-            self.send_response(200)
-            if self.webServer.routes[self.path]['type'] == "text":
-                self.send_header('Content-type', 'text/html')
+                self.send_header("Content-type", "application/json")
+                self.send_header('Access-Control-Allow-Origin', '*')
                 self.end_headers()
-                self.wfile.write(self.webServer.routes[self.path]['content'])
-            elif self.webServer.routes[self.path]['type'] == "image":
-                self.send_header('Content-type', 'image/png')
+
+                logs = AstroLogging.log_stream.getvalue()
+
+                n = 21
+                groups = logs.split('\n')
+                logs = '\n'.join(groups[-n:])
+
+                s = dedicatedServer.settings
+                res = {
+                    "status": dedicatedServer.status,
+                    "busy": dedicatedServer.busy,
+                    "settings": {
+                        "MaxServerFramerate": s.MaxServerFramerate,
+                        "PublicIP": s.PublicIP,
+                        "ServerName": s.ServerName,
+                        "MaximumPlayerCount": s.MaximumPlayerCount,
+                        "OwnerName": s.OwnerName,
+                        "OwnerGuid": s.OwnerGuid,
+                        "DenyUnlistedPlayers": s.DenyUnlistedPlayers,
+                        "VerbosePlayerProperties": s.VerbosePlayerProperties,
+                        "AutoSaveGameInterval": s.AutoSaveGameInterval,
+                        "BackupSaveGamesInterval": s.BackupSaveGamesInterval,
+                        "ServerGuid": s.ServerGuid,
+                        "ActiveSaveFileDescriptiveName": s.ActiveSaveFileDescriptiveName,
+                        "ServerAdvertisedName": s.ServerAdvertisedName,
+                        "Port": s.Port
+                    },
+                    "players": dedicatedServer.players,
+                    "logs": logs
+                }
+
+                self.wfile.write(
+                    bytes(json.dumps(res, separators=(',', ':')), "utf8"))
+
+            elif self.path in self.webServer.routes:
+                # static files
+                self.send_response(200)
+                if self.webServer.routes[self.path]['type'] == "text":
+                    self.send_header('Content-type', 'text/html')
+                    self.end_headers()
+                    self.wfile.write(
+                        self.webServer.routes[self.path]['content'])
+                elif self.webServer.routes[self.path]['type'] == "image":
+                    self.send_header('Content-type', 'image/png')
+                    self.end_headers()
+                    self.wfile.write(
+                        self.webServer.routes[self.path]['content'])
+
+            else:
+                # 404
+                self.send_response(404)
+
+                self.send_header("Content-type", "text/html")
                 self.end_headers()
-                self.wfile.write(self.webServer.routes[self.path]['content'])
 
-        else:
-            # 404
-            self.send_response(404)
+                self.wfile.write(bytes(
+                    "<html><head><title>Not Found</title></head><body>Not Found</body></html>", 'utf8'))
 
-            self.send_header("Content-type", "text/html")
-            self.end_headers()
-
-            self.wfile.write(bytes(
-                "<html><head><title>Not Found</title></head><body>Not Found</body></html>", 'utf8'))
-
-        return
+            return
+        except:
+            pass
 
 
 class AstroWebServer(threading.Thread):
