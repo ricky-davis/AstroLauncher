@@ -98,16 +98,11 @@ class ServerHttpRequestHandler(http.server.SimpleHTTPRequestHandler):
             elif self.path in self.webServer.routes:
                 # static files
                 self.send_response(200)
-                if self.webServer.routes[self.path]['type'] == "text":
-                    self.send_header('Content-type', 'text/html')
-                    self.end_headers()
-                    self.wfile.write(
-                        self.webServer.routes[self.path]['content'])
-                elif self.webServer.routes[self.path]['type'] == "image":
-                    self.send_header('Content-type', 'image/png')
-                    self.end_headers()
-                    self.wfile.write(
-                        self.webServer.routes[self.path]['content'])
+                self.send_header(
+                    'Content-type', self.webServer.routes[self.path]['type'])
+                self.end_headers()
+                self.wfile.write(
+                    self.webServer.routes[self.path]['content'])
 
             else:
                 # 404
@@ -137,36 +132,21 @@ class AstroWebServer(threading.Thread):
         # assign queue inside the thread
 
         # load content from files to be served
-        self.routes = {
-            "/": {
-                "path": "index.html",
-                "type": "text"
-            },
-            "/script.js": {
-                "path": "script.js",
-                "type": "text"
-            },
-            "/bootstrap.bundle.min.js": {
-                "path": "bootstrap.bundle.min.js",
-                "type": "text"
-            },
-            "/bootstrap.min.css": {
-                "path": "bootstrap.min.css",
-                "type": "text"
-            },
-            "/jquery-3.5.1.min.js": {
-                "path": "jquery-3.5.1.min.js",
-                "type": "text"
-            },
-            "/style.css": {
-                "path": "style.css",
-                "type": "text"
-            },
-            "/astrolauncherlogo.ico": {
-                "path": "astrolauncherlogo.ico",
-                "type": "image"
-            }
-        }
+        self.routes = {"/": {"path": "assets/index.html", "type": "text/html"}}
+        # pylint: disable=no-member, protected-access
+        dirName = os.path.join(sys. _MEIPASS, "assets")
+        fileNames = [f for f in os.listdir(
+            dirName) if os.path.isfile(os.path.join(dirName, f))]
+        for f in fileNames:
+            ext = f.split(".")[-1]
+            ctype = "text/html"
+            if ext == "ico":
+                ctype = "image/x-icon"
+            if ext == "png":
+                ctype = "image/png"
+            if ext == "ttf":
+                ctype = "font/ttf"
+            self.routes[f"/{f}"] = {"path": f"assets/{f}", "type": ctype}
 
         for key in self.routes:
             # pylint: disable=no-member, protected-access

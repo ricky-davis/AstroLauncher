@@ -1,10 +1,15 @@
 
-*{
-    color: #fff;
+@font-face {
+    font-family: Roboto-Regular;
+    src: url(Roboto-Regular.ttf);
 }
 @font-face {
-  font-family: AstroRegular;
-  src: url(https://cdn.glitch.com/32489c62-94fa-4379-9489-35240c55c26e%2FNDAstroneer-Regular.ttf?v=1591893620396);
+    font-family: Roboto-Light;
+    src: url(Roboto-Light.ttf);
+}
+*{
+    color: #fff;
+    font-family: Roboto-Light;
 }
 table,
 td,
@@ -18,16 +23,22 @@ th{
 body {
   background-color:rgba(50,50,50,1);
 }
-
-h1 {
+#banner{
     background: #17142f;
-    font-size: 1em;
-    text-align: center;
-    box-shadow: 0 0 30px #17142f;
-    padding: 20px;
+    padding: 20px 0px 10px 0px;
     margin: 0;
     white-space: nowrap;
-    font-family: AstroRegular;
+    box-shadow: 0 0 30px #17142f;
+    text-align: center;
+}
+#banner h1{
+    margin:0
+}
+#banner a{
+    color:#fff;
+}
+h1 {
+    font-size: 1em;
 }
 h5 {
     font-size: 1em;
@@ -41,7 +52,6 @@ h5 {
 }
 .astroCard {
     z-index: 1;
-    font-family: AstroRegular;
     font-size: 1em;
     border-radius: 15px;
     background-color:rgba(25,25,25,0.9);
@@ -53,39 +63,18 @@ h5 {
 
 @media (min-width: 576px) {
     h1 {
-      background: #17142f;
       font-size: 1.5em;
-      text-align: center;
-      box-shadow: 0 0 30px #17142f;
-      padding: 20px;
-      margin: 0;
-      white-space: nowrap;
-      font-family: AstroRegular;
     }
 }
 
 @media (min-width: 768px) {
     h1 {
-      background: #17142f;
       font-size: 2em;
-      text-align: center;
-      box-shadow: 0 0 30px #17142f;
-      padding: 20px;
-      margin: 0;
-      white-space: nowrap;
-      font-family: AstroRegular;
     }
 }
 
 @media (min-width: 1200px) {
     h1 {
-      background: #17142f;
       font-size: 3em;
-      text-align: center;
-      box-shadow: 0 0 30px #17142f;
-      padding: 20px;
-      margin: 0;
-      white-space: nowrap;
-      font-family: AstroRegular;
     }
 }

@@ -136,7 +136,7 @@ class AstroLauncher():
             self.astroPath, self)
 
         AstroLogging.logPrint(
-            f"Astroneer Dedicated Server Launcher {self.version}")
+            f"AstroLauncher - Unofficial Dedicated Server Launcher {self.version}")
         AstroLogging.logPrint(
             "If you encounter any bugs please open a new issue at:")
         AstroLogging.logPrint(
@@ -352,7 +352,7 @@ class AstroLauncher():
 
 if __name__ == "__main__":
     try:
-        os.system("title AstroLauncher - Dedicated Server Launcher")
+        os.system("title AstroLauncher - Unofficial Dedicated Server Launcher")
     except:
         pass
     try:
