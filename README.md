@@ -23,9 +23,8 @@
 - [Table of Contents](#table-of-contents)
 - [Overview](#overview)
 - [What does it do?](#what-does-it-do)
-- [INI File options](#ini-file-options)
-- [Coming soon](#coming-soon)
 - [TODO](#todo)
+- [INI File options](#ini-file-options)
 - [Getting Started](#getting-started)
   - [Prerequisites](#prerequisites)
   - [Installation](#installation)
@@ -49,6 +48,12 @@ This tool is perfect for you if you are hosting your own dedicated server for As
 6. Keeps a log of everything in the logs folder
 7. Auto Restart every X hours
 8. Backup Retention for X hours
+9. Web Interface to monitor server data, force saves and restarts
+
+## TODO
+
+1. Build out Web Interface to have more management functions, possibly log in functionality
+
 
 ## INI File options
 
@@ -86,12 +91,6 @@ AutoRestartEveryHours = 24
 DisableNetworkCheck = False
 ```
 
-## Coming soon
-1. Web Interface to monitor server data.
-
-## TODO
-
-1. Provide a web management interface
 
 <!-- GETTING STARTED -->
 
