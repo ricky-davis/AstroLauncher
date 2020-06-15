@@ -2,11 +2,13 @@
 
 import logging
 import os
+from io import StringIO
 from logging.handlers import TimedRotatingFileHandler
 from pprint import pformat
 
 
 class AstroLogging():
+    log_stream = None
 
     @staticmethod
     def logPrint(message, msgType="info"):
@@ -31,6 +33,11 @@ class AstroLogging():
         console = logging.StreamHandler()
         console.setFormatter(formatter)
 
+        AstroLogging.log_stream = StringIO()
+        stringIOLog = logging.StreamHandler(AstroLogging.log_stream)
+        stringIOLog.setFormatter(formatter)
+        stringIOLog.setLevel(logging.INFO)
+
         logsPath = os.path.join(astroPath, 'logs\\')
         if not os.path.exists(logsPath):
             os.makedirs(logsPath)
@@ -41,3 +48,4 @@ class AstroLogging():
 
         rootLogger.addHandler(console)
         rootLogger.addHandler(fileLogHandler)
+        rootLogger.addHandler(stringIOLog)

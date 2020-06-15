@@ -1,0 +1,107 @@
+<html lang="en">
+
+<head>
+    <meta charset=" utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <title>Astroneer Server Status</title>
+    <link rel="icon" type="image/ico" href="astrolauncherlogo.ico" />
+
+    <link rel="stylesheet" href="bootstrap.min.css" />
+    <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+    <div id="banner">
+        <h1>Dedicated Server Status for <span id="titleIP">[IP]</span></h1>
+        <a href="https://github.com/ricky-davis/AstroLauncher/releases/latest">AstroLauncher - Unofficial Dedicated
+            Server Launcher</a>
+    </div>
+    <div id="msg" class="bg-danger text-center collapse">
+        <h5></h5>
+    </div>
+
+    <div id="main" class="container-fluid">
+        <div class="row mt-5">
+            <div id="left" class="col-12 col-md-4 px-5">
+                <div class="row">
+                    <div id="stats" class="col p-4 astroCard">
+                        <h3>
+                            Statistics <span id="serverStatus"
+                                class="text-danger col-12 float-right px-0 text-md-left col-lg-5 text-lg-right float-lg-right ">Offline</span>
+                        </h3>
+                        <p>Server Name: <span id="serverName"></span></p>
+                        <p>Owner: <span id="owner"></span></p>
+                        <p>Max Server Framerate: <span id="maxFramerate"></span></p>
+                        <p>Maximum Players: <span id="maxPlayers"></span></p>
+                        <p>Players online: <span id="onlinePlayers"></span></p>
+                        <br />
+                        <button id="saveGameBtn" type="button" class="btn btn-success col-12 mr-xl-2 col-xl-3">Save
+                            Game</button>
+                        <button id="stopLauncherBtn" type="button"
+                            class="btn btn-danger col-12 ml-xl-1 col-xl-5 float-right">Stop
+                            Launcher
+                            & Server</button>
+                        <button id="rebootServerBtn" type="button"
+                            class="btn btn-warning col-12  mx-xl-1 col-xl-3 float-right">Reboot</button>
+                    </div>
+                </div>
+            </div>
+
+
+            <div id="right" class="col-12 mt-5 mt-md-0 col-md px-5">
+                <div id="onlinePlayersRow" class="row p-4 astroCard">
+                    <div class="col">
+                        <h3>
+                            Online Players
+                        </h3>
+                        <table id="onlinePlayersTable" class="table table-dark table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Role</th>
+                                    <th>In Game</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+                <div id="offinePlayersRow" class="row p-4 my-4 astroCard">
+                    <div class="col">
+                        <h3>
+                            Offline Players
+                        </h3>
+                        <table id="offlinePlayersTable" class="table table-dark table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Role</th>
+                                    <th>In Game</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row mt-3 ">
+            <div id="below" class="col px-5">
+                <div class="row">
+                    <div id="console" class="col p-4 astroCard">
+                        <h3>Console</h3>
+                        <div id="consoleText">
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+
+<script src="jquery-3.5.1.min.js"></script>
+<script src="bootstrap.bundle.min.js"></script>
+<script src="script.js"></script>
+
+</html>

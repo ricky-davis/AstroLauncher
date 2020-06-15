@@ -7,11 +7,13 @@ import subprocess
 import shutil
 import sys
 import time
+import queue
 
 import requests
 from watchdog.events import FileSystemEventHandler
 from watchdog.observers import Observer
 
+import cogs.AstroWebServer as AstroWebServer
 import cogs.AstroAPI as AstroAPI
 import cogs.ValidateSettings as ValidateSettings
 from cogs.AstroDaemon import AstroDaemon
@@ -43,6 +45,8 @@ class AstroLauncher():
         AutoRestartEveryHours: float = 24
         AutoRestartSyncTimestamp: str = "00:00"
         DisableNetworkCheck: bool = False
+        DisableWebServer: bool = False
+        WebServerPort: int = 5000
 
         def __post_init__(self):
             # pylint: disable=no-member
@@ -132,7 +136,7 @@ class AstroLauncher():
             self.astroPath, self)
 
         AstroLogging.logPrint(
-            f"Astroneer Dedicated Server Launcher {self.version}")
+            f"AstroLauncher - Unofficial Dedicated Server Launcher {self.version}")
         AstroLogging.logPrint(
             "If you encounter any bugs please open a new issue at:")
         AstroLogging.logPrint(
@@ -155,6 +159,15 @@ class AstroLauncher():
         if not self.launcherConfig.DisableBackupRetention:
             self.backup_retention()
             AstroLogging.logPrint("Backup retention started")
+        # setup queue for data exchange
+        if not self.launcherConfig.DisableWebServer:
+            self.webServerQueue = queue.SimpleQueue()
+            self.webServerQueue.put(self.DedicatedServer)
+
+            # start http server
+            AstroWebServer.startWebServer(self.webServerQueue, self)
+            AstroLogging.logPrint(
+                f"HTTP Server started at 127.0.0.1:{self.launcherConfig.WebServerPort}")
 
         atexit.register(self.DedicatedServer.kill_server,
                         reason="Launcher shutting down",
@@ -260,7 +273,8 @@ class AstroLauncher():
         """
             Starts the Dedicated Server process and waits for it to be registered
         """
-        self.DedicatedServer.ready = False
+        self.DedicatedServer.status = "starting"
+        self.DedicatedServer.busy = False
         oldLobbyIDs = self.DedicatedServer.deregister_all_server()
         AstroLogging.logPrint("Starting Server process...")
         if self.launcherConfig.EnableAutoRestart:
@@ -304,7 +318,7 @@ class AstroLauncher():
         elapsed = doneTime - startTime
         AstroLogging.logPrint(
             f"Server ready with ID {self.DedicatedServer.LobbyID}. Took {round(elapsed,2)} seconds to register.")
-        self.DedicatedServer.ready = True
+        self.DedicatedServer.status = "ready"
         self.DedicatedServer.server_loop()
 
     def check_network_config(self):
@@ -338,7 +352,7 @@ class AstroLauncher():
 
 if __name__ == "__main__":
     try:
-        os.system("title AstroLauncher - Dedicated Server Launcher")
+        os.system("title AstroLauncher - Unofficial Dedicated Server Launcher")
     except:
         pass
     try:
