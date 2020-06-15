@@ -2,6 +2,8 @@
 altgraph==0.17
 certifi==2020.4.5.2
 chardet==3.0.4
+colorama==0.4.3 ; sys_platform == 'win32'
+colorlog==4.1.0
 future==0.18.2
 idna==2.9
 pathtools==0.1.2

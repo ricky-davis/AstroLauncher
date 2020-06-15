@@ -5,6 +5,7 @@ import os
 from io import StringIO
 from logging.handlers import TimedRotatingFileHandler
 from pprint import pformat
+from colorlog import ColoredFormatter
 
 
 class AstroLogging():
@@ -25,13 +26,24 @@ class AstroLogging():
 
     @staticmethod
     def setup_logging(astroPath):
-        formatter = logging.Formatter(
-            '%(asctime)s - %(levelname)-6s %(message)s', datefmt="%Y-%m-%d %H:%M:%S")
+        LOGFORMAT = '%(asctime)s - %(levelname)-6s %(message)s'
+        CLOGFORMAT = '%(asctime)s - %(log_color)s%(levelname)-6s%(reset)s %(message)s'
+        DATEFMT = "%Y-%m-%d %H:%M:%S"
+        LOGCOLORS = {
+            'DEBUG':    'cyan',
+            'INFO':     'green',
+            'WARNING':  'red',
+            'ERROR':    'red',
+            'CRITICAL': 'red,bg_white',
+        }
+        formatter = logging.Formatter(LOGFORMAT, datefmt=DATEFMT)
+        colorformatter = ColoredFormatter(
+            CLOGFORMAT, datefmt=DATEFMT, log_colors=LOGCOLORS)
         rootLogger = logging.getLogger()
         rootLogger.setLevel(logging.INFO)
 
         console = logging.StreamHandler()
-        console.setFormatter(formatter)
+        console.setFormatter(colorformatter)
 
         AstroLogging.log_stream = StringIO()
         stringIOLog = logging.StreamHandler(AstroLogging.log_stream)

@@ -125,7 +125,7 @@ class AstroLauncher():
         self.refresh_launcher_config()
         if disable_auto_update is not None:
             self.launcherConfig.DisableAutoUpdate = disable_auto_update
-        self.version = "v1.4.0"
+        self.version = "v1.4.1"
         self.latestURL = "https://github.com/ricky-davis/AstroLauncher/releases/latest"
         self.isExecutable = os.path.samefile(sys.executable, sys.argv[0])
         self.headers = AstroAPI.base_headers
@@ -258,11 +258,12 @@ class AstroLauncher():
             downloadCMD = ["powershell", '-executionpolicy', 'bypass', '-command',
                            'Write-Host "Starting download of latest AstroLauncher.exe..";', 'wait-process', str(
                                os.getpid()), ';',
-                           'Invoke-WebRequest', downloadURL, "-OutFile", downloadPath + "_new.exe", ';',
-                           "Remove-Item", "-path", downloadPath + ".exe", ';',
-                           "Rename-Item", "-path", downloadPath + "_new.exe",
-                           "-NewName", fileName + ".exe", ";",
-                           'Start-Process', downloadPath]
+                           '[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12;',
+                           'Invoke-WebRequest', f"'{downloadURL}'", "-OutFile", f"'{downloadPath + '_new.exe'}'", ';',
+                           "Remove-Item", "-path", f"'{downloadPath + '.exe'}'", ';',
+                           "Rename-Item", "-path", f"'{downloadPath + '_new.exe'}'",
+                           "-NewName", f"'{fileName + '.exe'}'", ";",
+                           'Start-Process', f"'{downloadPath}'"]
             # print(' '.join(downloadCMD))
             subprocess.Popen(downloadCMD, shell=True, creationflags=subprocess.DETACHED_PROCESS |
                              subprocess.CREATE_NEW_PROCESS_GROUP)

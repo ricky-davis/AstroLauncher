@@ -89,6 +89,13 @@ AutoRestartEveryHours = 24
 
 # Disable the Port Forward / NAT Loopback check on startup
 DisableNetworkCheck = False
+
+# Disable the Web Management Server
+DisableWebServer=False
+
+# Set the port you want the Web Management Server to run on
+WebServerPort=5000
+
 ```
 
 
