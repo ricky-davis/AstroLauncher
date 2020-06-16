@@ -134,7 +134,10 @@ class AstroWebServer(threading.Thread):
         # load content from files to be served
         self.routes = {"/": {"path": "assets/index.html", "type": "text/html"}}
         # pylint: disable=no-member, protected-access
-        dirName = os.path.join(sys. _MEIPASS, "assets")
+        curDir = ""
+        if self.launcher.isExecutable:
+            curDir = sys._MEIPASS
+        dirName = os.path.join(curDir, "assets")
         fileNames = [f for f in os.listdir(
             dirName) if os.path.isfile(os.path.join(dirName, f))]
         for f in fileNames:
@@ -150,7 +153,7 @@ class AstroWebServer(threading.Thread):
 
         for key in self.routes:
             # pylint: disable=no-member, protected-access
-            with open(os.path.join(sys._MEIPASS, self.routes[key]['path']), 'rb') as contentFile:
+            with open(os.path.join(curDir, self.routes[key]['path']), 'rb') as contentFile:
                 self.routes[key]['content'] = contentFile.read()
 
         with socketserver.TCPServer(("", self.launcher.launcherConfig.WebServerPort), self.handler) as httpd:
