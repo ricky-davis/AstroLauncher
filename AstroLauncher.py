@@ -266,8 +266,8 @@ class AstroLauncher():
                            "Move-Item", "-path", f"'{downloadPath + '_new.exe'}'", "-destination", f"'{downloadPath + '.exe'}'", "-Force;",
                            'Start-Process', f"'{downloadPath + '.exe'}' --noupdate"]
             # print(' '.join(downloadCMD))
-            subprocess.Popen(downloadCMD, shell=True, creationflags=subprocess.DETACHED_PROCESS |
-                             subprocess.CREATE_NEW_PROCESS_GROUP)
+            subprocess.Popen(downloadCMD, shell=True,
+                             creationflags=subprocess.DETACHED_PROCESS)
         time.sleep(2)
         self.DedicatedServer.kill_server("Auto-Update")
 
