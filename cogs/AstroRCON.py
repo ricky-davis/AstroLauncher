@@ -73,7 +73,9 @@ class AstroRCON():
     @staticmethod
     def parseData(rawdata):
         try:
-            data = json.loads(rawdata.decode('utf8'))
-            return data
+            if rawdata != b"":
+                data = json.loads(rawdata.decode('utf8'))
+                return data
+            return None
         except:
             return rawdata
