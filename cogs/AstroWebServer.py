@@ -64,7 +64,7 @@ class ServerHttpRequestHandler(http.server.SimpleHTTPRequestHandler):
 
                 logs = AstroLogging.log_stream.getvalue()
 
-                n = 21
+                n = 200
                 groups = logs.split('\n')
                 logs = '\n'.join(groups[-n:])
 
