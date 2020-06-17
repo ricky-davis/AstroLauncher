@@ -41,6 +41,7 @@ class AstroDedicatedServer():
         ConsolePort: str = None
         ExitSemaphore: str = None
         HeartbeatInterval: str = None
+        PlayerProperties: list = None
 
     def __init__(self, astroPath, launcher):
         self.astroPath = astroPath
