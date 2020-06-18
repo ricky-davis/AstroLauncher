@@ -79,8 +79,25 @@ const tick = async () => {
         newLogs.forEach((entry) => {
             logList.push(entry);
 
+            let content = "";
+            if (entry.includes("INFO")) {
+                let parts = entry.split("INFO");
+                content =
+                    parts[0] +
+                    "<span style='color: green;'>INFO</span>" +
+                    parts[1];
+            } else if (entry.includes("WARNING")) {
+                let parts = entry.split("WARNING");
+                content =
+                    parts[0] +
+                    "<span style='color: red;'>WARNING</span>" +
+                    parts[1];
+            } else {
+                content = entry;
+            }
+
             let row = document.createElement("div");
-            row.innerText = entry;
+            row.innerHTML = content;
             $("#consoleText").append(row);
         });
 
