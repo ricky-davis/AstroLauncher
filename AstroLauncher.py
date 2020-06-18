@@ -132,9 +132,14 @@ class AstroLauncher():
 
         # fallback to automatic detection (experimental, do NOT rely on it)
         else:
-            autoPath = AstroAPI.getInstallPath()
-            if os.path.exists(os.path.join(autoPath, "AstroServer.exe")):
-                self.astroPath = autoPath
+            try:
+                autoPath = AstroAPI.getInstallPath()
+                if os.path.exists(os.path.join(autoPath, "AstroServer.exe")):
+                    self.astroPath = autoPath
+            except:
+                AstroLogging.logPrint(
+                    "Unable to find AstroServer.exe!", "critical")
+                return
 
         AstroLogging.setup_logging(self.astroPath)
         self.launcherINI = launcherINI
