@@ -80,17 +80,22 @@ const tick = async () => {
             logList.push(entry);
 
             let content = "";
+            entry = entry.replace(/"|'/g, "");
+            entry = linkify(entry);
+
             if (entry.includes("INFO")) {
                 let parts = entry.split("INFO");
                 content =
+                    "<i class='fas fa-info-circle' style='color: green;'></i> " +
                     parts[0] +
-                    "<span style='color: green;'>INFO</span>" +
+                    //"<span style='color: green;'>INFO</span>" +
                     parts[1];
             } else if (entry.includes("WARNING")) {
                 let parts = entry.split("WARNING");
                 content =
+                    "<i class='fas fa-exclamation-triangle' style='color: red;'></i> " +
                     parts[0] +
-                    "<span style='color: red;'>WARNING</span>" +
+                    //"<span style='color: red;'>WARNING</span>" +
                     parts[1];
             } else {
                 content = entry;
@@ -234,3 +239,12 @@ $("#stopLauncherBtn").click(function (e) {
         });
     }
 });
+
+const linkify = (text) => {
+    //const exp = /(\b(((https?|ftp|file):\/\/)|[-A-Z0-9+&@#\/%=~_|]*\.)[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/gi;
+    const exp = /(\b(((https?|ftp|file):\/\/)|[-A-Z+&@#\/%=~_|]+\.)[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/gi;
+    return text.replace(
+        exp,
+        `<a href="$1" target="_blank" style="color: white;">$1</a>`
+    );
+};
