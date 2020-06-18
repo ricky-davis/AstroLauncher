@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
     <title>Astroneer Server Status</title>
     <link rel="icon" type="image/ico" href="astrolauncherlogo.ico" />
-
     <link rel="stylesheet" href="bootstrap.min.css" />
+    <link rel="stylesheet" href="fontawesome/css/all.css" />
     <link rel="stylesheet" href="style.css" />
 </head>
 
@@ -21,20 +21,40 @@
     </div>
 
     <div id="main" class="container-fluid">
-        <div class="row mt-5">
-            <div id="left" class="col-12 col-md-4 px-5">
-                <div class="row">
-                    <div id="stats" class="col p-4 astroCard">
-                        <h3>
+        <div class="row mt-5 ">
+            <div id="above" class="col px-4">
+                <div id="console" class="card astroCard">
+                    <div class="card-header pt-4 px-4" data-toggle="collapse" data-target="#consoleTextCardBody"
+                        aria-expanded="true" aria-controls="consoleTextCardBody">
+                        <h3><span class="collapseArrows pr-2"></span>Console</h3>
+                    </div>
+                    <div id="consoleTextCardBody" class="card-body pt-0 collapse show">
+                        <div id="consoleText">
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row mt-3">
+            <div id="left" class="col-12 col-md-4 px-4">
+                <div id="stats" class="card astroCard">
+                    <div class="card-header pt-4 px-4" data-toggle="collapse" data-target="#serverStatusCardBody"
+                        aria-expanded="true" aria-controls="serverStatusCardBody">
+                        <h3><span class="collapseArrows pr-2"></span>
                             Statistics <span id="serverStatus"
                                 class="text-danger col-12 float-right px-0 text-md-left col-lg-5 text-lg-right float-lg-right ">Offline</span>
                         </h3>
+                    </div>
+
+                    <div id="serverStatusCardBody" class="card-body pt-4 collapse show">
                         <p>Server Name: <span id="serverName"></span></p>
                         <p>Owner: <span id="owner"></span></p>
                         <p>Max Server Framerate: <span id="maxFramerate"></span></p>
                         <p>Maximum Players: <span id="maxPlayers"></span></p>
                         <p>Players online: <span id="onlinePlayers"></span></p>
-                        <br />
+                    </div>
+                    <div id="serverStatusFooter" class="card-footer">
                         <button id="saveGameBtn" type="button" class="btn btn-success col-12 mr-xl-2 col-xl-3">Save
                             Game</button>
                         <button id="stopLauncherBtn" type="button"
@@ -48,12 +68,15 @@
             </div>
 
 
-            <div id="right" class="col-12 mt-5 mt-md-0 col-md px-5">
-                <div id="onlinePlayersRow" class="row p-4 astroCard">
-                    <div class="col">
-                        <h3>
+            <div id="right" class="col-12 mt-5 mt-md-0 col-md px-4">
+                <div id="onlinePlayersRow" class="card astroCard">
+                    <div class="card-header pt-4 px-4" data-toggle="collapse" data-target="#onlinePlayersCardBody"
+                        aria-expanded="true" aria-controls="onlinePlayersCardBody">
+                        <h3><span class="collapseArrows pr-2"></span>
                             Online Players
                         </h3>
+                    </div>
+                    <div id="onlinePlayersCardBody" class="card-body pt-0 collapse show">
                         <table id="onlinePlayersTable" class="table table-dark table-striped">
                             <thead>
                                 <tr>
@@ -66,11 +89,14 @@
                         </table>
                     </div>
                 </div>
-                <div id="offinePlayersRow" class="row p-4 my-4 astroCard">
-                    <div class="col">
-                        <h3>
+                <div id="offinePlayersRow" class="card my-4 astroCard">
+                    <div class="card-header pt-4 px-4" data-toggle="collapse" data-target="#offlinePlayersCardBody"
+                        aria-expanded="true" aria-controls="offlinePlayersCardBody">
+                        <h3><span class="collapseArrows pr-2"></span>
                             Offline Players
                         </h3>
+                    </div>
+                    <div id="offlinePlayersCardBody" class="card-body pt-0 collapse show">
                         <table id="offlinePlayersTable" class="table table-dark table-striped">
                             <thead>
                                 <tr>
@@ -81,18 +107,6 @@
                             </thead>
                             <tbody></tbody>
                         </table>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="row mt-3 ">
-            <div id="below" class="col px-5">
-                <div class="row">
-                    <div id="console" class="col p-4 astroCard">
-                        <h3>Console</h3>
-                        <div id="consoleText">
-
-                        </div>
                     </div>
                 </div>
             </div>

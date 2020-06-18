@@ -25,6 +25,16 @@ th {
   font-size: 1em;
 }
 
+h1 {
+  font-size: 1em;
+}
+h5 {
+  font-size: 1em;
+  margin: 0;
+  line-height: 200%;
+}
+
+
 #banner {
   background: #17142f;
   padding: 20px 0px 10px 0px;
@@ -40,19 +50,26 @@ th {
   color: #fff;
 }
 
-h1 {
-  font-size: 1em;
-}
-h5 {
-  font-size: 1em;
-  margin: 0;
-  line-height: 200%;
-}
-
 #msg {
   width: 100%;
   position: absolute;
   transition: all 1s ease;
+}
+#consoleText {
+  overflow: auto;
+  height: 250px;
+}
+#consoleText div:nth-of-type(2n){
+    background-color:rgba(30,30,30,0.9);
+}
+.card-header .collapseArrows:after{
+	content: "\f107";
+	color: #fff;
+    font-family: "Font Awesome 5 Free";
+    font-weight: 900;
+}
+.card-header[aria-expanded="true"] .collapseArrows::after {
+	content: "\f106";
 }
 
 .astroCard {
@@ -65,13 +82,6 @@ h5 {
   box-shadow: 3px 3px 10px 0px rgba(0, 0, 0, 0.75);
 }
 
-#console {
-  height: 500px;
-}
-#consoleText {
-  overflow: auto;
-  height: 400px;
-}
 
 @media (min-width: 576px) {
   h1 {
