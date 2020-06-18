@@ -118,7 +118,24 @@ class AstroLauncher():
             self.launcher.backupObserver.stop()
 
     def __init__(self, astroPath, launcherINI="Launcher.ini", disable_auto_update=None):
-        self.astroPath = astroPath
+        # check if path specified
+        if astroPath is not None:
+            if os.path.exists(os.path.join(astroPath, "AstroServer.exe")):
+                self.astroPath = astroPath
+            else:
+                print("Specified path does not contain the server executable")
+                time.sleep(5)
+
+        # check if executable in current directory
+        elif os.path.exists(os.path.join(os.getcwd(), "AstroServer.exe")):
+            self.astroPath = os.getcwd()
+
+        # fallback to automatic detection (experimental, do NOT rely on it)
+        else:
+            autoPath = AstroAPI.getInstallPath()
+            if os.path.exists(os.path.join(autoPath, "AstroServer.exe")):
+                self.astroPath = autoPath
+
         AstroLogging.setup_logging(self.astroPath)
         self.launcherINI = launcherINI
         self.launcherConfig = self.LauncherConfig()
@@ -383,9 +400,7 @@ if __name__ == "__main__":
                 AstroDaemon().daemon(args.launcherpid, args.consolepid)
             else:
                 print("Insufficient launch options!")
-        elif args.path:
-            AstroLauncher(args.path, disable_auto_update=args.noautoupdate)
         else:
-            AstroLauncher(os.getcwd(), disable_auto_update=args.noautoupdate)
+            AstroLauncher(args.path, disable_auto_update=args.noautoupdate)
     except KeyboardInterrupt:
         pass

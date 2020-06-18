@@ -10,44 +10,56 @@ const statusMsg = (msg, apiServerBusy = false) => {
         if (msg == "off") {
             $("#serverStatus").text("Offline");
             $("#serverStatus").addClass("text-danger");
-            $("#serverStatus").removeClass("text-success text-warning text-info");
+            $("#serverStatus").removeClass(
+                "text-success text-warning text-info"
+            );
             $("#msg h5").text("Server is offline");
             $("#msg").collapse("show");
         } else if (msg == "shutdown") {
             $("#serverStatus").text("Shutting Down");
             $("#serverStatus").addClass("text-danger");
-            $("#serverStatus").removeClass("text-success text-warning text-info");
+            $("#serverStatus").removeClass(
+                "text-success text-warning text-info"
+            );
             $("#msg h5").text("Server is shutting down");
             $("#msg").collapse("hide");
         } else if (msg == "starting") {
             $("#serverStatus").text("Starting");
             $("#serverStatus").addClass("text-warning");
-            $("#serverStatus").removeClass("text-success text-danger text-info");
+            $("#serverStatus").removeClass(
+                "text-success text-danger text-info"
+            );
             $("#msg h5").text("Server is getting ready");
             $("#msg").collapse("show");
         } else if (msg == "saving") {
             $("#serverStatus").text("Saving");
             $("#serverStatus").addClass("text-info");
-            $("#serverStatus").removeClass("text-danger text-warning text-success");
+            $("#serverStatus").removeClass(
+                "text-danger text-warning text-success"
+            );
             $("#msg h5").text("Server is saving");
             $("#msg").collapse("hide");
         } else if (msg == "reboot") {
             $("#serverStatus").text("Rebooting");
             $("#serverStatus").addClass("text-info");
-            $("#serverStatus").removeClass("text-danger text-warning text-success");
+            $("#serverStatus").removeClass(
+                "text-danger text-warning text-success"
+            );
             $("#msg h5").text("Server is rebooting");
             $("#msg").collapse("hide");
         } else if (msg == "ready") {
             $("#serverStatus").text("Ready");
             $("#serverStatus").addClass("text-success");
-            $("#serverStatus").removeClass("text-danger text-warning text-info");
+            $("#serverStatus").removeClass(
+                "text-danger text-warning text-info"
+            );
             $("#msg h5").text("Server is ready");
             $("#msg").collapse("hide");
         }
     }
 };
 
-let logList = []
+let logList = [];
 const tick = async () => {
     try {
         let res = await fetch(apiURL);
@@ -62,12 +74,31 @@ const tick = async () => {
 
         let sLogs = data.logs.split(/\r?\n/);
         //$("#consoleText").html("");
-        let newLogs = sLogs.filter(i => !logList.includes(i) && i != "");
-        newLogs.forEach((m) => {
+        let newLogs = sLogs.filter((i) => !logList.includes(i) && i != "");
+
+        newLogs.forEach((entry) => {
+            logList.push(entry);
+
+            let content = "";
+            if (entry.includes("INFO")) {
+                let parts = entry.split("INFO");
+                content =
+                    parts[0] +
+                    "<span style='color: green;'>INFO</span>" +
+                    parts[1];
+            } else if (entry.includes("WARNING")) {
+                let parts = entry.split("WARNING");
+                content =
+                    parts[0] +
+                    "<span style='color: red;'>WARNING</span>" +
+                    parts[1];
+            } else {
+                content = entry;
+            }
+
             let row = document.createElement("div");
-            row.innerText = m;
+            row.innerHTML = content;
             $("#consoleText").append(row);
-            logList.push(m);
         });
 
         if (isBottom) log.scrollTop = log.scrollHeight - log.clientHeight;
@@ -114,33 +145,31 @@ const tick = async () => {
 setInterval(tick, 1000);
 tick();
 
-
-
 const save = function (filename, data) {
-    var blob = new Blob([data], { type: 'text/csv' });
+    var blob = new Blob([data], { type: "text/csv" });
     if (window.navigator.msSaveOrOpenBlob) {
         window.navigator.msSaveBlob(blob, filename);
-    }
-    else {
-        var elem = window.document.createElement('a');
+    } else {
+        var elem = window.document.createElement("a");
         elem.href = window.URL.createObjectURL(blob);
         elem.download = filename;
         document.body.appendChild(elem);
         elem.click();
         document.body.removeChild(elem);
     }
-}
+};
 
 $(".fa-download").click(function (e) {
     e.stopPropagation();
-    fileBuffer = ""
-    $("#consoleText div").each((index, element) => {
-        console.log($(element))
-        fileBuffer += $(element).html() + "\r\n"
+
+    fileBuffer = "";
+    logList.forEach((entry) => {
+        fileBuffer += entry;
+        fileBuffer += "\n";
     });
+
     save("server.log", fileBuffer);
 });
-
 
 $("#saveGameBtn").click(function (e) {
     e.preventDefault();
@@ -198,7 +227,7 @@ $("#stopLauncherBtn").click(function (e) {
             type: "POST",
             url: apiURL + "/shutdown",
             dataType: "json",
-            success: function (result) { },
+            success: function (result) {},
             error: function (result) {
                 console.log(result);
             },
