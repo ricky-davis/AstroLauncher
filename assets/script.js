@@ -1,10 +1,9 @@
 console.log("Hi there! Feel to explore the code!");
-//let apiURL = 'http://127.0.0.1:80/api'
-let apiURL = "/api";
+let apiURL = 'http://127.0.0.1:80/api'
+//let apiURL = "/api";
 let playersTableOriginal = $("#onlinePlayersTable").html();
 
 let serverBusy = false;
-
 const statusMsg = (msg, apiServerBusy = false) => {
     if (apiServerBusy == false && serverBusy == false) {
         if (msg == "off") {
@@ -80,10 +79,12 @@ const tick = async () => {
             logList.push(entry);
 
             let content = "";
+            let levelType = "";
             entry = entry.replace(/"|'/g, "");
             entry = linkify(entry);
 
             if (entry.includes("INFO")) {
+                levelType = "INFO";
                 let parts = entry.split("INFO");
                 content =
                     "<i class='fas fa-info-circle' style='color: green;'></i> " +
@@ -92,6 +93,7 @@ const tick = async () => {
                     parts[1];
             } else if (entry.includes("WARNING")) {
                 let parts = entry.split("WARNING");
+                levelType = "WARNING";
                 content =
                     "<i class='fas fa-exclamation-triangle' style='color: red;'></i> " +
                     parts[0] +
@@ -103,6 +105,10 @@ const tick = async () => {
 
             let row = document.createElement("div");
             row.innerHTML = content;
+            if (levelType == "WARNING") {
+                $(row).addClass("warning")
+            }
+
             $("#consoleText").append(row);
         });
 
@@ -232,7 +238,7 @@ $("#stopLauncherBtn").click(function (e) {
             type: "POST",
             url: apiURL + "/shutdown",
             dataType: "json",
-            success: function (result) {},
+            success: function (result) { },
             error: function (result) {
                 console.log(result);
             },
