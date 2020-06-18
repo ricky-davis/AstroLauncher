@@ -130,7 +130,7 @@ class AstroLauncher():
         elif os.path.exists(os.path.join(os.getcwd(), "AstroServer.exe")):
             self.astroPath = os.getcwd()
 
-        # fallback to automatic detection
+        # fallback to automatic detection (experimental, do NOT rely on it)
         else:
             autoPath = AstroAPI.getInstallPath()
             if os.path.exists(os.path.join(autoPath, "AstroServer.exe")):
