@@ -1,5 +1,8 @@
 
 import requests
+import os
+import winreg
+import re
 
 
 base_headers = {'Content-Type': 'application/json; charset=utf-8',
@@ -45,3 +48,20 @@ def deregister_server(lobbyID, headers):
 
     x = (requests.post(url, headers=headers, json=jsonRequest)).json()
     return x
+
+
+def getInstallPath():
+
+    # query steam install path from registry
+    key = winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, 'Software\\Valve\\Steam')
+    steamPath = winreg.QueryValueEx(key, "InstallPath")[0]
+
+    with open(os.path.join(steamPath + "/steamapps/libraryfolders.vdf")) as libraryFile:
+
+        # get install directory of games
+        lf = libraryFile.read()
+        lf = lf.replace("\\\\", "\\")
+        # pylint: disable=anomalous-backslash-in-string
+        gamePath = re.findall('^\s*"\d*"\s*"([^"]*)"', lf, re.MULTILINE)[0]
+
+        return os.path.join(gamePath, "steamapps", "common", "ASTRONEER Dedicated Server")
