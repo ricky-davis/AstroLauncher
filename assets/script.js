@@ -1,70 +1,78 @@
 console.log("Hi there! Feel to explore the code!");
 //let apiURL = 'http://127.0.0.1:80/api'
-let apiURL = '/api'
-let playersTableOriginal = $("#onlinePlayersTable").html()
+let apiURL = "/api";
+let playersTableOriginal = $("#onlinePlayersTable").html();
 
-let serverBusy = false
+let serverBusy = false;
 
 const statusMsg = (msg, apiServerBusy = false) => {
     if (apiServerBusy == false && serverBusy == false) {
         if (msg == "off") {
-            $("#serverStatus").text("Offline")
-            $("#serverStatus").addClass("text-danger")
-            $("#serverStatus").removeClass("text-success text-warning text-info")
+            $("#serverStatus").text("Offline");
+            $("#serverStatus").addClass("text-danger");
+            $("#serverStatus").removeClass("text-success text-warning text-info");
             $("#msg h5").text("Server is offline");
-            $("#msg").collapse('show')
+            $("#msg").collapse("show");
         } else if (msg == "shutdown") {
-            $("#serverStatus").text("Shutting Down")
-            $("#serverStatus").addClass("text-danger")
-            $("#serverStatus").removeClass("text-success text-warning text-info")
+            $("#serverStatus").text("Shutting Down");
+            $("#serverStatus").addClass("text-danger");
+            $("#serverStatus").removeClass("text-success text-warning text-info");
             $("#msg h5").text("Server is shutting down");
-            $("#msg").collapse('hide')
+            $("#msg").collapse("hide");
         } else if (msg == "starting") {
-            $("#serverStatus").text("Starting")
-            $("#serverStatus").addClass("text-warning")
-            $("#serverStatus").removeClass("text-success text-danger text-info")
+            $("#serverStatus").text("Starting");
+            $("#serverStatus").addClass("text-warning");
+            $("#serverStatus").removeClass("text-success text-danger text-info");
             $("#msg h5").text("Server is getting ready");
-            $("#msg").collapse('show')
+            $("#msg").collapse("show");
         } else if (msg == "saving") {
-            $("#serverStatus").text("Saving")
-            $("#serverStatus").addClass("text-info")
-            $("#serverStatus").removeClass("text-danger text-warning text-success")
+            $("#serverStatus").text("Saving");
+            $("#serverStatus").addClass("text-info");
+            $("#serverStatus").removeClass("text-danger text-warning text-success");
             $("#msg h5").text("Server is saving");
-            $("#msg").collapse('hide')
+            $("#msg").collapse("hide");
         } else if (msg == "reboot") {
-            $("#serverStatus").text("Rebooting")
-            $("#serverStatus").addClass("text-info")
-            $("#serverStatus").removeClass("text-danger text-warning text-success")
+            $("#serverStatus").text("Rebooting");
+            $("#serverStatus").addClass("text-info");
+            $("#serverStatus").removeClass("text-danger text-warning text-success");
             $("#msg h5").text("Server is rebooting");
-            $("#msg").collapse('hide')
+            $("#msg").collapse("hide");
         } else if (msg == "ready") {
-            $("#serverStatus").text("Ready")
-            $("#serverStatus").addClass("text-success")
-            $("#serverStatus").removeClass("text-danger text-warning text-info")
+            $("#serverStatus").text("Ready");
+            $("#serverStatus").addClass("text-success");
+            $("#serverStatus").removeClass("text-danger text-warning text-info");
             $("#msg h5").text("Server is ready");
-            $("#msg").collapse('hide')
+            $("#msg").collapse("hide");
         }
     }
-}
+};
 
-const init = async () => {
+let logList = []
+const tick = async () => {
     try {
         let res = await fetch(apiURL);
         const data = await res.json();
-
         //console.log(data);
-        statusMsg(data.status, data.busy)
-        s = data.settings;
-        console.log(data.logs)
-        let sLogs = data.logs.split(/\r?\n/)
-        sLogs.reverse()
-        $("#consoleText").html("")
-        sLogs.forEach((m) => {
+
+        statusMsg(data.status, data.busy);
+
+        // smart scroll
+        let log = $("#consoleText")[0];
+        let isBottom = log.scrollTop == log.scrollHeight - log.clientHeight;
+
+        let sLogs = data.logs.split(/\r?\n/);
+        //$("#consoleText").html("");
+        let newLogs = sLogs.filter(i => !logList.includes(i) && i != "");
+        newLogs.forEach((m) => {
             let row = document.createElement("div");
             row.innerText = m;
             $("#consoleText").append(row);
+            logList.push(m);
         });
 
+        if (isBottom) log.scrollTop = log.scrollHeight - log.clientHeight;
+
+        s = data.settings;
 
         $("#titleIP").html(`${s.PublicIP}:${s.Port}`);
 
@@ -75,10 +83,10 @@ const init = async () => {
         $("#maxPlayers").html(s.MaximumPlayerCount);
         $("#onlinePlayersTable").html(playersTableOriginal);
         $("#offlinePlayersTable").html(playersTableOriginal);
-        if (data.players.hasOwnProperty('playerInfo')) {
-            $("#onlinePlayers").text(data.players.playerInfo.filter(
-                (p) => p.inGame
-            ).length);
+        if (data.players.hasOwnProperty("playerInfo")) {
+            $("#onlinePlayers").text(
+                data.players.playerInfo.filter((p) => p.inGame).length
+            );
 
             if (data.players) {
                 data.players.playerInfo.forEach((p) => {
@@ -88,73 +96,112 @@ const init = async () => {
                     <td>${p.inGame}</td>`;
                     if (p.inGame == true) {
                         $("#onlinePlayersTable>tbody").append(row);
-                    } else if (p.playerName != '') {
+                    } else if (p.playerName != "") {
                         $("#offlinePlayersTable>tbody").append(row);
-
                     }
                 });
             }
         }
     } catch (e) {
-        console.log(e)
+        console.log(e);
         $("#msg h5").text("ERROR! Try again in 10s");
-        $("#msg").collapse('show');
+        $("#msg").collapse("show");
         serverBusy = false;
         statusMsg("off");
     }
 };
-setInterval(init, 1000);
-init()
+
+setInterval(tick, 1000);
+tick();
+
+
+
+const save = function (filename, data) {
+    var blob = new Blob([data], { type: 'text/csv' });
+    if (window.navigator.msSaveOrOpenBlob) {
+        window.navigator.msSaveBlob(blob, filename);
+    }
+    else {
+        var elem = window.document.createElement('a');
+        elem.href = window.URL.createObjectURL(blob);
+        elem.download = filename;
+        document.body.appendChild(elem);
+        elem.click();
+        document.body.removeChild(elem);
+    }
+}
+
+$(".fa-download").click(function (e) {
+    e.stopPropagation();
+    fileBuffer = ""
+    $("#consoleText div").each((index, element) => {
+        console.log($(element))
+        fileBuffer += $(element).html() + "\r\n"
+    });
+    save("server.log", fileBuffer);
+});
+
+
 $("#saveGameBtn").click(function (e) {
     e.preventDefault();
-    statusMsg("saving")
-    serverBusy = true
+    statusMsg("saving");
+    serverBusy = true;
     $.ajax({
         type: "POST",
         url: apiURL + "/savegame",
-        dataType: 'json',
+        dataType: "json",
         success: function (result) {
-            setTimeout(() => { serverBusy = false }, 2000)
+            setTimeout(() => {
+                serverBusy = false;
+            }, 2000);
         },
         error: function (result) {
-            console.log(result)
-            alert('Error');
-        }
+            console.log(result);
+            alert("Error");
+        },
     });
 });
+
 $("#rebootServerBtn").click(function (e) {
     e.preventDefault();
-    statusMsg("reboot")
-    serverBusy = true
+    statusMsg("reboot");
+    serverBusy = true;
     $.ajax({
         type: "POST",
         url: apiURL + "/reboot",
-        dataType: 'json',
+        dataType: "json",
         success: function (result) {
-            setTimeout(() => { serverBusy = false }, 2000)
+            setTimeout(() => {
+                serverBusy = false;
+            }, 2000);
         },
         error: function (result) {
-            console.log(result)
-            alert('Error');
-        }
+            console.log(result);
+            alert("Error");
+        },
     });
 });
+
 $("#stopLauncherBtn").click(function (e) {
     e.preventDefault();
-    statusMsg("shutdown")
-    let reallyShutdown = confirm("Are you sure you want to shut down the launcher? It will have to be manually restarted.")
+    statusMsg("shutdown");
+    let reallyShutdown = confirm(
+        "Are you sure you want to shut down the launcher? It will have to be manually restarted."
+    );
     if (reallyShutdown == true) {
-        serverBusy = true
-        setTimeout(() => { serverBusy = false; statusMsg("off") }, 2000)
+        serverBusy = true;
+        setTimeout(() => {
+            serverBusy = false;
+            statusMsg("off");
+        }, 2000);
         $.ajax({
             type: "POST",
             url: apiURL + "/shutdown",
-            dataType: 'json',
-            success: function (result) {
-            },
+            dataType: "json",
+            success: function (result) { },
             error: function (result) {
-                console.log(result)
-            }
+                console.log(result);
+            },
         });
     }
 });

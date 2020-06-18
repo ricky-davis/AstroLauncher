@@ -1,9 +1,9 @@
-import threading
 import http.server
+import json
+import os
 import socketserver
 import sys
-import os
-import json
+import threading
 import time
 
 from cogs.AstroLogging import AstroLogging
@@ -64,7 +64,7 @@ class ServerHttpRequestHandler(http.server.SimpleHTTPRequestHandler):
 
                 logs = AstroLogging.log_stream.getvalue()
 
-                n = 21
+                n = 200
                 groups = logs.split('\n')
                 logs = '\n'.join(groups[-n:])
 
@@ -128,18 +128,36 @@ class AstroWebServer(threading.Thread):
         self.handler = ServerHttpRequestHandler
         self.routes = None
 
+    def getListOfFiles(self, dirName):
+        # create a list of file and sub directories
+        # names in the given directory
+        listOfFile = os.listdir(dirName)
+        allFiles = list()
+        # Iterate over all the entries
+        for entry in listOfFile:
+            # Create full path
+            fullPath = os.path.join(dirName, entry)
+            # If entry is a directory then get the list of files in this directory
+            if os.path.isdir(fullPath):
+                allFiles = allFiles + self.getListOfFiles(fullPath)
+            else:
+                allFiles.append(fullPath)
+
+        return allFiles
+
     def run(self):
-        # assign queue inside the thread
 
         # load content from files to be served
-        self.routes = {"/": {"path": "assets/index.html", "type": "text/html"}}
         # pylint: disable=no-member, protected-access
         curDir = ""
         if self.launcher.isExecutable:
             curDir = sys._MEIPASS
-        dirName = os.path.join(curDir, "assets")
-        fileNames = [f for f in os.listdir(
-            dirName) if os.path.isfile(os.path.join(dirName, f))]
+        self.routes = {
+            "/": {"path": "assets/index.html", "type": "text/html"}}
+        fileNames = self.getListOfFiles(os.path.join(curDir, "assets"))
+        fileNames = [os.path.relpath(x, curDir) for x in fileNames]
+        # print(fileNames)
+        assets = f"assets{os.sep}"
         for f in fileNames:
             ext = f.split(".")[-1]
             ctype = "text/html"
@@ -149,8 +167,9 @@ class AstroWebServer(threading.Thread):
                 ctype = "image/png"
             if ext == "ttf":
                 ctype = "font/ttf"
-            self.routes[f"/{f}"] = {"path": f"assets/{f}", "type": ctype}
-
+            self.routes[f"/{f.replace(assets , '').replace(os.sep , '/')}"] = {
+                "path": f"{f}", "type": ctype}
+        # print(self.routes)
         for key in self.routes:
             # pylint: disable=no-member, protected-access
             with open(os.path.join(curDir, self.routes[key]['path']), 'rb') as contentFile:
