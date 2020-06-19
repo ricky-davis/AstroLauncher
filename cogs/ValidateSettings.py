@@ -51,6 +51,10 @@ def get_current_settings(curPath):
     baseConfig = {
         "URL": {
             "Port": "8777"
+        },
+        "/Script/OnlineSubsystemUtils.IpNetDriver": {
+            "MaxClientRate": "1000000",
+            "MaxInternetClientRate": "1000000"
         }
     }
     config = MultiConfig().baseline(os.path.join(
