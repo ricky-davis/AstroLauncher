@@ -1,6 +1,6 @@
 console.log("Hi there! Feel to explore the code!");
-let apiURL = 'http://127.0.0.1:80/api'
-//let apiURL = "/api";
+//let apiURL = 'http://127.0.0.1:80/api'
+let apiURL = "/api";
 let playersTableOriginal = $("#onlinePlayersTable").html();
 
 let serverBusy = false;
@@ -106,7 +106,7 @@ const tick = async () => {
             let row = document.createElement("div");
             row.innerHTML = content;
             if (levelType == "WARNING") {
-                $(row).addClass("warning")
+                $(row).addClass("warning");
             }
 
             $("#consoleText").append(row);
@@ -238,7 +238,7 @@ $("#stopLauncherBtn").click(function (e) {
             type: "POST",
             url: apiURL + "/shutdown",
             dataType: "json",
-            success: function (result) { },
+            success: function (result) {},
             error: function (result) {
                 console.log(result);
             },
