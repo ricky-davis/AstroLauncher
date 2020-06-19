@@ -3,9 +3,13 @@ console.log("Hi there! Feel to explore the code!");
 let apiURL = "/api";
 let playersTableOriginal = $("#onlinePlayersTable").html();
 
-let serverBusy = false;
-const statusMsg = (msg, apiServerBusy = false) => {
-    if (apiServerBusy == false && serverBusy == false) {
+let oldMsg = "";
+let oldSettings = {};
+let oldPlayers = {};
+
+const statusMsg = (msg) => {
+    if (oldMsg != msg) {
+        oldMsg = msg;
         $("#serverStatus").removeClass(
             "text-success text-warning text-danger text-info"
         );
@@ -42,6 +46,9 @@ const statusMsg = (msg, apiServerBusy = false) => {
         }
     }
 };
+const compareObj = (obj1, obj2) => {
+    return JSON.stringify(obj1) === JSON.stringify(obj2);
+};
 
 let logList = [];
 const tick = async () => {
@@ -50,7 +57,7 @@ const tick = async () => {
         const data = await res.json();
         //console.log(data);
 
-        statusMsg(data.status, data.busy);
+        statusMsg(data.status);
 
         // smart scroll
         let log = $("#consoleText")[0];
@@ -100,40 +107,43 @@ const tick = async () => {
         if (isBottom) log.scrollTop = log.scrollHeight - log.clientHeight;
 
         s = data.settings;
+        if (!compareObj(oldSettings, s)) {
+            oldSettings = s;
+            $("#titleIP").html(`${s.PublicIP}:${s.Port}`);
 
-        $("#titleIP").html(`${s.PublicIP}:${s.Port}`);
+            $("#serverName").html(s.ServerName);
+            $("#owner").html(s.OwnerName);
+            $("#maxFramerate").html(parseFloat(s.MaxServerFramerate));
+        }
+        if (!compareObj(oldPlayers, data.players)) {
+            oldPlayers = data.players;
+            $("#maxPlayers").html(s.MaximumPlayerCount);
+            $("#onlinePlayersTable").html(playersTableOriginal);
+            $("#offlinePlayersTable").html(playersTableOriginal);
+            if (data.players.hasOwnProperty("playerInfo")) {
+                $("#onlinePlayers").text(
+                    data.players.playerInfo.filter((p) => p.inGame).length
+                );
 
-        $("#serverName").html(s.ServerName);
-        $("#owner").html(s.OwnerName);
-        $("#maxFramerate").html(parseFloat(s.MaxServerFramerate));
-
-        $("#maxPlayers").html(s.MaximumPlayerCount);
-        $("#onlinePlayersTable").html(playersTableOriginal);
-        $("#offlinePlayersTable").html(playersTableOriginal);
-        if (data.players.hasOwnProperty("playerInfo")) {
-            $("#onlinePlayers").text(
-                data.players.playerInfo.filter((p) => p.inGame).length
-            );
-
-            if (data.players) {
-                data.players.playerInfo.forEach((p) => {
-                    let row = document.createElement("tr");
-                    row.innerHTML = `<td>${p.playerName}</td>
+                if (data.players) {
+                    data.players.playerInfo.forEach((p) => {
+                        let row = document.createElement("tr");
+                        row.innerHTML = `<td>${p.playerName}</td>
                     <td>${p.playerCategory}</td>
                     <td>${p.inGame}</td>`;
-                    if (p.inGame == true) {
-                        $("#onlinePlayersTable>tbody").append(row);
-                    } else if (p.playerName != "") {
-                        $("#offlinePlayersTable>tbody").append(row);
-                    }
-                });
+                        if (p.inGame == true) {
+                            $("#onlinePlayersTable>tbody").append(row);
+                        } else if (p.playerName != "") {
+                            $("#offlinePlayersTable>tbody").append(row);
+                        }
+                    });
+                }
             }
         }
     } catch (e) {
         console.log(e);
         $("#msg h5").text("ERROR! Try again in 10s");
         $("#msg").collapse("show");
-        serverBusy = false;
         statusMsg("off");
     }
 };
@@ -141,7 +151,7 @@ const tick = async () => {
 setInterval(tick, 1000);
 tick();
 
-const save = function (filename, data) {
+const saveLog = function (filename, data) {
     var blob = new Blob([data], { type: "text/csv" });
     if (window.navigator.msSaveOrOpenBlob) {
         window.navigator.msSaveBlob(blob, filename);
@@ -164,22 +174,17 @@ $(".fa-download").click(function (e) {
         fileBuffer += "\n";
     });
 
-    save("server.log", fileBuffer);
+    saveLog("server.log", fileBuffer);
 });
 
 $("#saveGameBtn").click(function (e) {
     e.preventDefault();
     statusMsg("saving");
-    serverBusy = true;
     $.ajax({
         type: "POST",
         url: apiURL + "/savegame",
         dataType: "json",
-        success: function (result) {
-            setTimeout(() => {
-                serverBusy = false;
-            }, 2000);
-        },
+        success: function (result) {},
         error: function (result) {
             console.log(result);
             alert("Error");
@@ -190,16 +195,11 @@ $("#saveGameBtn").click(function (e) {
 $("#rebootServerBtn").click(function (e) {
     e.preventDefault();
     statusMsg("reboot");
-    serverBusy = true;
     $.ajax({
         type: "POST",
         url: apiURL + "/reboot",
         dataType: "json",
-        success: function (result) {
-            setTimeout(() => {
-                serverBusy = false;
-            }, 2000);
-        },
+        success: function (result) {},
         error: function (result) {
             console.log(result);
             alert("Error");
@@ -214,9 +214,7 @@ $("#stopLauncherBtn").click(function (e) {
         "Are you sure you want to shut down the launcher? It will have to be manually restarted."
     );
     if (reallyShutdown == true) {
-        serverBusy = true;
         setTimeout(() => {
-            serverBusy = false;
             statusMsg("off");
         }, 2000);
         $.ajax({

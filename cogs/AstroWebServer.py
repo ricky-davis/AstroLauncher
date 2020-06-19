@@ -4,7 +4,6 @@ import os
 import socketserver
 import sys
 import threading
-import time
 
 from cogs.AstroLogging import AstroLogging
 
@@ -26,11 +25,7 @@ class ServerHttpRequestHandler(http.server.SimpleHTTPRequestHandler):
             success = True
         if self.path == '/api/reboot':
             self.webServer.launcher.DedicatedServer.busy = True
-            self.webServer.launcher.DedicatedServer.saveGame()
-            self.webServer.launcher.DedicatedServer.busy = True
-            time.sleep(1)
-            self.webServer.launcher.DedicatedServer.busy = True
-            self.webServer.launcher.DedicatedServer.shutdownServer()
+            self.webServer.launcher.DedicatedServer.save_and_shutdown()
             success = True
         if self.path == '/api/shutdown':
             self.webServer.launcher.DedicatedServer.busy = True
@@ -71,7 +66,6 @@ class ServerHttpRequestHandler(http.server.SimpleHTTPRequestHandler):
                 s = dedicatedServer.settings
                 res = {
                     "status": dedicatedServer.status,
-                    "busy": dedicatedServer.busy,
                     "settings": {
                         "MaxServerFramerate": s.MaxServerFramerate,
                         "PublicIP": s.PublicIP,
