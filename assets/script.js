@@ -1,57 +1,42 @@
 console.log("Hi there! Feel to explore the code!");
-let apiURL = 'http://127.0.0.1:80/api'
-//let apiURL = "/api";
+//let apiURL = 'http://127.0.0.1:80/api'
+let apiURL = "/api";
 let playersTableOriginal = $("#onlinePlayersTable").html();
 
 let serverBusy = false;
 const statusMsg = (msg, apiServerBusy = false) => {
     if (apiServerBusy == false && serverBusy == false) {
+        $("#serverStatus").removeClass(
+            "text-success text-warning text-danger text-info"
+        );
         if (msg == "off") {
             $("#serverStatus").text("Offline");
             $("#serverStatus").addClass("text-danger");
-            $("#serverStatus").removeClass(
-                "text-success text-warning text-info"
-            );
             $("#msg h5").text("Server is offline");
             $("#msg").collapse("show");
         } else if (msg == "shutdown") {
             $("#serverStatus").text("Shutting Down");
             $("#serverStatus").addClass("text-danger");
-            $("#serverStatus").removeClass(
-                "text-success text-warning text-info"
-            );
             $("#msg h5").text("Server is shutting down");
             $("#msg").collapse("hide");
         } else if (msg == "starting") {
             $("#serverStatus").text("Starting");
             $("#serverStatus").addClass("text-warning");
-            $("#serverStatus").removeClass(
-                "text-success text-danger text-info"
-            );
             $("#msg h5").text("Server is getting ready");
             $("#msg").collapse("show");
         } else if (msg == "saving") {
             $("#serverStatus").text("Saving");
             $("#serverStatus").addClass("text-info");
-            $("#serverStatus").removeClass(
-                "text-danger text-warning text-success"
-            );
             $("#msg h5").text("Server is saving");
             $("#msg").collapse("hide");
         } else if (msg == "reboot") {
             $("#serverStatus").text("Rebooting");
             $("#serverStatus").addClass("text-info");
-            $("#serverStatus").removeClass(
-                "text-danger text-warning text-success"
-            );
             $("#msg h5").text("Server is rebooting");
             $("#msg").collapse("hide");
         } else if (msg == "ready") {
             $("#serverStatus").text("Ready");
             $("#serverStatus").addClass("text-success");
-            $("#serverStatus").removeClass(
-                "text-danger text-warning text-info"
-            );
             $("#msg h5").text("Server is ready");
             $("#msg").collapse("hide");
         }
@@ -87,7 +72,7 @@ const tick = async () => {
                 levelType = "INFO";
                 let parts = entry.split("INFO");
                 content =
-                    "<i class='fas fa-info-circle' style='color: green;'></i> " +
+                    "<i class='fas fa-info-circle iconInfo'></i> " +
                     parts[0] +
                     //"<span style='color: green;'>INFO</span>" +
                     parts[1];
@@ -95,7 +80,7 @@ const tick = async () => {
                 let parts = entry.split("WARNING");
                 levelType = "WARNING";
                 content =
-                    "<i class='fas fa-exclamation-triangle' style='color: red;'></i> " +
+                    "<i class='fas fa-exclamation-triangle iconWarn'></i> " +
                     parts[0] +
                     //"<span style='color: red;'>WARNING</span>" +
                     parts[1];
@@ -106,7 +91,7 @@ const tick = async () => {
             let row = document.createElement("div");
             row.innerHTML = content;
             if (levelType == "WARNING") {
-                $(row).addClass("warning")
+                $(row).addClass("warning");
             }
 
             $("#consoleText").append(row);
@@ -238,7 +223,7 @@ $("#stopLauncherBtn").click(function (e) {
             type: "POST",
             url: apiURL + "/shutdown",
             dataType: "json",
-            success: function (result) { },
+            success: function (result) {},
             error: function (result) {
                 console.log(result);
             },
