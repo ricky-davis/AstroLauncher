@@ -354,7 +354,7 @@ class AstroLauncher():
             AstroLogging.logPrint(
                 "I can't seem to validate your network settings..", "warning")
             AstroLogging.logPrint(
-                "Make sure to Port Forward and enable NAT Loopback", "warning")
+                f"Make sure to Port Forward ({self.DedicatedServer.settings.Port} UDP) and enable NAT Loopback", "warning")
             AstroLogging.logPrint(
                 "If nobody can connect, Port Forward.", "warning")
             AstroLogging.logPrint(

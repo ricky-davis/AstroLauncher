@@ -72,11 +72,7 @@ def socket_server(port, secret):
         # bind the socket to a public host,
         # and a well-known port
         serversocket.bind((socket.gethostname(), port))
-        # become a server socket
-        # serversocket.listen(1)
         while 1:
-            # accept connections from outside
-            # connection, _client_address = serversocket.accept()
             while True:
                 data = serversocket.recv(32)
                 # print(data)
@@ -91,8 +87,8 @@ def socket_server(port, secret):
 
 def socket_client(ip, port, secret):
     try:
-        with session_scope(ip, port) as s:
-            s.sendall(secret)
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s.sendto(secret, (ip, port))
     except:
         pass
 
