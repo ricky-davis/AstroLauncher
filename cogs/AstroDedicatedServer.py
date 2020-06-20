@@ -118,8 +118,11 @@ class AstroDedicatedServer():
         self.shutdownServer()
 
     def setStatus(self, status):
-        self.status = status
-        self.update_webServerQueue()
+        try:
+            self.status = status
+            self.update_webServerQueue()
+        except:
+            pass
 
     def update_webServerQueue(self):
         if not self.launcher.launcherConfig.DisableWebServer:
@@ -186,8 +189,11 @@ class AstroDedicatedServer():
 
     def kill_server(self, reason, save=False):
         AstroLogging.logPrint(f"Kill Server: {reason}")
-        self.busy = True
-        self.setStatus("shutdown")
+        try:
+            self.busy = True
+            self.setStatus("shutdown")
+        except:
+            pass
         try:
             if save:
                 self.saveGame()
@@ -205,7 +211,10 @@ class AstroDedicatedServer():
                 child.kill()
         except:
             pass
-        self.setStatus("off")
+        try:
+            self.setStatus("off")
+        except:
+            pass
         # Kill current process
         try:
             os.kill(os.getpid(), 9)
