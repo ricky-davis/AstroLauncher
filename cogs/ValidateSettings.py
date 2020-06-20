@@ -67,21 +67,21 @@ def get_current_settings(curPath):
 
 def socket_server(port, secret):
     try:
-        serversocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        serversocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         serversocket.settimeout(5)
         # bind the socket to a public host,
         # and a well-known port
         serversocket.bind((socket.gethostname(), port))
         # become a server socket
-        serversocket.listen(1)
+        # serversocket.listen(1)
         while 1:
             # accept connections from outside
-            connection, _client_address = serversocket.accept()
+            # connection, _client_address = serversocket.accept()
             while True:
-                data = connection.recv(32)
+                data = serversocket.recv(32)
                 # print(data)
                 if data == secret:
-                    connection.close()
+                    serversocket.close()
                     return True
                 else:
                     return False
