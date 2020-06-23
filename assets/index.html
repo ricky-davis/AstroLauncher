@@ -1,123 +1,192 @@
 <html lang="en">
+    <head>
+        <meta charset=" utf-8" />
+        <meta
+            name="viewport"
+            content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"
+        />
+        <title>Astroneer Server Status</title>
+        <link rel="icon" type="image/ico" href="astrolauncherlogo.ico" />
+        <link rel="stylesheet" href="bootstrap.min.css" />
+        <link rel="stylesheet" href="fontawesome/css/all.css" />
+        <link rel="stylesheet" href="style.css" />
+    </head>
 
-<head>
-    <meta charset=" utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-    <title>Astroneer Server Status</title>
-    <link rel="icon" type="image/ico" href="astrolauncherlogo.ico" />
-    <link rel="stylesheet" href="bootstrap.min.css" />
-    <link rel="stylesheet" href="fontawesome/css/all.css" />
-    <link rel="stylesheet" href="style.css" />
-</head>
+    <body>
+        <div id="banner">
+            <h1>Dedicated Server Status for <span id="titleIP">[IP]</span></h1>
+            <a
+                href="https://github.com/ricky-davis/AstroLauncher/releases/latest"
+                >AstroLauncher - Unofficial Dedicated Server Launcher</a
+            >
+        </div>
+        <div id="msg" class="bg-danger text-center collapse">
+            <h5></h5>
+        </div>
 
-<body>
-    <div id="banner">
-        <h1>Dedicated Server Status for <span id="titleIP">[IP]</span></h1>
-        <a href="https://github.com/ricky-davis/AstroLauncher/releases/latest">AstroLauncher - Unofficial Dedicated
-            Server Launcher</a>
-    </div>
-    <div id="msg" class="bg-danger text-center collapse">
-        <h5></h5>
-    </div>
-
-    <div id="main" class="container-fluid">
-        <div class="row mt-5 ">
-            <div id="above" class="col px-4">
-                <div id="console" class="card astroCard">
-                    <div class="card-header pt-4 px-4" data-toggle="collapse" data-target="#consoleTextCardBody"
-                        aria-expanded="true" aria-controls="consoleTextCardBody">
-                        <h3><span class="collapseArrows pr-2"></span>Console <i class="fa fa-download"
-                                aria-hidden="true"></i>
-                        </h3>
+        <div id="main" class="container-fluid">
+            <div class="row mt-5">
+                <div id="above" class="col px-4">
+                    <div id="console" class="card astroCard">
+                        <div
+                            class="card-header pt-4 px-4"
+                            data-toggle="collapse"
+                            data-target="#consoleTextCardBody"
+                            aria-expanded="true"
+                            aria-controls="consoleTextCardBody"
+                        >
+                            <h3>
+                                <span class="collapseArrows pr-2"></span>Console
+                                <i
+                                    class="fa fa-download"
+                                    aria-hidden="true"
+                                ></i>
+                            </h3>
+                        </div>
+                        <div
+                            id="consoleTextCardBody"
+                            class="card-body pt-0 collapse show"
+                        >
+                            <div id="consoleText"></div>
+                        </div>
                     </div>
-                    <div id="consoleTextCardBody" class="card-body pt-0 collapse show">
-                        <div id="consoleText">
+                </div>
+            </div>
+            <div class="row mt-3">
+                <div id="left" class="col-12 col-md-4 px-4">
+                    <div id="stats" class="card astroCard">
+                        <div
+                            class="card-header pt-4 px-4"
+                            data-toggle="collapse"
+                            data-target="#serverStatusCardBody"
+                            aria-expanded="true"
+                            aria-controls="serverStatusCardBody"
+                        >
+                            <h3>
+                                <span class="collapseArrows pr-2"></span>
+                                Statistics
+                                <span
+                                    id="serverStatus"
+                                    class="text-danger col-12 float-right px-0 text-md-left col-lg-5 text-lg-right float-lg-right"
+                                    >Offline</span
+                                >
+                            </h3>
+                        </div>
 
+                        <div
+                            id="serverStatusCardBody"
+                            class="card-body pt-4 collapse show"
+                        >
+                            <p>Server Name: <span id="serverName"></span></p>
+                            <p>Owner: <span id="owner"></span></p>
+                            <p>
+                                Max Server Framerate:
+                                <span id="maxFramerate"></span>
+                            </p>
+                            <p>
+                                Maximum Players: <span id="maxPlayers"></span>
+                            </p>
+                            <p>
+                                Players online: <span id="onlinePlayers"></span>
+                            </p>
+                        </div>
+                        <div id="serverStatusFooter" class="card-footer">
+                            <button
+                                id="saveGameBtn"
+                                type="button"
+                                class="btn btn-success col-12 mr-xl-2 col-xl-3"
+                            >
+                                Save Game
+                            </button>
+                            <button
+                                id="stopLauncherBtn"
+                                type="button"
+                                class="btn btn-danger col-12 ml-xl-1 col-xl-5 float-right"
+                            >
+                                Stop Launcher & Server
+                            </button>
+                            <button
+                                id="rebootServerBtn"
+                                type="button"
+                                class="btn btn-warning col-12 mx-xl-1 col-xl-3 float-right"
+                            >
+                                Reboot
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="right" class="col-12 mt-5 mt-md-0 col-md px-4">
+                    <div id="onlinePlayersRow" class="card astroCard">
+                        <div
+                            class="card-header pt-4 px-4"
+                            data-toggle="collapse"
+                            data-target="#onlinePlayersCardBody"
+                            aria-expanded="true"
+                            aria-controls="onlinePlayersCardBody"
+                        >
+                            <h3>
+                                <span class="collapseArrows pr-2"></span>
+                                Online Players
+                            </h3>
+                        </div>
+                        <div
+                            id="onlinePlayersCardBody"
+                            class="card-body pt-0 collapse show"
+                        >
+                            <table
+                                id="onlinePlayersTable"
+                                class="table table-dark table-striped"
+                            >
+                                <thead>
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>Role</th>
+                                        <th>In Game</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div id="offinePlayersRow" class="card my-4 astroCard">
+                        <div
+                            class="card-header pt-4 px-4"
+                            data-toggle="collapse"
+                            data-target="#offlinePlayersCardBody"
+                            aria-expanded="true"
+                            aria-controls="offlinePlayersCardBody"
+                        >
+                            <h3>
+                                <span class="collapseArrows pr-2"></span>
+                                Offline Players
+                            </h3>
+                        </div>
+                        <div
+                            id="offlinePlayersCardBody"
+                            class="card-body pt-0 collapse show"
+                        >
+                            <table
+                                id="offlinePlayersTable"
+                                class="table table-dark table-striped"
+                            >
+                                <thead>
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>Role</th>
+                                        <th>In Game</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-        <div class="row mt-3">
-            <div id="left" class="col-12 col-md-4 px-4">
-                <div id="stats" class="card astroCard">
-                    <div class="card-header pt-4 px-4" data-toggle="collapse" data-target="#serverStatusCardBody"
-                        aria-expanded="true" aria-controls="serverStatusCardBody">
-                        <h3><span class="collapseArrows pr-2"></span>
-                            Statistics <span id="serverStatus"
-                                class="text-danger col-12 float-right px-0 text-md-left col-lg-5 text-lg-right float-lg-right ">Offline</span>
-                        </h3>
-                    </div>
+    </body>
 
-                    <div id="serverStatusCardBody" class="card-body pt-4 collapse show">
-                        <p>Server Name: <span id="serverName"></span></p>
-                        <p>Owner: <span id="owner"></span></p>
-                        <p>Max Server Framerate: <span id="maxFramerate"></span></p>
-                        <p>Maximum Players: <span id="maxPlayers"></span></p>
-                        <p>Players online: <span id="onlinePlayers"></span></p>
-                    </div>
-                    <div id="serverStatusFooter" class="card-footer">
-                        <button id="saveGameBtn" type="button" class="btn btn-success col-12 mr-xl-2 col-xl-3">Save
-                            Game</button>
-                        <button id="stopLauncherBtn" type="button"
-                            class="btn btn-danger col-12 ml-xl-1 col-xl-5 float-right">Stop
-                            Launcher
-                            & Server</button>
-                        <button id="rebootServerBtn" type="button"
-                            class="btn btn-warning col-12  mx-xl-1 col-xl-3 float-right">Reboot</button>
-                    </div>
-                </div>
-            </div>
-
-
-            <div id="right" class="col-12 mt-5 mt-md-0 col-md px-4">
-                <div id="onlinePlayersRow" class="card astroCard">
-                    <div class="card-header pt-4 px-4" data-toggle="collapse" data-target="#onlinePlayersCardBody"
-                        aria-expanded="true" aria-controls="onlinePlayersCardBody">
-                        <h3><span class="collapseArrows pr-2"></span>
-                            Online Players
-                        </h3>
-                    </div>
-                    <div id="onlinePlayersCardBody" class="card-body pt-0 collapse show">
-                        <table id="onlinePlayersTable" class="table table-dark table-striped">
-                            <thead>
-                                <tr>
-                                    <th>Name</th>
-                                    <th>Role</th>
-                                    <th>In Game</th>
-                                </tr>
-                            </thead>
-                            <tbody></tbody>
-                        </table>
-                    </div>
-                </div>
-                <div id="offinePlayersRow" class="card my-4 astroCard">
-                    <div class="card-header pt-4 px-4" data-toggle="collapse" data-target="#offlinePlayersCardBody"
-                        aria-expanded="true" aria-controls="offlinePlayersCardBody">
-                        <h3><span class="collapseArrows pr-2"></span>
-                            Offline Players
-                        </h3>
-                    </div>
-                    <div id="offlinePlayersCardBody" class="card-body pt-0 collapse show">
-                        <table id="offlinePlayersTable" class="table table-dark table-striped">
-                            <thead>
-                                <tr>
-                                    <th>Name</th>
-                                    <th>Role</th>
-                                    <th>In Game</th>
-                                </tr>
-                            </thead>
-                            <tbody></tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</body>
-
-<script src="jquery-3.5.1.min.js"></script>
-<script src="bootstrap.bundle.min.js"></script>
-<script src="script.js"></script>
-
+    <script src="jquery-3.5.1.min.js"></script>
+    <script src="bootstrap.bundle.min.js"></script>
+    <script src="script.js"></script>
 </html>

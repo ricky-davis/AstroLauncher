@@ -6,6 +6,7 @@ import socket
 import threading
 import uuid
 from contextlib import contextmanager
+import time
 
 import requests
 
@@ -65,19 +66,34 @@ def get_current_settings(curPath):
     return settings
 
 
-def socket_server(port, secret):
+def socket_server(port, secret, tcp):
     try:
-        serversocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        serversocket.settimeout(5)
+        if tcp:
+            serversocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        else:
+            serversocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        serversocket.settimeout(10)
         # bind the socket to a public host,
         # and a well-known port
         serversocket.bind((socket.gethostname(), port))
+        # become a server socket
+        if tcp:
+            serversocket.listen(1)
         while 1:
+            # accept connections from outside
+            if tcp:
+                connection, _client_address = serversocket.accept()
             while True:
-                data = serversocket.recv(32)
-                # print(data)
+                if tcp:
+                    data = connection.recv(32)
+                else:
+                    data = serversocket.recv(32)
+
                 if data == secret:
-                    serversocket.close()
+                    if tcp:
+                        connection.close()
+                    else:
+                        serversocket.close()
                     return True
                 else:
                     return False
@@ -85,10 +101,15 @@ def socket_server(port, secret):
         return False
 
 
-def socket_client(ip, port, secret):
+def socket_client(ip, port, secret, tcp):
     try:
-        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        s.sendto(secret, (ip, port))
+        if tcp:
+            with session_scope(ip, port) as s:
+                s.sendall(secret)
+        else:
+            time.sleep(2)
+            s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            s.sendto(secret, (ip, port))
     except:
         pass
 
@@ -106,8 +127,9 @@ def session_scope(ip, consolePort: int):
         s.close()
 
 
-def test_network(ip, port):
+def test_network(ip, port, tcp):
     secretPhrase = secrets.token_hex(16).encode()
-    x = threading.Thread(target=socket_client, args=(ip, port, secretPhrase))
+    x = threading.Thread(target=socket_client,
+                         args=(ip, port, secretPhrase, tcp))
     x.start()
-    return socket_server(port, secretPhrase)
+    return socket_server(port, secretPhrase, tcp)
