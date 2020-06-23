@@ -1,20 +1,21 @@
 import argparse
+import asyncio
 import atexit
 import ctypes
 import dataclasses
 import os
-import subprocess
 import shutil
+import subprocess
 import sys
 import time
-import queue
+from threading import Thread
 
 import requests
 from watchdog.events import FileSystemEventHandler
 from watchdog.observers import Observer
 
-import cogs.AstroWebServer as AstroWebServer
 import cogs.AstroAPI as AstroAPI
+import cogs.AstroWebServer as AstroWebServer
 import cogs.ValidateSettings as ValidateSettings
 from cogs.AstroDaemon import AstroDaemon
 from cogs.AstroDedicatedServer import AstroDedicatedServer
@@ -144,6 +145,7 @@ class AstroLauncher():
         AstroLogging.setup_logging(self.astroPath)
         self.launcherINI = launcherINI
         self.launcherConfig = self.LauncherConfig()
+        self.launcherPath = os.getcwd()
         self.refresh_launcher_config()
         if disable_auto_update is not None:
             self.launcherConfig.DisableAutoUpdate = disable_auto_update
@@ -183,11 +185,8 @@ class AstroLauncher():
             AstroLogging.logPrint("Backup retention started")
         # setup queue for data exchange
         if not self.launcherConfig.DisableWebServer:
-            self.webServerQueue = queue.SimpleQueue()
-            self.webServerQueue.put(self.DedicatedServer)
-
             # start http server
-            AstroWebServer.startWebServer(self.webServerQueue, self)
+            self.webServer = self.start_WebServer()
             AstroLogging.logPrint(
                 f"HTTP Server started at 127.0.0.1:{self.launcherConfig.WebServerPort}")
 
@@ -372,6 +371,18 @@ class AstroLauncher():
             AstroLogging.logPrint(
                 "SECURITY ALERT: Disable this ASAP to prevent issues.", "warning")
             time.sleep(5)
+
+    def start_WebServer(self):
+        ws = AstroWebServer.WebServer(self)
+
+        def start_server():
+            asyncio.set_event_loop(asyncio.new_event_loop())
+            ws.run()
+
+        t = Thread(target=start_server, args=())
+        t.daemon = True
+        t.start()
+        return ws
 
 
 if __name__ == "__main__":
