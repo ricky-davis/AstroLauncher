@@ -347,7 +347,7 @@ class AstroLauncher():
 
     def check_network_config(self):
         networkCorrect = ValidateSettings.test_network(
-            self.DedicatedServer.settings.PublicIP, int(self.DedicatedServer.settings.Port))
+            self.DedicatedServer.settings.PublicIP, int(self.DedicatedServer.settings.Port), False)
         if networkCorrect:
             AstroLogging.logPrint("Server network configuration good!")
         else:
@@ -361,7 +361,7 @@ class AstroLauncher():
                 "If others are able to connect, but you aren't, enable NAT Loopback.", "warning")
 
         rconNetworkCorrect = not (ValidateSettings.test_network(
-            self.DedicatedServer.settings.PublicIP, int(self.DedicatedServer.settings.ConsolePort)))
+            self.DedicatedServer.settings.PublicIP, int(self.DedicatedServer.settings.ConsolePort), True))
         if rconNetworkCorrect:
             AstroLogging.logPrint("Remote Console network configuration good!")
         else:
