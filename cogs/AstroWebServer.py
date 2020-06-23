@@ -21,9 +21,12 @@ class WebServer(tornado.web.Application):
 
         settings = {
             'debug': True,
-            "static_path": os.path.join(curDir, "assets")
+            "static_path": os.path.join(curDir, "assets"),
+            "cookie_secret": "__TODO:_GENERATE_YOUR_OWN_RANDOM_VALUE_HERE__",
+            "login_url": "/login"
         }
         handlers = [(r'/', MainHandler, {"path": settings['static_path']}),
+                    (r"/login", LoginHandler, dict(launcher=self.launcher)),
                     (r"/api", APIRequestHandler, dict(launcher=self.launcher)),
                     (r"/api/savegame", SaveRequestHandler,
                      dict(launcher=self.launcher)),
@@ -41,18 +44,34 @@ class WebServer(tornado.web.Application):
         tornado.ioloop.IOLoop.instance().start()
 
 
-class MainHandler(tornado.web.RequestHandler):
-    def initialize(self, path):
-        self.path = path
-
-    def get(self):
-        self.render(os.path.join(self.path, 'index.html'))
-
-
 class BaseHandler(tornado.web.RequestHandler):
     def initialize(self, launcher):
         self.launcher = launcher
         self.WS = self.launcher.webServer
+
+    def get_current_user(self):
+        return self.get_secure_cookie("user")
+
+
+class MainHandler(BaseHandler):
+    def initialize(self, path):
+        self.path = path
+
+    @tornado.web.authenticated
+    def get(self):
+        self.render(os.path.join(self.path, 'index.html'))
+
+
+class LoginHandler(BaseHandler):
+    def get(self):
+        self.write('<html><body><form action="/login" method="post">'
+                   'Name: <input type="text" name="name">'
+                   '<input type="submit" value="Sign in">'
+                   '</form></body></html>')
+
+    def post(self):
+        self.set_secure_cookie("user", self.get_argument("name"))
+        self.redirect("/")
 
 
 class APIRequestHandler(BaseHandler):
