@@ -376,6 +376,9 @@ class AstroLauncher():
         ws = AstroWebServer.WebServer(self)
 
         def start_server():
+            if sys.version_info.minor > 7:
+                asyncio.set_event_loop_policy(
+                    asyncio.WindowsSelectorEventLoopPolicy())
             asyncio.set_event_loop(asyncio.new_event_loop())
             ws.run()
 
