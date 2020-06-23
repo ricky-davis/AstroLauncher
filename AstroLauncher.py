@@ -24,7 +24,7 @@ from cogs.MultiConfig import MultiConfig
 
 """
 Build:
-pyinstaller AstroLauncher.py -F --add-data "assets/*;." --icon=assets/astrolauncherlogo.ico
+pyinstaller AstroLauncher.py -F --add-data "assets;./assets" --icon=assets/astrolauncherlogo.ico
 or
 python BuildEXE.py
 """
