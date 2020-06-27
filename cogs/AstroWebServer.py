@@ -90,6 +90,7 @@ class APIRequestHandler(BaseHandler):
         s = dedicatedServer.settings
         res = {
             "status": dedicatedServer.status,
+            "statistics": self.launcher.DSServerStats,
             "settings": {
                 "MaxServerFramerate": s.MaxServerFramerate,
                 "PublicIP": s.PublicIP,
