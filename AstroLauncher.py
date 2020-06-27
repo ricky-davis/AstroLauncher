@@ -21,6 +21,7 @@ from cogs.AstroDaemon import AstroDaemon
 from cogs.AstroDedicatedServer import AstroDedicatedServer
 from cogs.AstroLogging import AstroLogging
 from cogs.MultiConfig import MultiConfig
+from cogs.AstroRCON import AstroRCON
 
 
 """
@@ -48,6 +49,7 @@ class AstroLauncher():
         DisableNetworkCheck: bool = False
         DisableWebServer: bool = False
         WebServerPort: int = 5000
+        DisableServerConsolePopup: bool = False
 
         def __post_init__(self):
             # pylint: disable=no-member
@@ -88,7 +90,7 @@ class AstroLauncher():
             super().__init__()
 
         def on_modified(self, event):
-            #AstroLogging.logPrint("File in save directory changed")
+            # AstroLogging.logPrint("File in save directory changed")
             path = os.path.join(self.astroPath, self.moveToPath)
             try:
                 if not os.path.exists(path):
@@ -109,9 +111,9 @@ class AstroLauncher():
                 dirName = os.path.dirname(event.src_path)
                 newFile = os.path.join(dirName, [f for f in os.listdir(
                     dirName) if os.path.isfile(os.path.join(dirName, f))][0])
-                #AstroLogging.logPrint(newFile, "debug")
+                # AstroLogging.logPrint(newFile, "debug")
                 shutil.copy2(newFile, path)
-                #AstroLogging.logPrint(copiedFile, "debug")
+                # AstroLogging.logPrint(copiedFile, "debug")
             except FileNotFoundError as e:
                 AstroLogging.logPrint(e, "error")
             except Exception as e:
@@ -156,6 +158,7 @@ class AstroLauncher():
         self.DaemonProcess = None
         self.saveObserver = None
         self.backupObserver = None
+        self.DSServerStats = None
         self.DedicatedServer = AstroDedicatedServer(
             self.astroPath, self)
 
@@ -298,6 +301,7 @@ class AstroLauncher():
         """
         self.DedicatedServer.status = "starting"
         self.DedicatedServer.busy = False
+        self.DSServerStats = None
         oldLobbyIDs = self.DedicatedServer.deregister_all_server()
         AstroLogging.logPrint("Starting Server process...")
         if self.launcherConfig.EnableAutoRestart:
@@ -312,6 +316,16 @@ class AstroLauncher():
         # Wait for server to finish registering...
         while not self.DedicatedServer.registered:
             try:
+                if self.DSServerStats is None:
+                    try:
+                        tempStats = AstroRCON.DSServerStatistics(
+                            self.DedicatedServer.settings.ConsolePort)
+                        if tempStats is not None:
+                            self.DSServerStats = tempStats
+                            AstroLogging.logPrint(
+                                f"Server version: v{tempStats['build']}")
+                    except:
+                        pass
                 serverData = (AstroAPI.get_server(
                     self.DedicatedServer.ipPortCombo, self.headers))
                 serverData = serverData['data']['Games']

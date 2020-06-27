@@ -96,6 +96,8 @@ DisableWebServer=False
 # Set the port you want the Web Management Server to run on
 WebServerPort=5000
 
+# Disable the server console popup window.
+DisableServerConsolePopup=False
 ```
 
 

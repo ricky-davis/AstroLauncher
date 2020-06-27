@@ -94,7 +94,10 @@ class AstroDedicatedServer():
         self.ipPortCombo = f'{self.settings.PublicIP}:{self.settings.Port}'
 
     def start(self):
-        cmd = [os.path.join(self.astroPath, "AstroServer.exe"), '-log']
+        if self.launcher.launcherConfig.DisableServerConsolePopup:
+            cmd = [os.path.join(self.astroPath, "AstroServer.exe")]
+        else:
+            cmd = [os.path.join(self.astroPath, "AstroServer.exe"), '-log']
         self.process = subprocess.Popen(cmd)
 
     def saveGame(self):

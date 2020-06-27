@@ -19,6 +19,18 @@ class AstroRCON():
             return None
 
     @staticmethod
+    def DSServerStatistics(consolePort):
+        try:
+            with AstroRCON.session_scope(consolePort) as s:
+                s.sendall(b"DSServerStatistics\n")
+                rawdata = AstroRCON.recvall(s)
+                parsedData = AstroRCON.parseData(rawdata)
+                # pprint(parsedData)
+                return parsedData
+        except:
+            return None
+
+    @staticmethod
     def DSSaveGame(consolePort):
         try:
             with AstroRCON.session_scope(consolePort) as s:
