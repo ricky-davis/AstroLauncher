@@ -1,8 +1,10 @@
 [![Contributors][contributors-shield]][contributors-url]
 [![Forks][forks-shield]][forks-url]
+[![Downloads][downloads-shield]][downloads-url]
 [![Stargazers][stars-shield]][stars-url]
 [![Issues][issues-shield]][issues-url]
 [![MIT License][license-shield]][license-url]
+
 
 <br />
 <p align="center">
@@ -109,8 +111,6 @@ To get a local copy up and running follow these simple steps or check the [Lates
 
 ### Prerequisites
 
-This is an example of how to list things you need to use the software and how to install them.
-
 - Python 3.7
 - pip / pipenv
 
@@ -138,11 +138,7 @@ pipenv install
 
 ## Usage
 
-Run the server launcher using one of the following commands
-
-```sh
-python Run-Server.py
-```
+Run the server launcher using the following command
 
 ```sh
 pipenv run python AstroLauncher.py
@@ -176,7 +172,7 @@ pipenv install -d
 2. Run pyinstaller with the all-in-one flag
 
 ```sh
-pyinstaller AstroLauncher.py -F --add-data "assets/*;." --icon=assets/astrolauncherlogo.ico
+pyinstaller AstroLauncher.py -F --add-data "assets;./assets" --icon=assets/astrolauncherlogo.ico
 ```
 or just run the BuildEXE.py which automatically cleans up afterwards
 ```sh
@@ -223,6 +219,10 @@ Project Link: [https://github.com/ricky-davis/AstroLauncher](https://github.com/
 [contributors-url]: https://github.com/ricky-davis/AstroLauncher/graphs/contributors
 [forks-shield]: https://img.shields.io/github/forks/ricky-davis/AstroLauncher.svg?style=flat-square
 [forks-url]: https://github.com/ricky-davis/AstroLauncher/network/members
+
+[downloads-shield]:https://img.shields.io/github/downloads/ricky-davis/AstroLauncher/total
+[downloads-url]:https://github.com/ricky-davis/AstroLauncher/releases/latest
+
 [stars-shield]: https://img.shields.io/github/stars/ricky-davis/AstroLauncher.svg?style=flat-square
 [stars-url]: https://github.com/ricky-davis/AstroLauncher/stargazers
 [issues-shield]: https://img.shields.io/github/issues/ricky-davis/AstroLauncher.svg?style=flat-square

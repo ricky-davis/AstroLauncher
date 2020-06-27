@@ -76,9 +76,12 @@ class AstroLauncher():
         def on_modified(self, event):
             time.sleep(1)
             dirName = os.path.dirname(event.src_path)
-            fileName = [f for f in os.listdir(
-                dirName) if os.path.isfile(os.path.join(dirName, f))][0]
-            AstroLogging.logPrint(f"Server saved. {fileName}")
+            fileNames = [os.path.join(dirName, f) for f in os.listdir(
+                dirName) if os.path.isfile(os.path.join(dirName, f))]
+            # print(fileNames)
+            fileName = sorted(fileNames, key=os.path.getmtime, reverse=True)[0]
+            AstroLogging.logPrint(
+                f"Server saved. {os.path.basename(fileName)}")
             self.launcher.saveObserver.stop()
 
     class BackupHandler(FileSystemEventHandler):
@@ -109,8 +112,11 @@ class AstroLauncher():
             time.sleep(1)
             try:
                 dirName = os.path.dirname(event.src_path)
-                newFile = os.path.join(dirName, [f for f in os.listdir(
-                    dirName) if os.path.isfile(os.path.join(dirName, f))][0])
+                fileNames = [os.path.join(dirName, f) for f in os.listdir(
+                    dirName) if os.path.isfile(os.path.join(dirName, f))]
+                # print(fileNames)
+                newFile = sorted(
+                    fileNames, key=os.path.getmtime, reverse=True)[0]
                 # AstroLogging.logPrint(newFile, "debug")
                 shutil.copy2(newFile, path)
                 # AstroLogging.logPrint(copiedFile, "debug")
@@ -151,7 +157,7 @@ class AstroLauncher():
         self.refresh_launcher_config()
         if disable_auto_update is not None:
             self.launcherConfig.DisableAutoUpdate = disable_auto_update
-        self.version = "v1.4.6"
+        self.version = "v1.4.7"
         self.latestURL = "https://github.com/ricky-davis/AstroLauncher/releases/latest"
         self.isExecutable = os.path.samefile(sys.executable, sys.argv[0])
         self.headers = AstroAPI.base_headers
