@@ -125,7 +125,7 @@ git clone https://github.com/ricky-davis/AstroLauncher.git
 2. Install python modules using pip or pipenv
 
 ```sh
-pip install requirements.txt
+pip install -r requirements.txt
 ```
 
 ```sh
