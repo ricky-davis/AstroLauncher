@@ -1,8 +1,10 @@
 [![Contributors][contributors-shield]][contributors-url]
 [![Forks][forks-shield]][forks-url]
+[![Downloads][downloads-shield]][downloads-url]
 [![Stargazers][stars-shield]][stars-url]
 [![Issues][issues-shield]][issues-url]
 [![MIT License][license-shield]][license-url]
+
 
 <br />
 <p align="center">
@@ -223,6 +225,10 @@ Project Link: [https://github.com/ricky-davis/AstroLauncher](https://github.com/
 [contributors-url]: https://github.com/ricky-davis/AstroLauncher/graphs/contributors
 [forks-shield]: https://img.shields.io/github/forks/ricky-davis/AstroLauncher.svg?style=flat-square
 [forks-url]: https://github.com/ricky-davis/AstroLauncher/network/members
+
+[downloads-shield]:https://img.shields.io/github/downloads/ricky-davis/AstroLauncher/total
+[downloads-url]:https://img.shields.io/github/downloads/ricky-davis/AstroLauncher/total
+
 [stars-shield]: https://img.shields.io/github/stars/ricky-davis/AstroLauncher.svg?style=flat-square
 [stars-url]: https://github.com/ricky-davis/AstroLauncher/stargazers
 [issues-shield]: https://img.shields.io/github/issues/ricky-davis/AstroLauncher.svg?style=flat-square
