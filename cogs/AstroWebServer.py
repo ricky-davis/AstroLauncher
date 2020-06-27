@@ -1,5 +1,6 @@
 
 import os
+import secrets
 import sys
 import logging
 
@@ -22,7 +23,7 @@ class WebServer(tornado.web.Application):
         settings = {
             'debug': True,
             "static_path": os.path.join(curDir, "assets"),
-            "cookie_secret": "__TODO:_GENERATE_YOUR_OWN_RANDOM_VALUE_HERE__",
+            "cookie_secret": secrets.token_hex(16).encode(),
             "login_url": "/login"
         }
         handlers = [(r'/', MainHandler, {"path": settings['static_path']}),
@@ -58,7 +59,7 @@ class MainHandler(BaseHandler):
     def initialize(self, path):
         self.path = path
 
-    @tornado.web.authenticated
+    # @tornado.web.authenticated
     def get(self):
         self.render(os.path.join(self.path, 'index.html'))
 
