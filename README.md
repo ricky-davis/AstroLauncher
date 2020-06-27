@@ -111,8 +111,6 @@ To get a local copy up and running follow these simple steps or check the [Lates
 
 ### Prerequisites
 
-This is an example of how to list things you need to use the software and how to install them.
-
 - Python 3.7
 - pip / pipenv
 
