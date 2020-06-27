@@ -138,11 +138,7 @@ pipenv install
 
 ## Usage
 
-Run the server launcher using one of the following commands
-
-```sh
-python Run-Server.py
-```
+Run the server launcher using the following command
 
 ```sh
 pipenv run python AstroLauncher.py
@@ -176,7 +172,7 @@ pipenv install -d
 2. Run pyinstaller with the all-in-one flag
 
 ```sh
-pyinstaller AstroLauncher.py -F --add-data "assets/*;." --icon=assets/astrolauncherlogo.ico
+pyinstaller AstroLauncher.py -F --add-data "assets;./assets" --icon=assets/astrolauncherlogo.ico
 ```
 or just run the BuildEXE.py which automatically cleans up afterwards
 ```sh
