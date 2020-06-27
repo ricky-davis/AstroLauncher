@@ -54,6 +54,7 @@ class BaseHandler(tornado.web.RequestHandler):
 
 
 class MainHandler(BaseHandler):
+    # pylint: disable=arguments-differ
     def initialize(self, path):
         self.path = path
 
