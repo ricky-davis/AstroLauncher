@@ -227,7 +227,7 @@ Project Link: [https://github.com/ricky-davis/AstroLauncher](https://github.com/
 [forks-url]: https://github.com/ricky-davis/AstroLauncher/network/members
 
 [downloads-shield]:https://img.shields.io/github/downloads/ricky-davis/AstroLauncher/total
-[downloads-url]:https://img.shields.io/github/downloads/ricky-davis/AstroLauncher/total
+[downloads-url]:https://github.com/ricky-davis/AstroLauncher/releases/latest
 
 [stars-shield]: https://img.shields.io/github/stars/ricky-davis/AstroLauncher.svg?style=flat-square
 [stars-url]: https://github.com/ricky-davis/AstroLauncher/stargazers
