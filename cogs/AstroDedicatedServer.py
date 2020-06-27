@@ -120,15 +120,8 @@ class AstroDedicatedServer():
     def setStatus(self, status):
         try:
             self.status = status
-            self.update_webServerQueue()
         except:
             pass
-
-    def update_webServerQueue(self):
-        if not self.launcher.launcherConfig.DisableWebServer:
-            # update data(self) in queue for webserver
-            self.launcher.webServerQueue.get()
-            self.launcher.webServerQueue.put(self)
 
     def server_loop(self):
         while True:
@@ -166,7 +159,6 @@ class AstroDedicatedServer():
                         set(self.onlinePlayers) - set(curPlayers))[0]
                     self.onlinePlayers = curPlayers
                     AstroLogging.logPrint(f"Player left: {playerDif}")
-            self.update_webServerQueue()
             time.sleep(self.launcher.launcherConfig.ServerStatusFrequency)
 
     def deregister_all_server(self):

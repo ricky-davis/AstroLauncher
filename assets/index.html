@@ -6,10 +6,11 @@
             content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"
         />
         <title>Astroneer Server Status</title>
-        <link rel="icon" type="image/ico" href="astrolauncherlogo.ico" />
-        <link rel="stylesheet" href="bootstrap.min.css" />
-        <link rel="stylesheet" href="fontawesome/css/all.css" />
-        <link rel="stylesheet" href="style.css" />
+        <link rel="icon" type="image/ico" href="{{
+        static_url("astrolauncherlogo.ico") }}" /> <link rel="stylesheet"
+        href="{{ static_url("bootstrap.min.css") }}" /> <link rel="stylesheet"
+        href="{{ static_url("fontawesome/css/all.css") }}" /> <link
+        rel="stylesheet" href="{{ static_url("style.css") }}" />
     </head>
 
     <body>
@@ -186,7 +187,7 @@
         </div>
     </body>
 
-    <script src="jquery-3.5.1.min.js"></script>
-    <script src="bootstrap.bundle.min.js"></script>
-    <script src="script.js"></script>
+    <script src="{{ static_url("jquery-3.5.1.min.js") }}"></script>
+    <script src="{{ static_url("bootstrap.bundle.min.js") }}"></script>
+    <script src="{{ static_url("script.js") }}"></script>
 </html>

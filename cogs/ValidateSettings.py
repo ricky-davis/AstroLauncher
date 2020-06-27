@@ -75,7 +75,7 @@ def socket_server(port, secret, tcp):
         serversocket.settimeout(10)
         # bind the socket to a public host,
         # and a well-known port
-        serversocket.bind((socket.gethostname(), port))
+        serversocket.bind(("0.0.0.0", port))
         # become a server socket
         if tcp:
             serversocket.listen(1)
