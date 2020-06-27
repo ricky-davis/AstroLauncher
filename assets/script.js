@@ -106,6 +106,9 @@ const tick = async () => {
 
         if (isBottom) log.scrollTop = log.scrollHeight - log.clientHeight;
 
+        if (data.statistics) {
+            $("#serverVersion").html(data.statistics["build"]);
+        }
         s = data.settings;
         if (!compareObj(oldSettings, s)) {
             oldSettings = s;
