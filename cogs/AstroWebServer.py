@@ -3,6 +3,7 @@ import os
 import secrets
 import sys
 import logging
+import hashlib
 
 import tornado.web
 
@@ -20,10 +21,15 @@ class WebServer(tornado.web.Application):
         if self.launcher.isExecutable:
             curDir = sys._MEIPASS
 
+        # temp
+        # these will later be saved and loaded from/to an .ini
+        self.cookieSecret = secrets.token_hex(16).encode()
+        self.passwordHash = ""
+
         settings = {
             'debug': True,
             "static_path": os.path.join(curDir, "assets"),
-            "cookie_secret": secrets.token_hex(16).encode(),
+            "cookie_secret": self.cookieSecret,
             "login_url": "/login"
         }
         handlers = [(r'/', MainHandler, {"path": settings['static_path']}),
@@ -51,7 +57,7 @@ class BaseHandler(tornado.web.RequestHandler):
         self.WS = self.launcher.webServer
 
     def get_current_user(self):
-        return self.get_secure_cookie("user")
+        return self.get_secure_cookie("login")
 
 
 class MainHandler(BaseHandler):
@@ -66,19 +72,42 @@ class MainHandler(BaseHandler):
 
 class LoginHandler(BaseHandler):
     def get(self):
-        self.write('<html><body><form action="/login" method="post">'
-                   'Name: <input type="text" name="name">'
-                   '<input type="submit" value="Sign in">'
-                   '</form></body></html>')
+        if self.application.passwordHash == "":
+            self.write('<html><body><form action="/login" method="post">'
+                       'New password: <input type="password" name="password">'
+                       '<input type="submit" value="Set password">'
+                       '</form></body></html>')
+        else:
+            self.write('<html><body><form action="/login" method="post">'
+                       'Password: <input type="password" name="password">'
+                       '<input type="submit" value="Sign in">'
+                       '</form></body></html>')
 
     def post(self):
-        self.set_secure_cookie("user", self.get_argument("name"))
-        self.redirect("/")
+        if self.application.passwordHash == "":
+            # write hash
+            self.application.passwordHash = hashlib.sha256(
+                bytes(self.get_argument("password"), 'utf-8')
+            ).hexdigest()
+            self.redirect("/login")
+        else:
+            # check hash
+            sendHash = hashlib.sha256(
+                bytes(self.get_argument("password"), 'utf-8')
+            ).hexdigest()
+            if sendHash == self.application.passwordHash:
+                self.set_secure_cookie("login", bytes(
+                    "admin", 'utf-8'))
+                self.redirect("/")
+            else:
+                self.redirect("/login")
 
 
 class APIRequestHandler(BaseHandler):
     def get(self):
-        # api
+
+        isAdmin = self.current_user == b"admin"
+
         dedicatedServer = self.launcher.DedicatedServer
 
         logs = AstroLogging.log_stream.getvalue()
@@ -89,6 +118,7 @@ class APIRequestHandler(BaseHandler):
 
         s = dedicatedServer.settings
         res = {
+            "admin": isAdmin,
             "status": dedicatedServer.status,
             "statistics": self.launcher.DSServerStats,
             "settings": {
@@ -108,28 +138,37 @@ class APIRequestHandler(BaseHandler):
                 "Port": s.Port
             },
             "players": dedicatedServer.players,
-            "logs": logs
         }
+
+        # only send full logs if admin
+        if isAdmin:
+            res["logs"] = logs
+        else:
+            res["logs"] = ""
+
         self.write(res)
 
 
 class SaveRequestHandler(BaseHandler):
     def post(self):
-        self.launcher.DedicatedServer.busy = True
-        self.launcher.DedicatedServer.saveGame()
-        self.write({"message": "Success"})
+        if self.current_user == b"admin":
+            self.launcher.DedicatedServer.busy = True
+            self.launcher.DedicatedServer.saveGame()
+            self.write({"message": "Success"})
 
 
 class RebootRequestHandler(BaseHandler):
     def post(self):
-        self.launcher.DedicatedServer.busy = True
-        self.launcher.DedicatedServer.save_and_shutdown()
-        self.write({"message": "Success"})
+        if self.current_user == b"admin":
+            self.launcher.DedicatedServer.busy = True
+            self.launcher.DedicatedServer.save_and_shutdown()
+            self.write({"message": "Success"})
 
 
 class ShutdownRequestHandler(BaseHandler):
     def post(self):
-        self.launcher.DedicatedServer.busy = True
-        self.launcher.DedicatedServer.kill_server(
-            "Website Request", save=True)
-        self.write({"message": "Success"})
+        if self.current_user == b"admin":
+            self.launcher.DedicatedServer.busy = True
+            self.launcher.DedicatedServer.kill_server(
+                "Website Request", save=True)
+            self.write({"message": "Success"})
