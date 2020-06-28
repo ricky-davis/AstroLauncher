@@ -73,8 +73,9 @@ class AstroLauncher():
             self.moveToPath = self.launcher.launcherConfig.BackupRetentionFolderLocation
             super().__init__()
 
-        def on_modified(self, event):
-            time.sleep(1)
+        def on_created(self, event):
+            # print(event)
+            # time.sleep(1)
             dirName = os.path.dirname(event.src_path)
             fileNames = [os.path.join(dirName, f) for f in os.listdir(
                 dirName) if os.path.isfile(os.path.join(dirName, f))]
@@ -82,7 +83,7 @@ class AstroLauncher():
             fileName = sorted(fileNames, key=os.path.getmtime, reverse=True)[0]
             AstroLogging.logPrint(
                 f"Server saved. {os.path.basename(fileName)}")
-            self.launcher.saveObserver.stop()
+            # self.launcher.saveObserver.stop()
 
     class BackupHandler(FileSystemEventHandler):
         def __init__(self, launcher):
@@ -90,10 +91,14 @@ class AstroLauncher():
             self.astroPath = self.launcher.astroPath
             self.moveToPath = self.launcher.launcherConfig.BackupRetentionFolderLocation
             self.retentionPeriodHours = self.launcher.launcherConfig.BackupRetentionPeriodHours
+            self.pendingFiles = []
             super().__init__()
 
-        def on_modified(self, event):
-            # AstroLogging.logPrint("File in save directory changed")
+        def handle_files(self):
+            #print(f"first: {self.pendingFiles}")
+            time.sleep(2)
+            #print(f"second: {self.pendingFiles}")
+
             path = os.path.join(self.astroPath, self.moveToPath)
             try:
                 if not os.path.exists(path):
@@ -108,23 +113,35 @@ class AstroLauncher():
                         os.remove(fpath)
             except Exception as e:
                 AstroLogging.logPrint(e, "error")
-            AstroLogging.logPrint("Copying backup to retention folder.")
-            time.sleep(1)
+
+            AstroLogging.logPrint("Copying backup(s) to retention folder.")
+            # time.sleep(1)
             try:
-                dirName = os.path.dirname(event.src_path)
+
+                dirName = os.path.dirname(self.pendingFiles[0])
                 fileNames = [os.path.join(dirName, f) for f in os.listdir(
                     dirName) if os.path.isfile(os.path.join(dirName, f))]
-                # print(fileNames)
-                newFile = sorted(
-                    fileNames, key=os.path.getmtime, reverse=True)[0]
-                # AstroLogging.logPrint(newFile, "debug")
-                shutil.copy2(newFile, path)
-                # AstroLogging.logPrint(copiedFile, "debug")
+                for cFile in fileNames:
+                    # AstroLogging.logPrint(newFile, "debug")
+                    # print(cFile)
+                    shutil.copy2(cFile, path)
+                    # AstroLogging.logPrint(copiedFile, "debug")
             except FileNotFoundError as e:
                 AstroLogging.logPrint(e, "error")
             except Exception as e:
                 AstroLogging.logPrint(e, "error")
+
             self.launcher.backupObserver.stop()
+            self.launcher.backup_retention()
+
+        def on_modified(self, event):
+            # print(event)
+            # AstroLogging.logPrint("File in save directory changed")
+            self.pendingFiles.append(event.src_path)
+            if len(self.pendingFiles) == 1:
+                t = Thread(target=self.handle_files, args=())
+                t.daemon = True
+                t.start()
 
     def __init__(self, astroPath, launcherINI="Launcher.ini", disable_auto_update=None):
         # check if path specified
