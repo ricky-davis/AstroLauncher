@@ -164,7 +164,7 @@ class AstroLauncher():
         self.DaemonProcess = None
         self.saveObserver = None
         self.backupObserver = None
-        self.DSServerStats = None
+        self.DSServerVersion = None
         self.DedicatedServer = AstroDedicatedServer(
             self.astroPath, self)
 
@@ -307,7 +307,7 @@ class AstroLauncher():
         """
         self.DedicatedServer.status = "starting"
         self.DedicatedServer.busy = False
-        self.DSServerStats = None
+        self.DSServerVersion = None
         oldLobbyIDs = self.DedicatedServer.deregister_all_server()
         AstroLogging.logPrint("Starting Server process...")
         if self.launcherConfig.EnableAutoRestart:
@@ -322,12 +322,12 @@ class AstroLauncher():
         # Wait for server to finish registering...
         while not self.DedicatedServer.registered:
             try:
-                if self.DSServerStats is None:
+                if self.DSServerVersion is None:
                     try:
                         tempStats = AstroRCON.DSServerStatistics(
                             self.DedicatedServer.settings.ConsolePort)
                         if tempStats is not None:
-                            self.DSServerStats = tempStats
+                            self.DSServerVersion = tempStats['build']
                             AstroLogging.logPrint(
                                 f"Server version: v{tempStats['build']}")
                     except:

@@ -34,6 +34,7 @@ class WebServer(tornado.web.Application):
         }
         handlers = [(r'/', MainHandler, {"path": settings['static_path']}),
                     (r"/login", LoginHandler, dict(launcher=self.launcher)),
+                    (r'/logout', LogoutHandler, dict(launcher=self.launcher)),
                     (r"/api", APIRequestHandler, dict(launcher=self.launcher)),
                     (r"/api/savegame", SaveRequestHandler,
                      dict(launcher=self.launcher)),
@@ -67,7 +68,8 @@ class MainHandler(BaseHandler):
 
     # @tornado.web.authenticated
     def get(self):
-        self.render(os.path.join(self.path, 'index.html'))
+        self.render(os.path.join(self.path, 'index.html'),
+                    isAdmin=self.current_user == b"admin")
 
 
 class LoginHandler(BaseHandler):
@@ -103,6 +105,12 @@ class LoginHandler(BaseHandler):
                 self.redirect("/login")
 
 
+class LogoutHandler(BaseHandler):
+    def get(self):
+        self.clear_cookie('login')
+        self.redirect('/')
+
+
 class APIRequestHandler(BaseHandler):
     def get(self):
 
@@ -120,21 +128,13 @@ class APIRequestHandler(BaseHandler):
         res = {
             "admin": isAdmin,
             "status": dedicatedServer.status,
-            "statistics": self.launcher.DSServerStats,
+            "version": self.launcher.DSServerVersion,
             "settings": {
                 "MaxServerFramerate": s.MaxServerFramerate,
                 "PublicIP": s.PublicIP,
                 "ServerName": s.ServerName,
                 "MaximumPlayerCount": s.MaximumPlayerCount,
                 "OwnerName": s.OwnerName,
-                "OwnerGuid": s.OwnerGuid,
-                "DenyUnlistedPlayers": s.DenyUnlistedPlayers,
-                "VerbosePlayerProperties": s.VerbosePlayerProperties,
-                "AutoSaveGameInterval": s.AutoSaveGameInterval,
-                "BackupSaveGamesInterval": s.BackupSaveGamesInterval,
-                "ServerGuid": s.ServerGuid,
-                "ActiveSaveFileDescriptiveName": s.ActiveSaveFileDescriptiveName,
-                "ServerAdvertisedName": s.ServerAdvertisedName,
                 "Port": s.Port
             },
             "players": dedicatedServer.players,

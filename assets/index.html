@@ -15,18 +15,29 @@
 
     <body>
         <div id="banner">
-            <h1>Dedicated Server Status for <span id="titleIP">[IP]</span></h1>
+            <h1>
+                Dedicated Server Status for 
+                <span id="titleIP">[IP]</span>
+            </h1>
             <a
                 href="https://github.com/ricky-davis/AstroLauncher/releases/latest"
                 >AstroLauncher - Unofficial Dedicated Server Launcher</a
             >
+            <span id="authLink" class="float-right mx-4">
+                {% if isAdmin %}
+                    <a class="text-danger" href="/logout">Logout</a>
+                {% else %}
+                    <a class="text-success" href="/login">Login</a>
+                {% end %}
+            </span>
         </div>
         <div id="msg" class="bg-danger text-center collapse">
             <h5></h5>
         </div>
 
-        <div id="main" class="container-fluid">
-            <div class="row mt-5">
+        <div id="main" class="container-fluid my-5">
+            {% if isAdmin %}
+            <div class="row">
                 <div id="above" class="col px-4">
                     <div id="console" class="card astroCard">
                         <div
@@ -53,6 +64,7 @@
                     </div>
                 </div>
             </div>
+            {% end %}
             <div class="row mt-3">
                 <div id="left" class="col-12 col-md-4 px-4">
                     <div id="stats" class="card astroCard">
@@ -92,29 +104,31 @@
                                 Players online: <span id="onlinePlayers"></span>
                             </p>
                         </div>
-                        <div id="serverStatusFooter" class="card-footer">
-                            <button
-                                id="saveGameBtn"
-                                type="button"
-                                class="btn btn-success col-12 mr-xl-2 col-xl-3"
-                            >
-                                Save Game
-                            </button>
-                            <button
-                                id="stopLauncherBtn"
-                                type="button"
-                                class="btn btn-danger col-12 ml-xl-1 col-xl-5 float-right"
-                            >
-                                Stop Launcher & Server
-                            </button>
-                            <button
-                                id="rebootServerBtn"
-                                type="button"
-                                class="btn btn-warning col-12 mx-xl-1 col-xl-3 float-right"
-                            >
-                                Reboot
-                            </button>
-                        </div>
+                        {% if isAdmin %}
+                            <div id="serverStatusFooter" class="card-footer">
+                                <button
+                                    id="saveGameBtn"
+                                    type="button"
+                                    class="btn btn-success col-12 mr-xl-2 col-xl-3"
+                                >
+                                    Save Game
+                                </button>
+                                <button
+                                    id="stopLauncherBtn"
+                                    type="button"
+                                    class="btn btn-danger col-12 ml-xl-1 col-xl-5 float-right"
+                                >
+                                    Stop Launcher & Server
+                                </button>
+                                <button
+                                    id="rebootServerBtn"
+                                    type="button"
+                                    class="btn btn-warning col-12 mx-xl-1 col-xl-3 float-right"
+                                >
+                                    Reboot
+                                </button>
+                            </div>
+                        {% end %}
                     </div>
                 </div>
 
