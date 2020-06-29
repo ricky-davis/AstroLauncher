@@ -127,13 +127,17 @@ class AstroLauncher():
             self.launcher.backupObserver.stop()
 
     def __init__(self, astroPath, launcherINI="Launcher.ini", disable_auto_update=None):
+        AstroLogging.setup_logging()
+
         # check if path specified
         if astroPath is not None:
             if os.path.exists(os.path.join(astroPath, "AstroServer.exe")):
                 self.astroPath = astroPath
             else:
-                print("Specified path does not contain the server executable")
+                AstroLogging.logPrint(
+                    "Specified path does not contain the server executable! (AstroServer.exe)", "critical")
                 time.sleep(5)
+                return
 
         # check if executable in current directory
         elif os.path.exists(os.path.join(os.getcwd(), "AstroServer.exe")):
@@ -147,10 +151,11 @@ class AstroLauncher():
                     self.astroPath = autoPath
             except:
                 AstroLogging.logPrint(
-                    "Unable to find AstroServer.exe!", "critical")
+                    "Unable to find server executable anywhere! (AstroServer.exe)", "critical")
+                time.sleep(5)
                 return
 
-        AstroLogging.setup_logging(self.astroPath)
+        AstroLogging.setup_loggingPath(self.astroPath)
         self.launcherINI = launcherINI
         self.launcherConfig = self.LauncherConfig()
         self.launcherPath = os.getcwd()
@@ -196,8 +201,8 @@ class AstroLauncher():
         if not self.launcherConfig.DisableWebServer:
             # start http server
             self.webServer = self.start_WebServer()
-            AstroLogging.logPrint(
-                f"HTTP Server started at 127.0.0.1:{self.launcherConfig.WebServerPort}")
+            # AstroLogging.logPrint(
+            #    f"HTTP Server started at 127.0.0.1:{self.launcherConfig.WebServerPort}")
 
         atexit.register(self.DedicatedServer.kill_server,
                         reason="Launcher shutting down",

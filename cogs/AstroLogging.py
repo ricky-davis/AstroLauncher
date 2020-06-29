@@ -25,7 +25,7 @@ class AstroLogging():
             logging.critical(pformat(message))
 
     @staticmethod
-    def setup_logging(astroPath):
+    def setup_logging():
         LOGFORMAT = '%(asctime)s - %(levelname)-6s %(message)s'
         CLOGFORMAT = '%(asctime)s - %(log_color)s%(levelname)-6s%(reset)s %(message)s'
         DATEFMT = "%Y-%m-%d %H:%M:%S"
@@ -50,6 +50,17 @@ class AstroLogging():
         stringIOLog.setFormatter(formatter)
         stringIOLog.setLevel(logging.INFO)
 
+        rootLogger.addHandler(console)
+        rootLogger.addHandler(stringIOLog)
+
+    @staticmethod
+    def setup_loggingPath(astroPath):
+        LOGFORMAT = '%(asctime)s - %(levelname)-6s %(message)s'
+        DATEFMT = "%Y-%m-%d %H:%M:%S"
+        formatter = logging.Formatter(LOGFORMAT, datefmt=DATEFMT)
+
+        rootLogger = logging.getLogger()
+
         logsPath = os.path.join(astroPath, 'logs\\')
         if not os.path.exists(logsPath):
             os.makedirs(logsPath)
@@ -58,6 +69,4 @@ class AstroLogging():
         fileLogHandler.setFormatter(formatter)
         fileLogHandler.setLevel(logging.DEBUG)
 
-        rootLogger.addHandler(console)
         rootLogger.addHandler(fileLogHandler)
-        rootLogger.addHandler(stringIOLog)
