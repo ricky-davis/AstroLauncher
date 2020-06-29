@@ -1,0 +1,57 @@
+<html lang="en">
+    {% module Template("uimodules/head.html")%}
+    <body>
+        {% module Template("uimodules/banner.html",title=title,isAdmin=isAdmin)
+        %}
+        <div id="main" class="container-fluid my-5">
+            <div class="row">
+                <div id="loginCol" class="col-4 px-4 mx-auto">
+                    <div id="loginCard" class="card astroCard">
+                        <div class="card-header pt-4 px-4">
+                            <h3>
+                                {% if isAdmin %} Logged in as Admin. {% else %}
+                                {% if hashSet %} Enter password to login. {%
+                                else %} No password set. Set one now! {% end %}
+                                {% end %}
+                            </h3>
+                        </div>
+
+                        <div id="loginCardBody" class="card-body pt-4 show">
+                            {% if isAdmin %}
+                            <form action="/logout" method="GET">
+                                <button
+                                    id="stopLauncherBtn"
+                                    type="submit"
+                                    class="btn btn-danger col-12 ml-xl-1 col-xl-5 float-left"
+                                >
+                                    Logout
+                                </button>
+                            </form>
+                            {% else %}
+                            <form action="/login" method="post">
+                                {% if hashSet %} Password: {% else %} New
+                                password: {% end %}
+                                <input
+                                    type="password"
+                                    name="password"
+                                    style="color: black;"
+                                />
+
+                                <button
+                                    id="saveGameBtn"
+                                    type="submit"
+                                    class="btn btn-success"
+                                >
+                                    Login
+                                </button>
+                            </form>
+                            {% end %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </body>
+    {% module Template("uimodules/scripts.html")%}
+    <!--<script src="{{ static_url('script.js') }}"></script>-->
+</html>

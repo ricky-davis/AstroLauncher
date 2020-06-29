@@ -41,6 +41,7 @@ h5 {
     white-space: nowrap;
     box-shadow: 0 0 30px #17142f;
     text-align: center;
+    position: relative;
 }
 #banner h1 {
     margin: 0;
@@ -48,11 +49,23 @@ h5 {
 #banner a {
     color: #fff;
 }
+#logo {
+    position: absolute;
+    left: 14px;
+    top: 15px;
+    height: calc(100% - 30px);
+    border-radius: 10%;
+}
+#authLink {
+    position: absolute;
+    right: 14px;
+}
 
 #msg {
     width: 100%;
     position: absolute;
     transition: all 1s ease;
+    z-index: 2;
 }
 #consoleText {
     overflow: auto;

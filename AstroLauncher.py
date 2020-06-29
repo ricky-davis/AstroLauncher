@@ -49,6 +49,7 @@ class AstroLauncher():
         DisableNetworkCheck: bool = False
         DisableWebServer: bool = False
         WebServerPort: int = 5000
+        WebServerPasswordHash: str = ""
         DisableServerConsolePopup: bool = False
 
         def __post_init__(self):
@@ -144,13 +145,17 @@ class AstroLauncher():
                 t.start()
 
     def __init__(self, astroPath, launcherINI="Launcher.ini", disable_auto_update=None):
+        AstroLogging.setup_logging()
+
         # check if path specified
         if astroPath is not None:
             if os.path.exists(os.path.join(astroPath, "AstroServer.exe")):
                 self.astroPath = astroPath
             else:
-                print("Specified path does not contain the server executable")
+                AstroLogging.logPrint(
+                    "Specified path does not contain the server executable! (AstroServer.exe)", "critical")
                 time.sleep(5)
+                return
 
         # check if executable in current directory
         elif os.path.exists(os.path.join(os.getcwd(), "AstroServer.exe")):
@@ -164,10 +169,11 @@ class AstroLauncher():
                     self.astroPath = autoPath
             except:
                 AstroLogging.logPrint(
-                    "Unable to find AstroServer.exe!", "critical")
+                    "Unable to find server executable anywhere! (AstroServer.exe)", "critical")
+                time.sleep(5)
                 return
 
-        AstroLogging.setup_logging(self.astroPath)
+        AstroLogging.setup_loggingPath(self.astroPath)
         self.launcherINI = launcherINI
         self.launcherConfig = self.LauncherConfig()
         self.launcherPath = os.getcwd()
@@ -181,7 +187,7 @@ class AstroLauncher():
         self.DaemonProcess = None
         self.saveObserver = None
         self.backupObserver = None
-        self.DSServerStats = None
+        self.DSServerVersion = None
         self.DedicatedServer = AstroDedicatedServer(
             self.astroPath, self)
 
@@ -213,8 +219,8 @@ class AstroLauncher():
         if not self.launcherConfig.DisableWebServer:
             # start http server
             self.webServer = self.start_WebServer()
-            AstroLogging.logPrint(
-                f"HTTP Server started at 127.0.0.1:{self.launcherConfig.WebServerPort}")
+            # AstroLogging.logPrint(
+            #    f"HTTP Server started at 127.0.0.1:{self.launcherConfig.WebServerPort}")
 
         atexit.register(self.DedicatedServer.kill_server,
                         reason="Launcher shutting down",
@@ -261,11 +267,11 @@ class AstroLauncher():
                 self.BackupHandler(self), watchPath)
             self.backupObserver.start()
 
-    def refresh_launcher_config(self):
+    def refresh_launcher_config(self, lcfg=None):
         field_names = set(
             f.name for f in dataclasses.fields(self.LauncherConfig))
         cleaned_config = {k: v for k,
-                          v in self.get_launcher_config().items() if k in field_names}
+                          v in self.get_launcher_config(lcfg).items() if k in field_names}
         self.launcherConfig = dataclasses.replace(
             self.launcherConfig, **cleaned_config)
 
@@ -274,9 +280,17 @@ class AstroLauncher():
         with open(self.launcherINI, 'w') as configfile:
             config.write(configfile)
 
-    def get_launcher_config(self):
+    def overwrite_launcher_config(self, ovrDict):
+        ovrConfig = {
+            "AstroLauncher": ovrDict
+        }
+        MultiConfig().overwrite_with(self.launcherINI, ovrConfig)
+
+    def get_launcher_config(self, lfcg=None):
+        if not lfcg:
+            lfcg = self.LauncherConfig()
         baseConfig = {
-            "AstroLauncher": dataclasses.asdict(self.LauncherConfig())
+            "AstroLauncher": dataclasses.asdict(lfcg)
         }
         config = MultiConfig().baseline(self.launcherINI, baseConfig)
         # print(settings)
@@ -324,7 +338,7 @@ class AstroLauncher():
         """
         self.DedicatedServer.status = "starting"
         self.DedicatedServer.busy = False
-        self.DSServerStats = None
+        self.DSServerVersion = None
         oldLobbyIDs = self.DedicatedServer.deregister_all_server()
         AstroLogging.logPrint("Starting Server process...")
         if self.launcherConfig.EnableAutoRestart:
@@ -339,12 +353,12 @@ class AstroLauncher():
         # Wait for server to finish registering...
         while not self.DedicatedServer.registered:
             try:
-                if self.DSServerStats is None:
+                if self.DSServerVersion is None:
                     try:
                         tempStats = AstroRCON.DSServerStatistics(
                             self.DedicatedServer.settings.ConsolePort)
                         if tempStats is not None:
-                            self.DSServerStats = tempStats
+                            self.DSServerVersion = tempStats['build']
                             AstroLogging.logPrint(
                                 f"Server version: v{tempStats['build']}")
                     except:
@@ -412,14 +426,14 @@ class AstroLauncher():
     def start_WebServer(self):
         ws = AstroWebServer.WebServer(self)
 
-        def start_server():
+        def start_WebServerThread():
             if sys.version_info.minor > 7:
                 asyncio.set_event_loop_policy(
                     asyncio.WindowsSelectorEventLoopPolicy())
             asyncio.set_event_loop(asyncio.new_event_loop())
             ws.run()
 
-        t = Thread(target=start_server, args=())
+        t = Thread(target=start_WebServerThread, args=())
         t.daemon = True
         t.start()
         return ws

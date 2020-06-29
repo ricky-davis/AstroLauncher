@@ -31,16 +31,17 @@ class MultiConfig():
                 key = p[0].strip()
                 if isinstance(p, list) and len(p) > 1:
                     value = p[1].strip()
-                    if value.lower() in self.BOOLEAN_STATES:
-                        value = self._convert_to_boolean(value)
-                    if key in self.__dict__[section]:
-                        if isinstance(self.__dict__[section][key], str):
-                            self.__dict__[section][key] = [
-                                self.__dict__[section][key], value]
+                    if value != "":
+                        if value.lower() in self.BOOLEAN_STATES:
+                            value = self._convert_to_boolean(value)
+                        if key in self.__dict__[section]:
+                            if isinstance(self.__dict__[section][key], str):
+                                self.__dict__[section][key] = [
+                                    self.__dict__[section][key], value]
+                            else:
+                                self.__dict__[section][key].append(value)
                         else:
-                            self.__dict__[section][key].append(value)
-                    else:
-                        self.__dict__[section][key] = value
+                            self.__dict__[section][key] = value
                 else:
                     if len(key) > 0:
                         section = key[1: len(key)-1]
@@ -76,6 +77,17 @@ class MultiConfig():
         tDict.update({k: v for k, v in updateWithDict.items()
                       if k not in tDict.keys()})
         return tDict
+
+    def overwrite_with(self, filePath, overwriteDict):
+        fileConfig = MultiConfig()
+        fileConfig.read(filePath)
+        ovrConfig = MultiConfig()
+        ovrConfig.read_dict(overwriteDict)
+        newConfig = fileConfig.update(ovrConfig.getdict())
+
+        with open(filePath, 'w') as configfile:
+            newConfig.write(configfile)
+        return newConfig
 
     def baseline(self, filePath, dictBaseline):
         baseConfig = MultiConfig()

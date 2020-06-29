@@ -146,22 +146,22 @@ class AstroDedicatedServer():
             if not self.busy:
                 self.setStatus("ready")
 
-            playerList = AstroRCON.DSListPlayers(self.settings.ConsolePort)
-            if playerList is not None:
-                self.players = playerList
-                curPlayers = [x['playerName']
-                              for x in self.players['playerInfo'] if x['inGame']]
+                playerList = AstroRCON.DSListPlayers(self.settings.ConsolePort)
+                if playerList is not None:
+                    self.players = playerList
+                    curPlayers = [x['playerName']
+                                  for x in self.players['playerInfo'] if x['inGame']]
 
-                if len(curPlayers) > len(self.onlinePlayers):
-                    playerDif = list(set(curPlayers) -
-                                     set(self.onlinePlayers))[0]
-                    self.onlinePlayers = curPlayers
-                    AstroLogging.logPrint(f"Player joining: {playerDif}")
-                elif len(curPlayers) < len(self.onlinePlayers):
-                    playerDif = list(
-                        set(self.onlinePlayers) - set(curPlayers))[0]
-                    self.onlinePlayers = curPlayers
-                    AstroLogging.logPrint(f"Player left: {playerDif}")
+                    if len(curPlayers) > len(self.onlinePlayers):
+                        playerDif = list(set(curPlayers) -
+                                         set(self.onlinePlayers))[0]
+                        self.onlinePlayers = curPlayers
+                        AstroLogging.logPrint(f"Player joining: {playerDif}")
+                    elif len(curPlayers) < len(self.onlinePlayers):
+                        playerDif = list(
+                            set(self.onlinePlayers) - set(curPlayers))[0]
+                        self.onlinePlayers = curPlayers
+                        AstroLogging.logPrint(f"Player left: {playerDif}")
             time.sleep(self.launcher.launcherConfig.ServerStatusFrequency)
 
     def deregister_all_server(self):

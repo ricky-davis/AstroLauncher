@@ -6,6 +6,7 @@ let playersTableOriginal = $("#onlinePlayersTable").html();
 let oldMsg = "";
 let oldSettings = {};
 let oldPlayers = {};
+let isAdmin = false;
 
 const statusMsg = (msg) => {
     if (oldMsg != msg) {
@@ -58,56 +59,58 @@ const tick = async () => {
         //console.log(data);
 
         statusMsg(data.status);
-
+        isAdmin = data.admin;
         // smart scroll
-        let log = $("#consoleText")[0];
-        let isBottom = log.scrollTop == log.scrollHeight - log.clientHeight;
+        if (isAdmin) {
+            let log = $("#consoleText")[0];
+            let isBottom = log.scrollTop == log.scrollHeight - log.clientHeight;
 
-        let sLogs = data.logs.split(/\r?\n/);
-        //$("#consoleText").html("");
-        let newLogs = sLogs.filter((i) => !logList.includes(i) && i != "");
+            let sLogs = data.logs.split(/\r?\n/);
+            //$("#consoleText").html("");
+            let newLogs = sLogs.filter((i) => !logList.includes(i) && i != "");
 
-        newLogs.forEach((entry) => {
-            logList.push(entry);
+            newLogs.forEach((entry) => {
+                logList.push(entry);
 
-            let content = "";
-            let levelType = "";
-            entry = entry.replace(/"|'/g, "");
-            entry = linkify(entry);
+                let content = "";
+                let levelType = "";
+                entry = entry.replace(/"|'/g, "");
+                entry = linkify(entry);
 
-            if (entry.includes("INFO")) {
-                levelType = "INFO";
-                let parts = entry.split("INFO");
-                content =
-                    "<i class='fas fa-info-circle iconInfo'></i> " +
-                    parts[0] +
-                    //"<span style='color: green;'>INFO</span>" +
-                    parts[1];
-            } else if (entry.includes("WARNING")) {
-                let parts = entry.split("WARNING");
-                levelType = "WARNING";
-                content =
-                    "<i class='fas fa-exclamation-triangle iconWarn'></i> " +
-                    parts[0] +
-                    //"<span style='color: red;'>WARNING</span>" +
-                    parts[1];
-            } else {
-                content = entry;
-            }
+                if (entry.includes("INFO")) {
+                    levelType = "INFO";
+                    let parts = entry.split("INFO");
+                    content =
+                        "<i class='fas fa-info-circle iconInfo'></i> " +
+                        parts[0] +
+                        //"<span style='color: green;'>INFO</span>" +
+                        parts[1];
+                } else if (entry.includes("WARNING")) {
+                    let parts = entry.split("WARNING");
+                    levelType = "WARNING";
+                    content =
+                        "<i class='fas fa-exclamation-triangle iconWarn'></i> " +
+                        parts[0] +
+                        //"<span style='color: red;'>WARNING</span>" +
+                        parts[1];
+                } else {
+                    content = entry;
+                }
 
-            let row = document.createElement("div");
-            row.innerHTML = content;
-            if (levelType == "WARNING") {
-                $(row).addClass("warning");
-            }
+                let row = document.createElement("div");
+                row.innerHTML = content;
+                if (levelType == "WARNING") {
+                    $(row).addClass("warning");
+                }
 
-            $("#consoleText").append(row);
-        });
+                $("#consoleText").append(row);
+            });
 
-        if (isBottom) log.scrollTop = log.scrollHeight - log.clientHeight;
+            if (isBottom) log.scrollTop = log.scrollHeight - log.clientHeight;
+        }
 
-        if (data.statistics) {
-            $("#serverVersion").html(data.statistics["build"]);
+        if (data.version) {
+            $("#serverVersion").html(data.version);
         }
         s = data.settings;
         if (!compareObj(oldSettings, s)) {
@@ -132,8 +135,7 @@ const tick = async () => {
                     data.players.playerInfo.forEach((p) => {
                         let row = document.createElement("tr");
                         row.innerHTML = `<td>${p.playerName}</td>
-                    <td>${p.playerCategory}</td>
-                    <td>${p.inGame}</td>`;
+                            <td>${p.playerCategory}</td>`;
                         if (p.inGame == true) {
                             $("#onlinePlayersTable>tbody").append(row);
                         } else if (p.playerName != "") {
