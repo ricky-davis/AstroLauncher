@@ -49,6 +49,7 @@ class AstroLauncher():
         DisableNetworkCheck: bool = False
         DisableWebServer: bool = False
         WebServerPort: int = 5000
+        WebServerPasswordHash: str = ""
         DisableServerConsolePopup: bool = False
 
         def __post_init__(self):
@@ -249,11 +250,11 @@ class AstroLauncher():
                 self.BackupHandler(self), watchPath)
             self.backupObserver.start()
 
-    def refresh_launcher_config(self):
+    def refresh_launcher_config(self, lcfg=None):
         field_names = set(
             f.name for f in dataclasses.fields(self.LauncherConfig))
         cleaned_config = {k: v for k,
-                          v in self.get_launcher_config().items() if k in field_names}
+                          v in self.get_launcher_config(lcfg).items() if k in field_names}
         self.launcherConfig = dataclasses.replace(
             self.launcherConfig, **cleaned_config)
 
@@ -262,9 +263,17 @@ class AstroLauncher():
         with open(self.launcherINI, 'w') as configfile:
             config.write(configfile)
 
-    def get_launcher_config(self):
+    def overwrite_launcher_config(self, ovrDict):
+        ovrConfig = {
+            "AstroLauncher": ovrDict
+        }
+        MultiConfig().overwrite_with(self.launcherINI, ovrConfig)
+
+    def get_launcher_config(self, lfcg=None):
+        if not lfcg:
+            lfcg = self.LauncherConfig()
         baseConfig = {
-            "AstroLauncher": dataclasses.asdict(self.LauncherConfig())
+            "AstroLauncher": dataclasses.asdict(lfcg)
         }
         config = MultiConfig().baseline(self.launcherINI, baseConfig)
         # print(settings)

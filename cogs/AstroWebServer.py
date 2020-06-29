@@ -8,6 +8,7 @@ import hashlib
 import tornado.web
 
 from cogs.AstroLogging import AstroLogging
+from AstroLauncher import AstroLauncher
 
 # pylint: disable=abstract-method,attribute-defined-outside-init,no-member
 
@@ -24,7 +25,18 @@ class WebServer(tornado.web.Application):
         # temp
         # these will later be saved and loaded from/to an .ini
         self.cookieSecret = secrets.token_hex(16).encode()
-        self.passwordHash = ""
+        self.passwordHash = self.launcher.launcherConfig.WebServerPasswordHash
+        cfgOvr = {}
+
+        if len(self.passwordHash) != 64:
+            AstroLogging.logPrint(
+                "SECURITY ALERT: You must set your Web Server Password!", "warning")
+            cfgOvr["WebServerPasswordHash"] = ""
+            self.passwordHash = ""
+
+        if cfgOvr != {}:
+            self.launcher.overwrite_launcher_config(cfgOvr)
+            self.launcher.refresh_launcher_config()
 
         settings = {
             'debug': True,
@@ -99,6 +111,9 @@ class LoginHandler(BaseHandler):
             self.application.passwordHash = hashlib.sha256(
                 bytes(self.get_argument("password"), 'utf-8')
             ).hexdigest()
+            lfcg = AstroLauncher.LauncherConfig(
+                WebServerPasswordHash=self.application.passwordHash)
+            self.application.launcher.refresh_launcher_config(lfcg)
             self.redirect("/login")
         else:
             # check hash
