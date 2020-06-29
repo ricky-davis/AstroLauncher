@@ -98,6 +98,9 @@ DisableWebServer=False
 # Set the port you want the Web Management Server to run on
 WebServerPort=5000
 
+# Automatically generated SHA256 password hash for the admin panel in the webserver
+WebServerPasswordHash=
+
 # Disable the server console popup window.
 DisableServerConsolePopup=False
 ```
