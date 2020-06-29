@@ -54,6 +54,7 @@ h5 {
     left: 14px;
     top: 15px;
     height: calc(100% - 30px);
+    border-radius: 10%;
 }
 #authLink {
     position: absolute;
