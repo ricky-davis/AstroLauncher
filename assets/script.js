@@ -135,8 +135,7 @@ const tick = async () => {
                     data.players.playerInfo.forEach((p) => {
                         let row = document.createElement("tr");
                         row.innerHTML = `<td>${p.playerName}</td>
-                    <td>${p.playerCategory}</td>
-                    <td>${p.inGame}</td>`;
+                            <td>${p.playerCategory}</td>`;
                         if (p.inGame == true) {
                             $("#onlinePlayersTable>tbody").append(row);
                         } else if (p.playerName != "") {

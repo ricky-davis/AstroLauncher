@@ -48,11 +48,16 @@ h5 {
 #banner a {
     color: #fff;
 }
+#authLink {
+    position: absolute;
+    right: 14px;
+}
 
 #msg {
     width: 100%;
     position: absolute;
     transition: all 1s ease;
+    z-index: 2;
 }
 #consoleText {
     overflow: auto;

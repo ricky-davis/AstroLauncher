@@ -33,7 +33,7 @@ class WebServer(tornado.web.Application):
             "login_url": "/login"
         }
         handlers = [(r'/', MainHandler, {"path": settings['static_path']}),
-                    (r"/login", LoginHandler, dict(launcher=self.launcher)),
+                    (r"/login", LoginHandler, {"path": settings['static_path']}),
                     (r'/logout', LogoutHandler, dict(launcher=self.launcher)),
                     (r"/api", APIRequestHandler, dict(launcher=self.launcher)),
                     (r"/api/savegame", SaveRequestHandler,
@@ -73,17 +73,13 @@ class MainHandler(BaseHandler):
 
 
 class LoginHandler(BaseHandler):
+    def initialize(self, path):
+        self.path = path
+
     def get(self):
-        if self.application.passwordHash == "":
-            self.write('<html><body><form action="/login" method="post">'
-                       'New password: <input type="password" name="password">'
-                       '<input type="submit" value="Set password">'
-                       '</form></body></html>')
-        else:
-            self.write('<html><body><form action="/login" method="post">'
-                       'Password: <input type="password" name="password">'
-                       '<input type="submit" value="Sign in">'
-                       '</form></body></html>')
+        self.render(os.path.join(self.path, 'login.html'),
+                    isAdmin=self.current_user == b"admin",
+                    hashSet=not self.application.passwordHash == "")
 
     def post(self):
         if self.application.passwordHash == "":

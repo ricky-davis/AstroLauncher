@@ -23,7 +23,7 @@
                 href="https://github.com/ricky-davis/AstroLauncher/releases/latest"
                 >AstroLauncher - Unofficial Dedicated Server Launcher</a
             >
-            <span id="authLink" class="float-right mx-4">
+            <span id="authLink">
                 {% if isAdmin %}
                     <a class="text-danger" href="/logout">Logout</a>
                 {% else %}
@@ -35,7 +35,7 @@
             <h5></h5>
         </div>
 
-        <div id="main" class="container-fluid my-5">
+        <div id="main" class="container-fluid my-4">
             {% if isAdmin %}
             <div class="row">
                 <div id="above" class="col px-4">
@@ -65,7 +65,7 @@
                 </div>
             </div>
             {% end %}
-            <div class="row mt-3">
+            <div class="row mt-4">
                 <div id="left" class="col-12 col-md-4 px-4">
                     <div id="stats" class="card astroCard">
                         <div
@@ -158,7 +158,6 @@
                                     <tr>
                                         <th>Name</th>
                                         <th>Role</th>
-                                        <th>In Game</th>
                                     </tr>
                                 </thead>
                                 <tbody></tbody>
@@ -190,7 +189,6 @@
                                     <tr>
                                         <th>Name</th>
                                         <th>Role</th>
-                                        <th>In Game</th>
                                     </tr>
                                 </thead>
                                 <tbody></tbody>
@@ -202,7 +200,7 @@
         </div>
     </body>
 
-    <script src="{{ static_url("jquery-3.5.1.min.js") }}"></script>
-    <script src="{{ static_url("bootstrap.bundle.min.js") }}"></script>
-    <script src="{{ static_url("script.js") }}"></script>
+    <script src="{{ static_url('jquery-3.5.1.min.js') }}"></script>
+    <script src="{{ static_url('bootstrap.bundle.min.js') }}"></script>
+    <script src="{{ static_url('script.js') }}"></script>
 </html>
