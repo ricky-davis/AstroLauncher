@@ -1,0 +1,15 @@
+<div id="banner">
+    <h1>
+        {{ title }}
+    </h1>
+    <a href="https://github.com/ricky-davis/AstroLauncher/releases/latest"
+        >AstroLauncher - Unofficial Dedicated Server Launcher</a
+    >
+    <span id="authLink">
+        {% if isAdmin %}
+        <a class="text-danger" href="/logout">Logout</a>
+        {% else %}
+        <a class="text-success" href="/login">Login</a>
+        {% end %}
+    </span>
+</div>

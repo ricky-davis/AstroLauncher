@@ -1,41 +1,13 @@
 <html lang="en">
-    <head>
-        <meta charset=" utf-8" />
-        <meta
-            name="viewport"
-            content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"
-        />
-        <title>Astroneer Server Status</title>
-        <link rel="icon" type="image/ico" href="{{
-        static_url('astrolauncherlogo.ico') }}" /> <link rel="stylesheet"
-        href="{{ static_url('bootstrap.min.css') }}" /> <link rel="stylesheet"
-        href="{{ static_url('fontawesome/css/all.css') }}" /> <link
-        rel="stylesheet" href="{{ static_url('style.css') }}" />
-    </head>
-
+    {% module Template("uimodules/head.html")%}
     <body>
-        <div id="banner">
-            <h1>
-                Dedicated Server Status for 
-                <span id="titleIP">[IP]</span>
-            </h1>
-            <a
-                href="https://github.com/ricky-davis/AstroLauncher/releases/latest"
-                >AstroLauncher - Unofficial Dedicated Server Launcher</a
-            >
-            <span id="authLink">
-                {% if isAdmin %}
-                    <a class="text-danger" href="/logout">Logout</a>
-                {% else %}
-                    <a class="text-success" href="/login">Login</a>
-                {% end %}
-            </span>
-        </div>
+        {% module Template("uimodules/banner.html",title=title,isAdmin=isAdmin)
+        %}
         <div id="msg" class="bg-danger text-center collapse">
             <h5></h5>
         </div>
 
-        <div id="main" class="container-fluid my-4">
+        <div id="main" class="container-fluid my-5">
             {% if isAdmin %}
             <div class="row">
                 <div id="above" class="col px-4">
@@ -105,29 +77,29 @@
                             </p>
                         </div>
                         {% if isAdmin %}
-                            <div id="serverStatusFooter" class="card-footer">
-                                <button
-                                    id="saveGameBtn"
-                                    type="button"
-                                    class="btn btn-success col-12 mr-xl-2 col-xl-3"
-                                >
-                                    Save Game
-                                </button>
-                                <button
-                                    id="stopLauncherBtn"
-                                    type="button"
-                                    class="btn btn-danger col-12 ml-xl-1 col-xl-5 float-right"
-                                >
-                                    Stop Launcher & Server
-                                </button>
-                                <button
-                                    id="rebootServerBtn"
-                                    type="button"
-                                    class="btn btn-warning col-12 mx-xl-1 col-xl-3 float-right"
-                                >
-                                    Reboot
-                                </button>
-                            </div>
+                        <div id="serverStatusFooter" class="card-footer">
+                            <button
+                                id="saveGameBtn"
+                                type="button"
+                                class="btn btn-success col-12 mr-xl-2 col-xl-3"
+                            >
+                                Save Game
+                            </button>
+                            <button
+                                id="stopLauncherBtn"
+                                type="button"
+                                class="btn btn-danger col-12 ml-xl-1 col-xl-5 float-right"
+                            >
+                                Stop Launcher & Server
+                            </button>
+                            <button
+                                id="rebootServerBtn"
+                                type="button"
+                                class="btn btn-warning col-12 mx-xl-1 col-xl-3 float-right"
+                            >
+                                Reboot
+                            </button>
+                        </div>
                         {% end %}
                     </div>
                 </div>
@@ -200,7 +172,6 @@
         </div>
     </body>
 
-    <script src="{{ static_url('jquery-3.5.1.min.js') }}"></script>
-    <script src="{{ static_url('bootstrap.bundle.min.js') }}"></script>
+    {% module Template("uimodules/scripts.html")%}
     <script src="{{ static_url('script.js') }}"></script>
 </html>

@@ -32,8 +32,9 @@ class WebServer(tornado.web.Application):
             "cookie_secret": self.cookieSecret,
             "login_url": "/login"
         }
-        handlers = [(r'/', MainHandler, {"path": settings['static_path']}),
-                    (r"/login", LoginHandler, {"path": settings['static_path']}),
+        handlers = [(r'/', MainHandler, dict(path=settings['static_path'], launcher=self.launcher)),
+                    (r"/login", LoginHandler,
+                     {"path": settings['static_path']}),
                     (r'/logout', LogoutHandler, dict(launcher=self.launcher)),
                     (r"/api", APIRequestHandler, dict(launcher=self.launcher)),
                     (r"/api/savegame", SaveRequestHandler,
@@ -63,23 +64,34 @@ class BaseHandler(tornado.web.RequestHandler):
 
 class MainHandler(BaseHandler):
     # pylint: disable=arguments-differ
-    def initialize(self, path):
+    def initialize(self, path, launcher):
         self.path = path
+        self.launcher = launcher
 
     # @tornado.web.authenticated
     def get(self):
-        self.render(os.path.join(self.path, 'index.html'),
-                    isAdmin=self.current_user == b"admin")
+        s = self.launcher.DedicatedServer.settings
+        if not self.application.passwordHash == "":
+            self.render(os.path.join(self.path, 'index.html'),
+                        isAdmin=self.current_user == b"admin",
+                        title=f"Dedicated Server Status for {s.PublicIP}:{s.Port}")
+        else:
+            self.redirect("/login")
 
 
 class LoginHandler(BaseHandler):
+    # pylint: disable=arguments-differ
     def initialize(self, path):
         self.path = path
 
     def get(self):
-        self.render(os.path.join(self.path, 'login.html'),
-                    isAdmin=self.current_user == b"admin",
-                    hashSet=not self.application.passwordHash == "")
+        if not self.current_user == b"admin":
+            self.render(os.path.join(self.path, 'login.html'),
+                        isAdmin=self.current_user == b"admin",
+                        hashSet=not self.application.passwordHash == "",
+                        title="Dedicated Server Status Login")
+        else:
+            self.redirect("/")
 
     def post(self):
         if self.application.passwordHash == "":
