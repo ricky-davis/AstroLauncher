@@ -8,8 +8,8 @@ import hashlib
 import tornado.web
 
 from cogs.AstroLogging import AstroLogging
+from cogs import UIModules
 from AstroLauncher import AstroLauncher
-
 # pylint: disable=abstract-method,attribute-defined-outside-init,no-member
 
 
@@ -21,7 +21,7 @@ class WebServer(tornado.web.Application):
         curDir = self.launcher.launcherPath
         if self.launcher.isExecutable:
             curDir = sys._MEIPASS
-
+        self.assetDir = os.path.join(curDir, "assets")
         # temp
         # these will later be saved and loaded from/to an .ini
         self.cookieSecret = secrets.token_hex(16).encode()
@@ -40,9 +40,10 @@ class WebServer(tornado.web.Application):
 
         settings = {
             'debug': True,
-            "static_path": os.path.join(curDir, "assets"),
+            "static_path": self.assetDir,
             "cookie_secret": self.cookieSecret,
-            "login_url": "/login"
+            "login_url": "/login",
+            "ui_modules": UIModules,
         }
         handlers = [(r'/', MainHandler, dict(path=settings['static_path'], launcher=self.launcher)),
                     (r"/login", LoginHandler,

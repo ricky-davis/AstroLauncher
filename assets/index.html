@@ -1,8 +1,7 @@
 <html lang="en">
-    {% module Template("uimodules/head.html")%}
+    {% module HeadModule(title,isAdmin) %}
     <body>
-        {% module Template("uimodules/banner.html",title=title,isAdmin=isAdmin)
-        %}
+        {% module BannerModule(title,isAdmin) %}
         <div id="msg" class="bg-danger text-center collapse">
             <h5></h5>
         </div>
@@ -172,6 +171,6 @@
         </div>
     </body>
 
-    {% module Template("uimodules/scripts.html")%}
+    {% module ScriptsModule(title,isAdmin) %}
     <script src="{{ static_url('script.js') }}"></script>
 </html>

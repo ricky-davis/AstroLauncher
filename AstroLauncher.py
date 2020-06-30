@@ -77,13 +77,18 @@ class AstroLauncher():
         def on_created(self, event):
             # print(event)
             # time.sleep(1)
-            dirName = os.path.dirname(event.src_path)
-            fileNames = [os.path.join(dirName, f) for f in os.listdir(
-                dirName) if os.path.isfile(os.path.join(dirName, f))]
-            # print(fileNames)
-            fileName = sorted(fileNames, key=os.path.getmtime, reverse=True)[0]
-            AstroLogging.logPrint(
-                f"Server saved. {os.path.basename(fileName)}")
+            try:
+                time.sleep(0.5)
+                dirName = os.path.dirname(event.src_path)
+                fileNames = [os.path.join(dirName, f) for f in os.listdir(
+                    dirName) if os.path.isfile(os.path.join(dirName, f))]
+                # print(fileNames)
+                fileName = sorted(
+                    fileNames, key=os.path.getmtime, reverse=True)[0]
+                AstroLogging.logPrint(
+                    f"Server saved. {os.path.basename(fileName)}")
+            except:
+                pass
             # self.launcher.saveObserver.stop()
 
     class BackupHandler(FileSystemEventHandler):
@@ -138,11 +143,14 @@ class AstroLauncher():
         def on_modified(self, event):
             # print(event)
             # AstroLogging.logPrint("File in save directory changed")
-            self.pendingFiles.append(event.src_path)
-            if len(self.pendingFiles) == 1:
-                t = Thread(target=self.handle_files, args=())
-                t.daemon = True
-                t.start()
+            try:
+                self.pendingFiles.append(event.src_path)
+                if len(self.pendingFiles) == 1:
+                    t = Thread(target=self.handle_files, args=())
+                    t.daemon = True
+                    t.start()
+            except:
+                pass
 
     def __init__(self, astroPath, launcherINI="Launcher.ini", disable_auto_update=None):
         AstroLogging.setup_logging()

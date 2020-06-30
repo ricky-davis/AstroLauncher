@@ -1,8 +1,7 @@
 <html lang="en">
-    {% module Template("uimodules/head.html")%}
+    {% module HeadModule(title,isAdmin) %}
     <body>
-        {% module Template("uimodules/banner.html",title=title,isAdmin=isAdmin)
-        %}
+        {% module BannerModule(title,isAdmin) %}
         <div id="main" class="container-fluid my-5">
             <div class="row">
                 <div id="loginCol" class="col-4 px-4 mx-auto">
@@ -52,6 +51,6 @@
             </div>
         </div>
     </body>
-    {% module Template("uimodules/scripts.html")%}
+    {% module ScriptsModule(title,isAdmin) %}
     <!--<script src="{{ static_url('script.js') }}"></script>-->
 </html>
