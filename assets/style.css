@@ -1,10 +1,10 @@
 @font-face {
     font-family: Roboto-Regular;
-    src: url(Roboto-Regular.ttf);
+    src: url(lib/Roboto-Regular.ttf);
 }
 @font-face {
     font-family: Roboto-Light;
-    src: url(Roboto-Light.ttf);
+    src: url(lib/Roboto-Light.ttf);
 }
 * {
     color: #fff;

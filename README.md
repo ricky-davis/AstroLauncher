@@ -179,7 +179,7 @@ pyinstaller AstroLauncher.py -F --add-data "assets;./assets" --icon=assets/astro
 ```
 or just run the BuildEXE.py which automatically cleans up afterwards
 ```sh
-python -OO BuildEXE.py
+python BuildEXE.py
 ```
 
 1. Move the executable (in the new `dist` folder) to the directory of your choice. (If you want you can now delete the `dist` and `build` folders, as well as the `.spec` file)
