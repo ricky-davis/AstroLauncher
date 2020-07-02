@@ -1,3 +1,4 @@
+
 import dataclasses
 import datetime
 import os
@@ -47,6 +48,8 @@ class AstroDedicatedServer():
         self.astroPath = astroPath
         self.launcher = launcher
         self.settings = self.ServerSettings()
+        self.DSServerStats = None
+        self.oldServerStats = self.DSServerStats
         self.ipPortCombo = None
         self.process = None
         self.players = {}
@@ -87,6 +90,12 @@ class AstroDedicatedServer():
         self.status = "off"
         self.busy = False
         self.refresh_settings()
+        self.AstroRCON = self.start_RCON()
+
+    def start_RCON(self):
+        rc = AstroRCON(self)
+        rc.run()
+        return rc
 
     def refresh_settings(self):
         self.settings = dataclasses.replace(
@@ -105,14 +114,15 @@ class AstroDedicatedServer():
         self.busy = True
         time.sleep(1)
         AstroLogging.logPrint("Saving the current game...")
-        AstroRCON.DSSaveGame(self.settings.ConsolePort)
+        self.AstroRCON.DSSaveGame()
         self.busy = False
 
     def shutdownServer(self):
         self.setStatus("shutdown")
         self.busy = True
         time.sleep(1)
-        AstroRCON.DSServerShutdown(self.settings.ConsolePort)
+        self.AstroRCON.DSServerShutdown()
+        self.DSServerStats = None
         AstroLogging.logPrint("Server shutdown.")
 
     def save_and_shutdown(self):
@@ -127,6 +137,8 @@ class AstroDedicatedServer():
             pass
 
     def server_loop(self):
+        self.AstroRCON = self.start_RCON()
+        time.sleep(2)
         while True:
             if not self.launcher.launcherConfig.DisableBackupRetention:
                 self.launcher.backup_retention()
@@ -134,35 +146,50 @@ class AstroDedicatedServer():
             self.launcher.save_reporting()
             if self.launcher.launcherConfig.EnableAutoRestart:
                 if (((datetime.datetime.now() - self.lastRestart).total_seconds() > 60) and ((self.nextRestartTime - datetime.datetime.now()).total_seconds() < 0)):
-                    AstroLogging.logPrint("Preparing to shutdown the server.")
+                    AstroLogging.logPrint(
+                        "Preparing to shutdown the server.")
                     self.lastRestart = datetime.datetime.now()
                     self.nextRestartTime += datetime.timedelta(
                         hours=self.launcher.launcherConfig.AutoRestartEveryHours)
                     self.save_and_shutdown()
 
             if self.process.poll() is not None:
-                AstroLogging.logPrint("Server was closed. Restarting..")
+                AstroLogging.logPrint(
+                    "Server was closed. Restarting..")
                 return self.launcher.start_server()
+
             if not self.busy:
                 self.setStatus("ready")
+                self.DSServerStats = self.AstroRCON.DSServerStatistics()
+                if self.DSServerStats is not None:
+                    FPSJumpRate = (
+                        float(self.settings.MaxServerFramerate) / 10)
+                    if self.oldServerStats is None or (abs(float(self.DSServerStats['averageFPS']) - float(self.oldServerStats['averageFPS'])) > FPSJumpRate):
+                        AstroLogging.logPrint(
+                            f"Server FPS: {self.DSServerStats['averageFPS']}")
+                    self.oldServerStats = self.DSServerStats
 
-                playerList = AstroRCON.DSListPlayers(self.settings.ConsolePort)
+                playerList = self.AstroRCON.DSListPlayers()
                 if playerList is not None:
                     self.players = playerList
                     curPlayers = [x['playerName']
                                   for x in self.players['playerInfo'] if x['inGame']]
 
                     if len(curPlayers) > len(self.onlinePlayers):
+
                         playerDif = list(set(curPlayers) -
                                          set(self.onlinePlayers))[0]
                         self.onlinePlayers = curPlayers
-                        AstroLogging.logPrint(f"Player joining: {playerDif}")
+                        AstroLogging.logPrint(
+                            f"Player joining: {playerDif}")
                     elif len(curPlayers) < len(self.onlinePlayers):
                         playerDif = list(
                             set(self.onlinePlayers) - set(curPlayers))[0]
                         self.onlinePlayers = curPlayers
-                        AstroLogging.logPrint(f"Player left: {playerDif}")
-            time.sleep(self.launcher.launcherConfig.ServerStatusFrequency)
+                        AstroLogging.logPrint(
+                            f"Player left: {playerDif}")
+            time.sleep(
+                self.launcher.launcherConfig.ServerStatusFrequency)
 
     def deregister_all_server(self):
         servers_registered = (AstroAPI.get_server(
