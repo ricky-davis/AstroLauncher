@@ -60,6 +60,9 @@ const tick = async () => {
 
         statusMsg(data.status);
         isAdmin = data.admin;
+        if ($("#console").length && !isAdmin) {
+            location.reload();
+        }
         // smart scroll
         if (isAdmin) {
             let log = $("#consoleText")[0];

@@ -4,6 +4,7 @@ import secrets
 import sys
 import logging
 import hashlib
+from threading import Thread
 
 import tornado.web
 
@@ -176,23 +177,40 @@ class APIRequestHandler(BaseHandler):
 class SaveRequestHandler(BaseHandler):
     def post(self):
         if self.current_user == b"admin":
-            self.launcher.DedicatedServer.busy = True
-            self.launcher.DedicatedServer.saveGame()
+            if not self.launcher.DedicatedServer.busy:
+                self.launcher.DedicatedServer.busy = True
+                t = Thread(
+                    target=self.launcher.DedicatedServer.saveGame, args=())
+                t.daemon = True
+                t.start()
             self.write({"message": "Success"})
+        else:
+            self.write({"message": "Not Authenticated"})
 
 
 class RebootRequestHandler(BaseHandler):
     def post(self):
         if self.current_user == b"admin":
-            self.launcher.DedicatedServer.busy = True
-            self.launcher.DedicatedServer.save_and_shutdown()
+            if not self.launcher.DedicatedServer.busy:
+                self.launcher.DedicatedServer.busy = True
+                t = Thread(
+                    target=self.launcher.DedicatedServer.save_and_shutdown, args=())
+                t.daemon = True
+                t.start()
             self.write({"message": "Success"})
+        else:
+            self.write({"message": "Not Authenticated"})
 
 
 class ShutdownRequestHandler(BaseHandler):
     def post(self):
         if self.current_user == b"admin":
-            self.launcher.DedicatedServer.busy = True
-            self.launcher.DedicatedServer.kill_server(
-                "Website Request", save=True)
+            if not self.launcher.DedicatedServer.busy:
+                self.launcher.DedicatedServer.busy = True
+                t = Thread(
+                    target=self.launcher.DedicatedServer.kill_server, args=("Website Request", True))
+                t.daemon = True
+                t.start()
             self.write({"message": "Success"})
+        else:
+            self.write({"message": "Not Authenticated"})
