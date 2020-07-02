@@ -69,8 +69,8 @@ class AstroRCON():
             parsedData = AstroRCON.parseData(rawdata)
             # pprint(parsedData)
             return parsedData
-        except Exception as e:
-            print(e)
+        except:  # Exception as e:
+            # print(e)
             return None
 
     def DSServerShutdown(self):
@@ -80,8 +80,8 @@ class AstroRCON():
             parsedData = AstroRCON.parseData(rawdata)
             # pprint(parsedData)
             return parsedData
-        except Exception as e:
-            print(e)
+        except:  # Exception as e:
+            # print(e)
             return None
 
     @staticmethod
