@@ -46,8 +46,7 @@ class WebServer(tornado.web.Application):
             "static_path": self.assetDir,
             "cookie_secret": self.cookieSecret,
             "login_url": "/login",
-            "ui_modules": UIModules,
-            "validate_cert": False
+            "ui_modules": UIModules
         }
 
         handlers = [(r'/', MainHandler, dict(path=settings['static_path'], launcher=self.launcher)),
