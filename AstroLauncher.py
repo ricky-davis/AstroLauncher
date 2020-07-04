@@ -4,6 +4,7 @@ import atexit
 import ctypes
 import dataclasses
 import os
+import psutil
 import shutil
 import subprocess
 import sys
@@ -47,13 +48,17 @@ class AstroLauncher():
         AutoRestartEveryHours: float = 24
         AutoRestartSyncTimestamp: str = "00:00"
         DisableNetworkCheck: bool = False
+
         DisableWebServer: bool = False
         WebServerPort: int = 5000
         WebServerPasswordHash: str = ""
+
         EnableWebServerSSL: bool = False
         SSLPort: int = 443
         SSLCertFile: str = ""
         SSLKeyFile: str = ""
+
+        CPUAffinity: str = ""
 
         def __post_init__(self):
             # pylint: disable=no-member
@@ -198,6 +203,19 @@ class AstroLauncher():
         self.DaemonProcess = None
         self.saveObserver = None
         self.backupObserver = None
+        self.affinity = self.launcherConfig.CPUAffinity
+        try:
+            if self.affinity != "":
+                affinityList = [int(x.strip())
+                                for x in self.affinity.split(',')]
+                p = psutil.Process()
+                p.cpu_affinity(affinityList)
+        except ValueError as e:
+            AstroLogging.logPrint(f"CPU Affinity Error: {e}", "critical")
+            AstroLogging.logPrint(
+                f"Please correct this in your launcher config", "critical")
+            return
+
         self.DedicatedServer = AstroDedicatedServer(
             self.astroPath, self)
 
