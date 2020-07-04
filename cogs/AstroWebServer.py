@@ -1,16 +1,17 @@
 
+import hashlib
+import logging
 import os
 import secrets
 import sys
-import logging
-import hashlib
 from threading import Thread
 
 import tornado.web
 
-from cogs.AstroLogging import AstroLogging
-from cogs import UIModules
 from AstroLauncher import AstroLauncher
+from cogs import UIModules
+from cogs.AstroLogging import AstroLogging
+
 # pylint: disable=abstract-method,attribute-defined-outside-init,no-member
 
 
@@ -19,6 +20,7 @@ class WebServer(tornado.web.Application):
         logging.getLogger('tornado.access').disabled = True
         self.launcher = launcher
         self.port = self.launcher.launcherConfig.WebServerPort
+        self.ssl = False
         curDir = self.launcher.launcherPath
         if self.launcher.isExecutable:
             curDir = sys._MEIPASS
@@ -45,7 +47,9 @@ class WebServer(tornado.web.Application):
             "cookie_secret": self.cookieSecret,
             "login_url": "/login",
             "ui_modules": UIModules,
+            "validate_cert": False
         }
+
         handlers = [(r'/', MainHandler, dict(path=settings['static_path'], launcher=self.launcher)),
                     (r"/login", LoginHandler,
                      {"path": settings['static_path']}),
@@ -61,8 +65,25 @@ class WebServer(tornado.web.Application):
         super().__init__(handlers, **settings)
 
     def run(self):
-        self.listen(self.port)
-        url = f"http://localhost:{self.port}"
+        if self.launcher.launcherConfig.EnableWebServerSSL:
+            certFile = self.launcher.launcherConfig.SSLCertFile
+            keyFile = self.launcher.launcherConfig.SSLKeyFile
+            if os.path.exists(keyFile) and os.path.exists(certFile):
+                self.ssl = True
+            else:
+                AstroLogging.logPrint(
+                    "No SSL Certificates specified. Defaulting to HTTP", "warning")
+        if self.ssl:
+            sslPort = self.launcher.launcherConfig.SSLPort
+            ssl_options = {
+                "certfile": os.path.join(self.launcher.launcherPath, certFile),
+                "keyfile": os.path.join(self.launcher.launcherPath, keyFile),
+            }
+            self.listen(sslPort, ssl_options=ssl_options)
+            url = f"https://localhost{':'+str(sslPort) if sslPort != 443 else ''}"
+        else:
+            self.listen(self.port)
+            url = f"http://localhost{':'+str(self.port) if self.port != 80 else ''}"
         AstroLogging.logPrint(f"Running a web server at {url}")
         tornado.ioloop.IOLoop.instance().start()
 
@@ -113,7 +134,7 @@ class LoginHandler(BaseHandler):
             self.application.passwordHash = hashlib.sha256(
                 bytes(self.get_argument("password"), 'utf-8')
             ).hexdigest()
-            lfcg = AstroLauncher.LauncherConfig(
+            lfcg = AstroLauncher.launcherConfig(
                 WebServerPasswordHash=self.application.passwordHash)
             self.application.launcher.refresh_launcher_config(lfcg)
             self.redirect("/login")
