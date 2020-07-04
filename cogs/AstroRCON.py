@@ -1,71 +1,88 @@
 
 import json
 import socket
-from contextlib import contextmanager
+
+from cogs.AstroLogging import AstroLogging
 
 
 class AstroRCON():
 
-    @staticmethod
-    def DSListPlayers(consolePort):
+    def __init__(self, DedicatedServer):
+        self.DS = DedicatedServer
+        self.connected = False
+        self.socket = None
+
+    def run(self):
+        # pylint: disable=protected-access
+        if self.socket is None or self.socket._closed:
+            self.socket = self.getSocket()
+        if not self.connected:
+            try:
+                self.socket.send(b"u up?")
+            except:  # Exception as e:
+                self.connected = False
+                #print("no response, reconnecting..")
+                try:
+                    self.connectSocket()
+                except:  # Exception as er:
+                    pass
+                #print(f"3 {e}")
+
+    def connectSocket(self):
+        if not self.connected:
+            # print("Connecting...")
+            self.socket.connect(
+                ("127.0.0.1", int(self.DS.settings.ConsolePort)))
+            self.connected = True
+            AstroLogging.logPrint("Connected to RCON Console!")
+
+    def getSocket(self):
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        return s
+
+    def DSListPlayers(self):
         try:
-            with AstroRCON.session_scope(consolePort) as s:
-                s.sendall(b"DSListPlayers\n")
-                rawdata = AstroRCON.recvall(s)
-                parsedData = AstroRCON.parseData(rawdata)
-                # pprint(parsedData)
-                return parsedData
-        except:
+            self.socket.sendall(b"DSListPlayers\n")
+            rawdata = AstroRCON.recvall(self.socket)
+            parsedData = AstroRCON.parseData(rawdata)
+            # pprint(parsedData)
+            return parsedData
+        except Exception as e:
+            print(f"Error retrieving player list: {e}")
             return None
 
-    @staticmethod
-    def DSServerStatistics(consolePort):
+    def DSServerStatistics(self):
         try:
-            with AstroRCON.session_scope(consolePort) as s:
-                s.sendall(b"DSServerStatistics\n")
-                rawdata = AstroRCON.recvall(s)
-                parsedData = AstroRCON.parseData(rawdata)
-                # pprint(parsedData)
-                return parsedData
-        except:
+            self.socket.sendall(b"DSServerStatistics\n")
+            rawdata = AstroRCON.recvall(self.socket)
+            parsedData = AstroRCON.parseData(rawdata)
+            # pprint(parsedData)
+            return parsedData
+        except Exception as e:
+            print(f"Error retrieving server statistics: {e}")
             return None
 
-    @staticmethod
-    def DSSaveGame(consolePort):
+    def DSSaveGame(self):
         try:
-            with AstroRCON.session_scope(consolePort) as s:
-                s.sendall(b"DSSaveGame\n")
-                rawdata = AstroRCON.recvall(s)
-                parsedData = AstroRCON.parseData(rawdata)
-                # pprint(parsedData)
-                return parsedData
-        except:
+            self.socket.sendall(b"DSSaveGame\n")
+            rawdata = AstroRCON.recvall(self.socket)
+            parsedData = AstroRCON.parseData(rawdata)
+            # pprint(parsedData)
+            return parsedData
+        except:  # Exception as e:
+            # print(e)
             return None
 
-    @staticmethod
-    def DSServerShutdown(consolePort):
+    def DSServerShutdown(self):
         try:
-            with AstroRCON.session_scope(consolePort) as s:
-                s.sendall(b"DSServerShutdown\n")
-                rawdata = AstroRCON.recvall(s)
-                parsedData = AstroRCON.parseData(rawdata)
-                # pprint(parsedData)
-                return parsedData
-        except:
+            self.socket.sendall(b"DSServerShutdown\n")
+            rawdata = AstroRCON.recvall(self.socket)
+            parsedData = AstroRCON.parseData(rawdata)
+            # pprint(parsedData)
+            return parsedData
+        except:  # Exception as e:
+            # print(e)
             return None
-
-    @staticmethod
-    @contextmanager
-    def session_scope(consolePort: int):
-        try:
-            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            # s.settimeout(5)
-            s.connect(("127.0.0.1", int(consolePort)))
-            yield s
-        except:
-            pass
-        finally:
-            s.close()
 
     @staticmethod
     def recvall(sock):
@@ -79,15 +96,18 @@ class AstroRCON():
                     # either 0 or end of data
                     break
             return data
-        except ConnectionResetError:
+        except:  # ConnectionResetError as e:
+            #print(f"recvall Error {e}")
             return None
 
     @staticmethod
     def parseData(rawdata):
         try:
             if rawdata != b"":
-                data = json.loads(rawdata.decode('utf8'))
+                rawdata = rawdata.rstrip()
+                data = json.loads(rawdata.decode())
                 return data
             return None
-        except:
+        except:  # Exception as e:
+            #print(f"RCON Parse Error {e}")
             return rawdata

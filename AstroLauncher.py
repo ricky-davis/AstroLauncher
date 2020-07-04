@@ -21,7 +21,6 @@ from cogs.AstroDaemon import AstroDaemon
 from cogs.AstroDedicatedServer import AstroDedicatedServer
 from cogs.AstroLogging import AstroLogging
 from cogs.MultiConfig import MultiConfig
-from cogs.AstroRCON import AstroRCON
 
 
 """
@@ -195,7 +194,6 @@ class AstroLauncher():
         self.DaemonProcess = None
         self.saveObserver = None
         self.backupObserver = None
-        self.DSServerVersion = None
         self.DedicatedServer = AstroDedicatedServer(
             self.astroPath, self)
 
@@ -214,9 +212,6 @@ class AstroLauncher():
         if not self.launcherConfig.DisableNetworkCheck:
             AstroLogging.logPrint("Checking the network configuration..")
             self.check_network_config()
-
-        self.headers['X-Authorization'] = AstroAPI.generate_XAUTH(
-            self.DedicatedServer.settings.ServerGuid)
 
         self.save_reporting()
 
@@ -344,9 +339,12 @@ class AstroLauncher():
         """
             Starts the Dedicated Server process and waits for it to be registered
         """
+        self.DedicatedServer = AstroDedicatedServer(
+            self.astroPath, self)
         self.DedicatedServer.status = "starting"
         self.DedicatedServer.busy = False
-        self.DSServerVersion = None
+        self.headers['X-Authorization'] = AstroAPI.generate_XAUTH(
+            self.DedicatedServer.settings.ServerGuid)
         oldLobbyIDs = self.DedicatedServer.deregister_all_server()
         AstroLogging.logPrint("Starting Server process...")
         if self.launcherConfig.EnableAutoRestart:
@@ -361,16 +359,6 @@ class AstroLauncher():
         # Wait for server to finish registering...
         while not self.DedicatedServer.registered:
             try:
-                if self.DSServerVersion is None:
-                    try:
-                        tempStats = AstroRCON.DSServerStatistics(
-                            self.DedicatedServer.settings.ConsolePort)
-                        if tempStats is not None:
-                            self.DSServerVersion = tempStats['build']
-                            AstroLogging.logPrint(
-                                f"Server version: v{tempStats['build']}")
-                    except:
-                        pass
                 serverData = (AstroAPI.get_server(
                     self.DedicatedServer.ipPortCombo, self.headers))
                 serverData = serverData['data']['Games']

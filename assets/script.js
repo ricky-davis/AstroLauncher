@@ -60,6 +60,9 @@ const tick = async () => {
 
         statusMsg(data.status);
         isAdmin = data.admin;
+        if ($("#console").length && !isAdmin) {
+            location.reload();
+        }
         // smart scroll
         if (isAdmin) {
             let log = $("#consoleText")[0];
@@ -109,39 +112,62 @@ const tick = async () => {
             if (isBottom) log.scrollTop = log.scrollHeight - log.clientHeight;
         }
 
-        if (data.version) {
-            $("#serverVersion").html(data.version);
-        }
         s = data.settings;
+        if (data.stats) {
+            $("#serverVersion").html(data.stats.build);
+            $("#framerateStats").html(
+                parseInt(data.stats.averageFPS) +
+                    "/" +
+                    parseInt(s.MaxServerFramerate) +
+                    " FPS"
+            );
+        } else {
+            if (
+                data.status == "starting" ||
+                data.status == "off" ||
+                data.status == "shutdown"
+            ) {
+                $("#serverVersion").html("");
+                $("#framerateStats").html("");
+            }
+        }
         if (!compareObj(oldSettings, s)) {
             oldSettings = s;
             $("#titleIP").html(`${s.PublicIP}:${s.Port}`);
 
             $("#serverName").html(s.ServerName);
             $("#owner").html(s.OwnerName);
-            $("#maxFramerate").html(parseFloat(s.MaxServerFramerate));
         }
-        if (!compareObj(oldPlayers, data.players)) {
-            oldPlayers = data.players;
-            $("#maxPlayers").html(s.MaximumPlayerCount);
-            $("#onlinePlayersTable").html(playersTableOriginal);
-            $("#offlinePlayersTable").html(playersTableOriginal);
-            if (data.players.hasOwnProperty("playerInfo")) {
-                $("#onlinePlayers").text(
-                    data.players.playerInfo.filter((p) => p.inGame).length
-                );
+        if (
+            data.status == "starting" ||
+            data.status == "off" ||
+            data.status == "shutdown"
+        ) {
+            $("#playersStats").text("");
+        } else {
+            if (!compareObj(oldPlayers, data.players)) {
+                oldPlayers = data.players;
+                $("#onlinePlayersTable").html(playersTableOriginal);
+                $("#offlinePlayersTable").html(playersTableOriginal);
+                if (data.players.hasOwnProperty("playerInfo")) {
+                    $("#playersStats").text(
+                        data.players.playerInfo.filter((p) => p.inGame).length +
+                            "/" +
+                            s.MaximumPlayerCount
+                    );
 
-                if (data.players) {
-                    data.players.playerInfo.forEach((p) => {
-                        let row = document.createElement("tr");
-                        row.innerHTML = `<td>${p.playerName}</td>
+                    if (data.players) {
+                        data.players.playerInfo.forEach((p) => {
+                            let row = document.createElement("tr");
+                            row.innerHTML = `<td>${p.playerName}</td>
                             <td>${p.playerCategory}</td>`;
-                        if (p.inGame == true) {
-                            $("#onlinePlayersTable>tbody").append(row);
-                        } else if (p.playerName != "") {
-                            $("#offlinePlayersTable>tbody").append(row);
-                        }
-                    });
+                            if (p.inGame == true) {
+                                $("#onlinePlayersTable>tbody").append(row);
+                            } else if (p.playerName != "") {
+                                $("#offlinePlayersTable>tbody").append(row);
+                            }
+                        });
+                    }
                 }
             }
         }
