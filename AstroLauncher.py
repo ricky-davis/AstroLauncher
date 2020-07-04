@@ -4,13 +4,13 @@ import atexit
 import ctypes
 import dataclasses
 import os
-import psutil
 import shutil
 import subprocess
 import sys
 import time
 from threading import Thread
 
+import psutil
 import requests
 from watchdog.events import FileSystemEventHandler
 from watchdog.observers import Observer
@@ -213,7 +213,7 @@ class AstroLauncher():
         except ValueError as e:
             AstroLogging.logPrint(f"CPU Affinity Error: {e}", "critical")
             AstroLogging.logPrint(
-                f"Please correct this in your launcher config", "critical")
+                "Please correct this in your launcher config", "critical")
             return
 
         self.DedicatedServer = AstroDedicatedServer(
