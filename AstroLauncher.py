@@ -37,6 +37,7 @@ class AstroLauncher():
     @dataclasses.dataclass
     class LauncherConfig():
         DisableAutoUpdate: bool = False
+        DisableServerConsolePopup: bool = False
         ServerStatusFrequency: float = 2
         PlayfabAPIFrequency: float = 2
         DisableBackupRetention: bool = False
@@ -49,7 +50,10 @@ class AstroLauncher():
         DisableWebServer: bool = False
         WebServerPort: int = 5000
         WebServerPasswordHash: str = ""
-        DisableServerConsolePopup: bool = False
+        EnableWebServerSSL: bool = False
+        SSLPort: int = 443
+        SSLCertFile: str = ""
+        SSLKeyFile: str = ""
 
         def __post_init__(self):
             # pylint: disable=no-member
