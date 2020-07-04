@@ -64,6 +64,9 @@ Below are the descriptions and defaults for the INI file options. Do not copy/pa
 # Disables Auto Update -- Notifies but does not download
 DisableAutoUpdate = False
 
+# Disable the server console popup window.
+DisableServerConsolePopup=False
+
 # Specifies how often the launcher will check for players joining/leaving
 ServerStatusFrequency = 2
 
@@ -101,8 +104,21 @@ WebServerPort=5000
 # Automatically generated SHA256 password hash for the admin panel in the webserver
 WebServerPasswordHash=
 
-# Disable the server console popup window.
-DisableServerConsolePopup=False
+# Enable HTTPS for the webserver. If no/wrong Cert/Key files are specified, defaults to False
+EnableWebServerSSL=False
+
+# Port you want to use if SSL works
+SSLPort=443
+
+# Paths to Cert and Key files
+SSLCertFile=
+SSLKeyFile=
+
+# CPU Affinity - Specify logical cores to run on. Automatically chooses if empty.
+# ex:
+#  CPUAffinity=0,1,3,5,9
+CPUAffinity=
+
 ```
 
 
