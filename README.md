@@ -98,6 +98,9 @@ AutoRestartEveryHours = 24
 # Disable the Port Forward / NAT Loopback check on startup
 DisableNetworkCheck = False
 
+# Enable/Disable showing server FPS in console. This will probably spam your console when playing are in your server
+ShowServerFPSInConsole = True
+
 # Disable the Web Management Server
 DisableWebServer=False
 

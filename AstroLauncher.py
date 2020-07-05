@@ -49,6 +49,7 @@ class AstroLauncher():
         AutoRestartEveryHours: float = 24
         AutoRestartSyncTimestamp: str = "00:00"
         DisableNetworkCheck: bool = False
+        ShowServerFPSInConsole: bool = True
 
         DisableWebServer: bool = False
         WebServerPort: int = 5000

@@ -162,11 +162,12 @@ class AstroDedicatedServer():
                 self.setStatus("ready")
                 self.DSServerStats = self.AstroRCON.DSServerStatistics()
                 if self.DSServerStats is not None:
-                    FPSJumpRate = (
-                        float(self.settings.MaxServerFramerate) / 10)
-                    if self.oldServerStats is None or (abs(float(self.DSServerStats['averageFPS']) - float(self.oldServerStats['averageFPS'])) > FPSJumpRate):
-                        AstroLogging.logPrint(
-                            f"Server FPS: {self.DSServerStats['averageFPS']}")
+                    if self.launcher.launcherConfig.ShowServerFPSInConsole:
+                        FPSJumpRate = (
+                            float(self.settings.MaxServerFramerate) / 10)
+                        if self.oldServerStats is None or (abs(float(self.DSServerStats['averageFPS']) - float(self.oldServerStats['averageFPS'])) > FPSJumpRate):
+                            AstroLogging.logPrint(
+                                f"Server FPS: {self.DSServerStats['averageFPS']}")
                     self.oldServerStats = self.DSServerStats
 
                 playerList = self.AstroRCON.DSListPlayers()
