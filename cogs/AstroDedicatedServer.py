@@ -4,6 +4,7 @@ import datetime
 import os
 import subprocess
 import time
+import schedule
 
 import psutil
 
@@ -57,36 +58,16 @@ class AstroDedicatedServer():
         self.registered = False
         self.LobbyID = None
         self.serverGUID = self.settings.ServerGuid if self.settings.ServerGuid != '' else "REGISTER"
-        if self.launcher.launcherConfig.EnableAutoRestart:
-            self.syncRestartTime = self.launcher.launcherConfig.AutoRestartSyncTimestamp
-            self.nextRestartTime = None
+        if self.launcher.launcherConfig.EnableAutoRestart: 
+            restartTime = self.launcher.launcherConfig.AutoRestartSyncTimestamp
+            if restartTime == "midnight":
+                restartTime = "00:00"
             self.lastRestart = datetime.datetime.now()
+            print("set up auto restart")
 
-            if self.syncRestartTime != "False":
-                if self.syncRestartTime == "midnight":
-                    self.syncRestartTime = "00:00"
-                dt = datetime.datetime.today()
-                timestamp = datetime.datetime.strptime(
-                    self.syncRestartTime, '%H:%M')
-                restartTime = datetime.datetime.combine(dt, datetime.datetime.min.time())+datetime.timedelta(
-                    hours=timestamp.hour, minutes=timestamp.minute)
-                RestartCooldown = bool(
-                    (dt - restartTime).total_seconds() < 300 and (dt - restartTime).total_seconds() > -300)
-                if timestamp.hour == 0 and ((dt - restartTime).total_seconds()/60/60) > self.launcher.launcherConfig.AutoRestartEveryHours:
-                    restartTime += datetime.timedelta(days=1)
-                if dt > restartTime or RestartCooldown:
-                    restartTime += \
-                        datetime.timedelta(
-                            hours=self.launcher.launcherConfig.AutoRestartEveryHours)
-                    while dt >= restartTime:
-                        restartTime += \
-                            datetime.timedelta(
-                                hours=self.launcher.launcherConfig.AutoRestartEveryHours)
-                self.nextRestartTime = restartTime
-            else:
-                self.nextRestartTime = self.lastRestart + \
-                    datetime.timedelta(
-                        hours=self.launcher.launcherConfig.AutoRestartEveryHours)
+            schedule.every(self.launcher.launcherConfig.AutoRestartEveryHours).hours.at(
+                restartTime).do(self.restart_server)
+
         self.status = "off"
         self.busy = False
         self.refresh_settings()
@@ -130,6 +111,12 @@ class AstroDedicatedServer():
         self.busy = True
         self.shutdownServer()
 
+    def restart_server(self):
+        AstroLogging.logPrint("Preparing to restart the server.")
+        print("restarting")
+        self.lastRestart = datetime.datetime.now()
+        self.save_and_shutdown()
+
     def setStatus(self, status):
         try:
             self.status = status
@@ -139,19 +126,16 @@ class AstroDedicatedServer():
     def server_loop(self):
         self.AstroRCON = self.start_RCON()
         time.sleep(2)
+        # this is what the main thread will be running
         while True:
             if not self.launcher.launcherConfig.DisableBackupRetention:
                 self.launcher.backup_retention()
 
             self.launcher.save_reporting()
             if self.launcher.launcherConfig.EnableAutoRestart:
-                if (((datetime.datetime.now() - self.lastRestart).total_seconds() > 60) and ((self.nextRestartTime - datetime.datetime.now()).total_seconds() < 0)):
-                    AstroLogging.logPrint(
-                        "Preparing to shutdown the server.")
-                    self.lastRestart = datetime.datetime.now()
-                    self.nextRestartTime += datetime.timedelta(
-                        hours=self.launcher.launcherConfig.AutoRestartEveryHours)
-                    self.save_and_shutdown()
+                print("running pending")
+                schedule.run_pending()
+                
 
             if self.process.poll() is not None:
                 AstroLogging.logPrint(

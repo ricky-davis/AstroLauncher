@@ -381,7 +381,7 @@ class AstroLauncher():
         AstroLogging.logPrint("Starting Server process...")
         if self.launcherConfig.EnableAutoRestart:
             AstroLogging.logPrint(
-                f"Next restart is at {self.DedicatedServer.nextRestartTime}")
+                f"Next restart is at {self.launcherConfig.AutoRestartSyncTimestamp}")
         time.sleep(5)
         startTime = time.time()
         self.DedicatedServer.start()
