@@ -362,7 +362,7 @@ class AstroLauncher():
             subprocess.Popen(downloadCMD, shell=True,
                              creationflags=subprocess.DETACHED_PROCESS)
         time.sleep(2)
-        # self.DedicatedServer.kill_server("Auto-Update")
+        self.DedicatedServer.kill_server("Auto-Update")
 
     def start_server(self, firstLaunch=False):
         """
