@@ -58,15 +58,20 @@ class AstroDedicatedServer():
         self.registered = False
         self.LobbyID = None
         self.serverGUID = self.settings.ServerGuid if self.settings.ServerGuid != '' else "REGISTER"
-        if self.launcher.launcherConfig.EnableAutoRestart: 
+
+        self.schedule = schedule
+        if self.launcher.launcherConfig.EnableAutoRestart:
             restartTime = self.launcher.launcherConfig.AutoRestartSyncTimestamp
             if restartTime == "midnight":
                 restartTime = "00:00"
             self.lastRestart = datetime.datetime.now()
-            print("set up auto restart")
 
-            schedule.every(self.launcher.launcherConfig.AutoRestartEveryHours).hours.at(
-                restartTime).do(self.restart_server)
+            if self.launcher.launcherConfig.AutoRestartEveryHours == 24:
+                schedule.every().day.at(
+                    restartTime).do(self.restart_server)
+            else:
+                # non-daily restart
+                schedule.every().day.at(restartTime).do(self.sync_time_interval)
 
         self.status = "off"
         self.busy = False
@@ -111,9 +116,14 @@ class AstroDedicatedServer():
         self.busy = True
         self.shutdownServer()
 
+    def sync_time_interval(self):
+        schedule.every(self.launcher.launcherConfig.AutoRestartEveryHours).hours.do(
+            self.restart_server)
+        self.restart_server()
+        return schedule.CancelJob
+
     def restart_server(self):
         AstroLogging.logPrint("Preparing to restart the server.")
-        print("restarting")
         self.lastRestart = datetime.datetime.now()
         self.save_and_shutdown()
 
@@ -133,9 +143,7 @@ class AstroDedicatedServer():
 
             self.launcher.save_reporting()
             if self.launcher.launcherConfig.EnableAutoRestart:
-                print("running pending")
                 schedule.run_pending()
-                
 
             if self.process.poll() is not None:
                 AstroLogging.logPrint(
