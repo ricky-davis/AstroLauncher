@@ -133,7 +133,7 @@ class LoginHandler(BaseHandler):
             self.application.passwordHash = hashlib.sha256(
                 bytes(self.get_argument("password"), 'utf-8')
             ).hexdigest()
-            lfcg = AstroLauncher.launcherConfig(
+            lfcg = AstroLauncher.LauncherConfig(
                 WebServerPasswordHash=self.application.passwordHash)
             self.application.launcher.refresh_launcher_config(lfcg)
             self.redirect("/login")
