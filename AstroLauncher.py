@@ -249,9 +249,6 @@ class AstroLauncher():
             # AstroLogging.logPrint(
             #    f"HTTP Server started at 127.0.0.1:{self.launcherConfig.WebServerPort}")
 
-        atexit.register(self.DedicatedServer.kill_server,
-                        reason="Launcher shutting down",
-                        save=True)
         self.start_server(firstLaunch=True)
 
     def save_reporting(self):
@@ -369,10 +366,13 @@ class AstroLauncher():
         """
             Starts the Dedicated Server process and waits for it to be registered
         """
-        if not firstLaunch:
+        if firstLaunch:
+            atexit.register(self.DedicatedServer.kill_server,
+                            reason="Launcher shutting down",
+                            save=True)
+        else:
             self.check_for_update(serverStart=True)
-        self.DedicatedServer = AstroDedicatedServer(
-            self.astroPath, self)
+
         self.DedicatedServer.status = "starting"
         self.DedicatedServer.busy = False
         self.headers['X-Authorization'] = AstroAPI.generate_XAUTH(
