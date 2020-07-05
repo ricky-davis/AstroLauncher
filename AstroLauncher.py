@@ -38,6 +38,7 @@ class AstroLauncher():
     @dataclasses.dataclass
     class LauncherConfig():
         DisableAutoUpdate: bool = False
+        UpdateOnServerRestart: bool = True
         DisableServerConsolePopup: bool = False
         ServerStatusFrequency: float = 2
         PlayfabAPIFrequency: float = 2
@@ -196,7 +197,7 @@ class AstroLauncher():
         self.refresh_launcher_config()
         if disable_auto_update is not None:
             self.launcherConfig.DisableAutoUpdate = disable_auto_update
-        self.version = "v1.5.1"
+        self.version = "v1.5.0"
         self.latestURL = "https://github.com/ricky-davis/AstroLauncher/releases/latest"
         self.isExecutable = os.path.samefile(sys.executable, sys.argv[0])
         self.headers = AstroAPI.base_headers
@@ -250,7 +251,7 @@ class AstroLauncher():
         atexit.register(self.DedicatedServer.kill_server,
                         reason="Launcher shutting down",
                         save=True)
-        self.start_server()
+        self.start_server(firstLaunch=True)
 
     def save_reporting(self):
         if self.saveObserver:
@@ -322,7 +323,7 @@ class AstroLauncher():
         settings = config.getdict()['AstroLauncher']
         return settings
 
-    def check_for_update(self):
+    def check_for_update(self, serverStart=False):
         try:
             url = "https://api.github.com/repos/ricky-davis/AstroLauncher/releases/latest"
             data = ((requests.get(url)).json())
@@ -331,7 +332,11 @@ class AstroLauncher():
                 AstroLogging.logPrint(
                     f"UPDATE: There is a newer version of the launcher out! {latestVersion}")
                 AstroLogging.logPrint(f"Download it at {self.latestURL}")
-                if self.isExecutable and not self.launcherConfig.DisableAutoUpdate:
+                aupdate = not self.launcherConfig.DisableAutoUpdate
+                if not self.launcherConfig.UpdateOnServerRestart and serverStart:
+                    return
+
+                if self.isExecutable and aupdate:
                     self.autoupdate(data)
         except:
             pass
@@ -345,22 +350,26 @@ class AstroLauncher():
             downloadPath = os.path.join(downloadFolder, fileName)
 
             downloadCMD = ["powershell", '-executionpolicy', 'bypass', '-command',
-                           'Write-Host "Starting download of latest AstroLauncher.exe..";', 'wait-process', str(
+                           'Write-Host "Downloading latest AstroLauncher.exe..";', 'wait-process', str(
                                os.getpid()), ';',
                            '[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12;',
+                           "$ProgressPreference = 'SilentlyContinue';",
                            'Invoke-WebRequest', f"'{downloadURL}'", "-OutFile", f"'{downloadPath + '_new.exe'}'", ';',
                            "Move-Item", "-path", f"'{downloadPath + '_new.exe'}'", "-destination", f"'{downloadPath + '.exe'}'", "-Force;",
-                           'Start-Process', f"'{downloadPath + '.exe'}' --noupdate"]
+                           'Write-Host "Download complete!";',
+                           'Start-Process', f"'{downloadPath + '.exe'}'"]
             # print(' '.join(downloadCMD))
             subprocess.Popen(downloadCMD, shell=True,
                              creationflags=subprocess.DETACHED_PROCESS)
         time.sleep(2)
-        self.DedicatedServer.kill_server("Auto-Update")
+        # self.DedicatedServer.kill_server("Auto-Update")
 
-    def start_server(self):
+    def start_server(self, firstLaunch=False):
         """
             Starts the Dedicated Server process and waits for it to be registered
         """
+        if not firstLaunch:
+            self.check_for_update(serverStart=True)
         self.DedicatedServer = AstroDedicatedServer(
             self.astroPath, self)
         self.DedicatedServer.status = "starting"

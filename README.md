@@ -64,6 +64,9 @@ Below are the descriptions and defaults for the INI file options. Do not copy/pa
 # Disables Auto Update -- Notifies but does not download
 DisableAutoUpdate = False
 
+# Allows the launcher to autoUpdate every time the server restarts
+UpdateOnServerRestart=True
+
 # Disable the server console popup window.
 DisableServerConsolePopup=False
 
