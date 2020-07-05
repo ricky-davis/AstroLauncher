@@ -2,6 +2,7 @@
 
 import logging
 import os
+import sys
 from io import StringIO
 from logging.handlers import TimedRotatingFileHandler
 from pprint import pformat
@@ -12,17 +13,21 @@ class AstroLogging():
     log_stream = None
 
     @staticmethod
-    def logPrint(message, msgType="info"):
+    def logPrint(message, msgType="info", printTraceback=False):
         if msgType == "debug":
-            logging.debug(pformat(message))
+            logging.debug(pformat(message), exc_info=printTraceback)
         if msgType == "info":
-            logging.info(pformat(message))
+            logging.info(pformat(message), exc_info=printTraceback)
         if msgType == "warning":
-            logging.warning(pformat(message))
+            logging.warning(pformat(message), exc_info=printTraceback)
         if msgType == "error":
-            logging.error(pformat(message))
+            logging.error(pformat(message), exc_info=printTraceback)
         if msgType == "critical":
-            logging.critical(pformat(message))
+            if printTraceback:
+                ermsg = ('Error on line {}'.format(
+                    sys.exc_info()[-1].tb_lineno), type(message).__name__, message)
+                logging.critical(pformat(ermsg))
+            logging.critical(pformat(message), exc_info=printTraceback)
 
     @staticmethod
     def setup_logging():

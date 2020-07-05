@@ -502,3 +502,5 @@ if __name__ == "__main__":
             AstroLauncher(args.path, disable_auto_update=args.noautoupdate)
     except KeyboardInterrupt:
         pass
+    except Exception as err:
+        AstroLogging.logPrint(err, "critical", True)
