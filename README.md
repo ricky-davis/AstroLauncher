@@ -38,7 +38,7 @@
 
 ## Overview
 
-This tool is perfect for you if you are hosting your own dedicated server for Astroneer. It has many features to make hosting a lot easier like automatic restarts, advanced logging and a webinterface.
+This tool is perfect for you if you are hosting your own dedicated server for Astroneer. It has many features to make hosting a lot easier like automatic restarts, advanced logging, and a webinterface.
 
 ## What does it do?
 
@@ -50,11 +50,11 @@ This tool is perfect for you if you are hosting your own dedicated server for As
 6. Keeps a log of everything in the logs folder
 7. Auto Restart every X hours
 8. Backup Retention for X hours
-9. Web Interface to monitor server data, force saves and restarts
+9. Web Interface w/ login to monitor server data, force saves and restarts
 
 ## TODO
 
-1. Build out Web Interface to have more management functions, possibly log in functionality
+1. Build out Web Interface to have more management functions, including ban, kick, whitelist, and promote player
 
 
 ## INI File options

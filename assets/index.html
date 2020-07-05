@@ -74,27 +74,27 @@
                             </p>
                         </div>
                         {% if isAdmin %}
-                        <div id="serverStatusFooter" class="card-footer">
+                        <div id="serverStatusFooter" class="card-footer row">
                             <button
                                 id="saveGameBtn"
                                 type="button"
-                                class="btn btn-success col-12 mr-xl-2 col-xl-3"
+                                class="btn btn-success m-1 col-12 col-xl-4"
                             >
                                 Save Game
                             </button>
                             <button
-                                id="stopLauncherBtn"
-                                type="button"
-                                class="btn btn-danger col-12 ml-xl-1 col-xl-5 float-right"
-                            >
-                                Stop Launcher & Server
-                            </button>
-                            <button
                                 id="rebootServerBtn"
                                 type="button"
-                                class="btn btn-warning col-12 mx-xl-1 col-xl-3 float-right"
+                                class="btn btn-warning m-1 col-12 col-xl-3"
                             >
                                 Reboot
+                            </button>
+                            <button
+                                id="stopLauncherBtn"
+                                type="button"
+                                class="btn btn-danger m-1 col-12 col-xl-4"
+                            >
+                                Stop Launcher & Server
                             </button>
                         </div>
                         {% end %}

@@ -36,12 +36,13 @@ h5 {
 
 #banner {
     background: #17142f;
-    padding: 20px 0px 10px 0px;
-    margin: 0;
     white-space: nowrap;
     box-shadow: 0 0 30px #17142f;
     text-align: center;
     position: relative;
+}
+#banner .row {
+    padding: 20px 0px 10px 0px;
 }
 #banner h1 {
     margin: 0;
@@ -50,17 +51,9 @@ h5 {
     color: #fff;
 }
 #logo {
-    position: absolute;
-    left: 14px;
-    top: 15px;
-    height: calc(100% - 30px);
+    height: 60px;
     border-radius: 10%;
 }
-#authLink {
-    position: absolute;
-    right: 14px;
-}
-
 #msg {
     width: 100%;
     position: absolute;
@@ -123,12 +116,23 @@ h5 {
 }
 
 @media (min-width: 768px) {
+    #logo {
+        height: 80px;
+    }
+}
+
+@media (min-width: 880px) {
     h1 {
         font-size: 2em;
     }
 }
 
 @media (min-width: 1200px) {
+    h1 {
+        font-size: 2.5em;
+    }
+}
+@media (min-width: 1500px) {
     h1 {
         font-size: 3em;
     }
