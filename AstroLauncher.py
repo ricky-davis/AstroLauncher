@@ -393,11 +393,6 @@ class AstroLauncher():
         # Wait for server to finish registering...
         while not self.DedicatedServer.registered:
             try:
-                if not self.DedicatedServer.AstroRCON or not self.DedicatedServer.AstroRCON.connected:
-                    self.DedicatedServer.AstroRCON = self.DedicatedServer.start_RCON()
-            except:
-                pass
-            try:
                 serverData = (AstroAPI.get_server(
                     self.DedicatedServer.ipPortCombo, self.headers))
                 serverData = serverData['data']['Games']

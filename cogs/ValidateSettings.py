@@ -20,6 +20,16 @@ def get_public_ip():
 
 
 def get_current_settings(curPath):
+
+    confPath = os.path.join(
+        curPath, r"Astro\Saved\Config\WindowsServer\AstroServerSettings.ini")
+    ovrConfig = {
+        "/Script/Astro.AstroServerSettings": {
+            "VerbosePlayerProperties": "True"
+        }
+    }
+    MultiConfig().overwrite_with(confPath, ovrConfig)
+
     baseConfig = {
         "/Script/Astro.AstroServerSettings": {
             "bLoadAutoSave": "True",
@@ -44,8 +54,7 @@ def get_current_settings(curPath):
             "ConsolePort": "1234"
         }
     }
-    config = MultiConfig().baseline(os.path.join(
-        curPath, r"Astro\Saved\Config\WindowsServer\AstroServerSettings.ini"), baseConfig)
+    config = MultiConfig().baseline(confPath, baseConfig)
 
     settings = config.getdict()['/Script/Astro.AstroServerSettings']
 

@@ -89,6 +89,7 @@ class AstroDedicatedServer():
                         hours=self.launcher.launcherConfig.AutoRestartEveryHours)
         self.status = "off"
         self.busy = False
+
         self.refresh_settings()
         self.AstroRCON = self.start_RCON()
 
@@ -145,6 +146,12 @@ class AstroDedicatedServer():
         self.refresh_settings()
 
     def server_loop(self):
+        try:
+            if not self.AstroRCON or not self.AstroRCON.connected:
+                self.AstroRCON = self.start_RCON()
+        except:
+            pass
+        time.sleep(2)
         self.quickToggleWhitelist()
         while True:
             if not self.launcher.launcherConfig.DisableBackupRetention:
