@@ -56,7 +56,7 @@ const tick = async () => {
     try {
         let res = await fetch(apiURL);
         const data = await res.json();
-        //console.log(data);
+        // console.log(data);
 
         statusMsg(data.status);
         isAdmin = data.admin;
@@ -114,6 +114,10 @@ const tick = async () => {
 
         s = data.settings;
         if (data.stats) {
+            $("#hWL").html(data.stats.isEnforcingWhitelist.toString());
+            $("#hPW").html(data.stats.hasServerPassword.toString());
+            $("#hCM").html(data.stats.creativeMode.toString());
+
             $("#serverVersion").html(data.stats.build);
             $("#framerateStats").html(
                 parseInt(data.stats.averageFPS) +

@@ -372,6 +372,8 @@ class AstroLauncher():
                             save=True)
         else:
             self.check_for_update(serverStart=True)
+            self.DedicatedServer = AstroDedicatedServer(
+                self.astroPath, self)
 
         self.DedicatedServer.status = "starting"
         self.DedicatedServer.busy = False
@@ -391,7 +393,7 @@ class AstroLauncher():
         # Wait for server to finish registering...
         while not self.DedicatedServer.registered:
             try:
-                if not self.DedicatedServer.AstroRCON.connected:
+                if not self.DedicatedServer.AstroRCON or not self.DedicatedServer.AstroRCON.connected:
                     self.DedicatedServer.AstroRCON = self.DedicatedServer.start_RCON()
             except:
                 pass
