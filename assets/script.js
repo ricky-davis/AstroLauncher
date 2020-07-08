@@ -162,9 +162,21 @@ const tick = async () => {
                             row.innerHTML = `<td>${p.playerName}</td>
                             <td>${p.playerCategory}</td>`;
                             if (p.inGame == true) {
+                                if (isAdmin) {
+                                    row.innerHTML +=
+                                        "<td>" +
+                                        createActionButtons("online", p) +
+                                        "</td>";
+                                }
                                 $("#onlinePlayersTable>tbody").append(row);
                             } else if (p.playerName != "") {
                                 $("#offlinePlayersTable>tbody").append(row);
+                                if (isAdmin) {
+                                    row.innerHTML +=
+                                        "<td>" +
+                                        createActionButtons("offline", p) +
+                                        "</td>";
+                                }
                             }
                         });
                     }
@@ -181,6 +193,79 @@ const tick = async () => {
 
 setInterval(tick, 1000);
 tick();
+
+const createActionButtons = function (status, player) {
+    actionButtonBufferList = [];
+    if (player.playerCategory != "Owner") {
+        stockButton = $("<input/>")
+            .attr({ type: "button", class: "btn pBtn mx-1" })
+            .attr("data-guid", player.playerGuid);
+
+        if (status == "online") {
+            kickButton = stockButton
+                .clone()
+                .addClass("btn-warning")
+                .attr("data-action", "kick")
+                .val("Kick");
+            actionButtonBufferList.push(kickButton);
+        }
+        if (player.playerCategory != "Blacklisted") {
+            banButton = stockButton
+                .clone()
+                .addClass("btn-danger")
+                .attr("data-action", "ban")
+                .val("Ban");
+            actionButtonBufferList.push(banButton);
+        }
+
+        if (player.playerCategory != "Whitelisted") {
+            WLButton = stockButton
+                .clone()
+                .addClass("btn-primary")
+                .attr("data-action", "WL")
+                .val("Whitelist");
+            actionButtonBufferList.push(WLButton);
+        }
+
+        if (player.playerCategory != "Admin") {
+            AdminButton = stockButton
+                .clone()
+                .addClass("btn-info")
+                .attr("data-action", "admin")
+                .val("Give Admin");
+            actionButtonBufferList.push(AdminButton);
+        }
+        ResetButton = stockButton
+            .clone()
+            .addClass("btn-warning")
+            .attr("data-action", "reset")
+            .val("Reset Perms");
+        actionButtonBufferList.push(ResetButton);
+    }
+    actionButtonBuffer = "";
+    actionButtonBufferList.forEach((element) => {
+        actionButtonBuffer += element.prop("outerHTML");
+    });
+    return actionButtonBuffer;
+};
+
+$(document).on("click", ".pBtn", function (e) {
+    e.preventDefault();
+    pGuid = $(e.target).attr("data-guid");
+    pAction = $(e.target).attr("data-action");
+
+    $.ajax({
+        type: "POST",
+        url: apiURL + "/player",
+        dataType: "json",
+        data: JSON.stringify({ guid: pGuid, action: pAction }),
+        success: function (result) {},
+        error: function (result) {
+            console.log(result);
+            alert("Error");
+        },
+    });
+});
 
 const saveLog = function (filename, data) {
     var blob = new Blob([data], { type: "text/csv" });

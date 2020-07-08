@@ -60,6 +60,8 @@ class WebServer(tornado.web.Application):
                      dict(launcher=self.launcher)),
                     (r"/api/shutdown", ShutdownRequestHandler,
                      dict(launcher=self.launcher)),
+                    (r"/api/player", PlayerRequestHandler,
+                     dict(launcher=self.launcher)),
                     ]
         super().__init__(handlers, **settings)
 
@@ -231,6 +233,61 @@ class ShutdownRequestHandler(BaseHandler):
                     target=self.launcher.DedicatedServer.kill_server, args=("Website Request", True))
                 t.daemon = True
                 t.start()
+            self.write({"message": "Success"})
+        else:
+            self.write({"message": "Not Authenticated"})
+
+
+class PlayerRequestHandler(BaseHandler):
+    def post(self):
+        data = tornado.escape.json_decode(self.request.body)
+        players = self.launcher.DedicatedServer.players['playerInfo']
+        playerGUID = data["guid"]
+        player = [x for x in players if x['playerGuid']
+                  == playerGUID and x["playerName"] != ""][0]
+        playerName = player["playerName"]
+        action = data['action']
+        if player["playerCategory"] == "Owner":
+            self.write({"message": "Cannot touch the Owner!"})
+            return
+        if self.current_user == b"admin":
+            if action == "kick":
+                self.launcher.DedicatedServer.AstroRCON.DSKickPlayerGuid(
+                    playerGUID)
+                AstroLogging.logPrint(f"Kicking player: {playerName}")
+
+            if action == "ban":
+                if len([x for x in players if x["playerName"] == playerName and x["inGame"]]) > 0:
+                    self.launcher.DedicatedServer.AstroRCON.DSKickPlayerGuid(
+                        playerGUID)
+                self.launcher.DedicatedServer.AstroRCON.DSSetPlayerCategoryForPlayerName(
+                    playerName, "Blacklisted")
+                self.launcher.DedicatedServer.refresh_settings()
+                AstroLogging.logPrint(f"Banning player: {playerName}")
+
+            if action == "WL":
+                self.launcher.DedicatedServer.AstroRCON.DSSetPlayerCategoryForPlayerName(
+                    playerName, "Whitelisted")
+                self.launcher.DedicatedServer.refresh_settings()
+                AstroLogging.logPrint(f"Whitelisting player: {playerName}")
+
+            if action == "admin":
+                self.launcher.DedicatedServer.AstroRCON.DSSetPlayerCategoryForPlayerName(
+                    playerName, "Admin")
+                self.launcher.DedicatedServer.refresh_settings()
+                AstroLogging.logPrint(f"Setting player as Admin: {playerName}")
+
+            if action == "reset":
+                self.launcher.DedicatedServer.AstroRCON.DSSetPlayerCategoryForPlayerName(
+                    playerName, "Unlisted")
+                self.launcher.DedicatedServer.refresh_settings()
+                AstroLogging.logPrint(
+                    f"Resetting perms for player: {playerName}")
+
+            playerList = self.launcher.DedicatedServer.AstroRCON.DSListPlayers()
+            if playerList is not None:
+                self.launcher.DedicatedServer.players = playerList
+
             self.write({"message": "Success"})
         else:
             self.write({"message": "Not Authenticated"})

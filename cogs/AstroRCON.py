@@ -51,6 +51,30 @@ class AstroRCON():
             print(f"Error retrieving player list: {e}")
             return None
 
+    def DSKickPlayerGuid(self, playerGuid):
+        try:
+            self.socket.sendall(f'DSKickPlayerGuid {playerGuid}\n'.encode())
+            rawdata = AstroRCON.recvall(self.socket)
+            parsedData = AstroRCON.parseData(rawdata)
+            # pprint(parsedData)
+            return parsedData
+        except Exception as e:
+            print(f"Error kicking player: {e}")
+            return None
+
+    def DSSetPlayerCategoryForPlayerName(self, playerName, category):
+        try:
+            escapedName = playerName.replace('"', '\\"')
+            self.socket.sendall(
+                f'DSSetPlayerCategoryForPlayerName "{escapedName}" {category}\n'.encode())
+            rawdata = AstroRCON.recvall(self.socket)
+            parsedData = AstroRCON.parseData(rawdata)
+            # pprint(parsedData)
+            return parsedData
+        except:  # Exception as e:
+            # print(e)
+            return None
+
     def DSServerStatistics(self):
         try:
             self.socket.sendall(b"DSServerStatistics\n")
@@ -65,6 +89,18 @@ class AstroRCON():
     def DSSaveGame(self):
         try:
             self.socket.sendall(b"DSSaveGame\n")
+            rawdata = AstroRCON.recvall(self.socket)
+            parsedData = AstroRCON.parseData(rawdata)
+            # pprint(parsedData)
+            return parsedData
+        except:  # Exception as e:
+            # print(e)
+            return None
+
+    def DSSetDenyUnlisted(self, state):
+        try:
+            self.socket.sendall(
+                f'DSSetDenyUnlisted {state}\n'.encode())
             rawdata = AstroRCON.recvall(self.socket)
             parsedData = AstroRCON.parseData(rawdata)
             # pprint(parsedData)
