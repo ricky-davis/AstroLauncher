@@ -113,7 +113,7 @@ class AstroDedicatedServer():
     def saveGame(self):
         self.setStatus("saving")
         self.busy = True
-        time.sleep(1)
+        # time.sleep(1)
         AstroLogging.logPrint("Saving the current game...")
         self.AstroRCON.DSSaveGame()
         self.busy = False
@@ -121,7 +121,7 @@ class AstroDedicatedServer():
     def shutdownServer(self):
         self.setStatus("shutdown")
         self.busy = True
-        time.sleep(1)
+        # time.sleep(1)
         self.AstroRCON.DSServerShutdown()
         self.DSServerStats = None
         AstroLogging.logPrint("Server shutdown.")
@@ -146,14 +146,18 @@ class AstroDedicatedServer():
         self.refresh_settings()
 
     def server_loop(self):
-        try:
-            if not self.AstroRCON or not self.AstroRCON.connected:
-                self.AstroRCON = self.start_RCON()
-        except:
-            pass
-        time.sleep(2)
-        self.quickToggleWhitelist()
         while True:
+            # Ensure RCON is connected
+            try:
+                if not self.AstroRCON or not self.AstroRCON.connected:
+                    self.AstroRCON = self.start_RCON()
+                    self.quickToggleWhitelist()
+            except:
+                pass
+            while not self.AstroRCON.connected:
+                time.sleep(0.1)
+            ###########################
+
             if not self.launcher.launcherConfig.DisableBackupRetention:
                 self.launcher.backup_retention()
 
@@ -244,7 +248,7 @@ class AstroDedicatedServer():
         try:
             if save:
                 self.saveGame()
-                time.sleep(1)
+                # time.sleep(1)
                 self.shutdownServer()
         except:
             pass
