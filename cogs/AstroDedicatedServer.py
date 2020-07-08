@@ -42,7 +42,7 @@ class AstroDedicatedServer():
         ConsolePort: str = None
         ExitSemaphore: str = None
         HeartbeatInterval: str = None
-        PlayerProperties: list = None
+        PlayerProperties: list = dataclasses.field(default_factory=list)
 
     def __init__(self, astroPath, launcher):
         self.astroPath = astroPath
@@ -136,9 +136,16 @@ class AstroDedicatedServer():
         except:
             pass
 
+    def quickToggleWhitelist(self):
+        '''Toggling the whitelist is good for forcing the server to put every player who has joined the current save's Guid into the INI'''
+
+        wLOn = self.settings.DenyUnlistedPlayers
+        self.AstroRCON.DSSetDenyUnlisted(not wLOn)
+        self.AstroRCON.DSSetDenyUnlisted(wLOn)
+        self.refresh_settings()
+
     def server_loop(self):
-        self.AstroRCON = self.start_RCON()
-        time.sleep(2)
+        self.quickToggleWhitelist()
         while True:
             if not self.launcher.launcherConfig.DisableBackupRetention:
                 self.launcher.backup_retention()
@@ -177,12 +184,22 @@ class AstroDedicatedServer():
                                   for x in self.players['playerInfo'] if x['inGame']]
 
                     if len(curPlayers) > len(self.onlinePlayers):
-
                         playerDif = list(set(curPlayers) -
                                          set(self.onlinePlayers))[0]
                         self.onlinePlayers = curPlayers
+
                         AstroLogging.logPrint(
                             f"Player joining: {playerDif}")
+
+                        # Add player to INI with Unlisted category if not exists or is Pending
+                        pp = list(self.settings.PlayerProperties)
+                        difGuid = [x for x in self.players['playerInfo']
+                                   if x['playerName'] == playerDif][0]["playerGuid"]
+                        if len([x for x in pp if difGuid in x and "PlayerCategory=Pending" not in x]) == 0:
+                            self.AstroRCON.DSSetPlayerCategoryForPlayerName(
+                                playerDif, "Unlisted")
+                            self.refresh_settings()
+
                     elif len(curPlayers) < len(self.onlinePlayers):
                         playerDif = list(
                             set(self.onlinePlayers) - set(curPlayers))[0]
