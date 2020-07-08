@@ -479,20 +479,20 @@ if __name__ == "__main__":
         pass
     try:
         parser = argparse.ArgumentParser()
-        parser.add_argument(
-            "-p", "--path", help="Set the server folder path", type=str.lower)
         parser.add_argument("-d", "--daemon", dest="daemon",
                             help="Set the launcher to run as a Daemon", action='store_true')
-        parser.add_argument("-U", "--noupdate", dest="noautoupdate", default=None,
-                            help="Disable autoupdate if running as exe", action='store_true')
-
-        parser.add_argument("-i", "--ini", dest="launcherINI", default="Launcher.ini",
-                            help="Set the location of the Launcher INI")
-
         parser.add_argument(
             "-c", "--consolepid", help="Set the consolePID for the Daemon", type=str.lower)
         parser.add_argument(
             "-l", "--launcherpid", help="Set the launcherPID for the Daemon", type=str.lower)
+
+        parser.add_argument(
+            "-p", "--path", help="Set the server folder path", type=str.lower)
+        parser.add_argument("-U", "--noupdate", dest="noautoupdate", default=None,
+                            help="Disable autoupdate if running as exe", action='store_true')
+        parser.add_argument("-i", "--ini", dest="launcherINI", default="Launcher.ini",
+                            help="Set the location of the Launcher INI")
+
         args = parser.parse_args()
         if args.daemon:
             if args.consolepid and args.launcherpid:
