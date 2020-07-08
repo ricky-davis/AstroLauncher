@@ -48,7 +48,7 @@
                         >
                             <h3>
                                 <span class="collapseArrows pr-2"></span>
-                                Statistics
+                                Server Info
                                 <span
                                     id="serverStatus"
                                     class="text-danger col-12 float-right px-0 text-md-left col-lg-5 text-lg-right float-lg-right"
@@ -61,20 +61,40 @@
                             id="serverStatusCardBody"
                             class="card-body pt-4 collapse show"
                         >
-                            <p>Server Name: <span id="serverName"></span></p>
-                            <p>Version: <span id="serverVersion"></span></p>
-                            <p>Owner: <span id="owner"></span></p>
-                            <p>
-                                Framerate:
-                                <span id="framerateStats"></span>
-                            </p>
-                            <p>
-                                Players:
-                                <span id="playersStats"></span>
-                            </p>
-                            <p>Has Whitelist: <span id="hWL"></span></p>
-                            <p>Has Password: <span id="hPW"></span></p>
-                            <p>Creative Mode: <span id="hCM"></span></p>
+                            <table>
+                                <tr>
+                                    <th>Server Name:</th>
+                                    <td id="serverName"></td>
+                                </tr>
+                                <tr>
+                                    <th>Version:</th>
+                                    <td id="serverVersion"</td>
+                                </tr>
+                                <tr>
+                                    <th>Owner:</th>
+                                    <td id="owner"</td>
+                                </tr>
+                                <tr>
+                                    <th>Whitelist:</th>
+                                    <td id="hWL"</td>
+                                </tr>
+                                <tr>
+                                    <th>Password:</th>
+                                    <td id="hPW"</td>
+                                </tr>
+                                <tr>
+                                    <th>Creative:</th>
+                                    <td id="hCM"</td>
+                                </tr>
+                                <tr>
+                                    <th>Framerate:</th>
+                                    <td id="framerateStats"</td>
+                                </tr>
+                                <tr>
+                                    <th>Players:</th>
+                                    <td id="playersStats"</td>
+                                </tr>
+                            </table>
                         </div>
                         {% if isAdmin %}
                         <div id="serverStatusFooter" class="card-footer row">

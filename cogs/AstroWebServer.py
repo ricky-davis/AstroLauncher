@@ -110,7 +110,7 @@ class MainHandler(BaseHandler):
         if not self.application.passwordHash == "":
             self.render(os.path.join(self.path, 'index.html'),
                         isAdmin=self.current_user == b"admin",
-                        title=f"Dedicated Server Status for {s.PublicIP}:{s.Port}")
+                        title=s.ServerName)
         else:
             self.redirect("/login")
 
@@ -122,10 +122,11 @@ class LoginHandler(BaseHandler):
 
     def get(self):
         if not self.current_user == b"admin":
+            s = self.launcher.DedicatedServer.settings
             self.render(os.path.join(self.path, 'login.html'),
                         isAdmin=self.current_user == b"admin",
                         hashSet=not self.application.passwordHash == "",
-                        title="Dedicated Server Status Login")
+                        title=s.ServerName)
         else:
             self.redirect("/")
 

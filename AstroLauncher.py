@@ -421,7 +421,7 @@ class AstroLauncher():
         doneTime = time.time()
         elapsed = doneTime - startTime
         AstroLogging.logPrint(
-            f"Server ready with ID {self.DedicatedServer.LobbyID}. Took {round(elapsed,2)} seconds to register.")
+            f"Server ready! Took {round(elapsed,2)} seconds to register.")  # {self.DedicatedServer.LobbyID}
         self.DedicatedServer.status = "ready"
         self.DedicatedServer.server_loop()
 

@@ -28,6 +28,9 @@ th {
 h1 {
     font-size: 1em;
 }
+h2 {
+    word-wrap: break-word;
+}
 h5 {
     font-size: 1em;
     margin: 0;
@@ -51,7 +54,7 @@ h5 {
     color: #fff;
 }
 #logo {
-    height: 60px;
+    width: 40px;
     border-radius: 10%;
 }
 #msg {
@@ -67,6 +70,21 @@ h5 {
 #consoleText div:not(.warning):nth-of-type(2n) {
     background-color: rgba(30, 30, 30, 0.9);
 }
+
+#serverStatusCardBody table,
+#serverStatusCardBody th,
+#serverStatusCardBody td {
+    border: 0px;
+    border-collapse: collapse;
+}
+
+#serverStatusCardBody th {
+    text-align: right;
+}
+#serverStatusCardBody td {
+    border: 0px;
+}
+
 .iconInfo {
     color: green;
     width: 18px;
@@ -113,11 +131,14 @@ h5 {
     h1 {
         font-size: 1.5em;
     }
+    h2 {
+        font-size: 1.3em;
+    }
 }
 
 @media (min-width: 768px) {
     #logo {
-        height: 80px;
+        width: 60px;
     }
 }
 
@@ -125,15 +146,24 @@ h5 {
     h1 {
         font-size: 2em;
     }
+    h2 {
+        font-size: 1.8em;
+    }
 }
 
 @media (min-width: 1200px) {
     h1 {
         font-size: 2.5em;
     }
+    h2 {
+        font-size: 2em;
+    }
 }
 @media (min-width: 1500px) {
     h1 {
         font-size: 3em;
+    }
+    h2 {
+        font-size: 2.5em;
     }
 }

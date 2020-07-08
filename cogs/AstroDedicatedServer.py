@@ -227,10 +227,12 @@ class AstroDedicatedServer():
         self.registered = False
         if (len(servers_registered)) > 0:
             AstroLogging.logPrint(
-                f"Attemping to deregister all ({len(servers_registered)}) servers as {self.ipPortCombo}")
+                f"Attemping to deregister all ({len(servers_registered)}) servers matching self")
             # pprint(servers_registered)
-            for reg_srvr in servers_registered:
-                AstroLogging.logPrint(f"Deregistering {reg_srvr['LobbyID']}..")
+            for counter, reg_srvr in enumerate(servers_registered):
+                # reg_srvr['LobbyID']
+                AstroLogging.logPrint(
+                    f"Deregistering {counter+1}/{len(servers_registered)}...")
                 AstroAPI.deregister_server(
                     reg_srvr['LobbyID'], self.launcher.headers)
             AstroLogging.logPrint("All servers deregistered")
