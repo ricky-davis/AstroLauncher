@@ -481,6 +481,9 @@ if __name__ == "__main__":
         parser.add_argument("-U", "--noupdate", dest="noautoupdate", default=None,
                             help="Disable autoupdate if running as exe", action='store_true')
 
+        parser.add_argument("-i", "--ini", dest="launcherINI", default="Launcher.ini",
+                            help="Set the location of the Launcher INI")
+
         parser.add_argument(
             "-c", "--consolepid", help="Set the consolePID for the Daemon", type=str.lower)
         parser.add_argument(
@@ -499,7 +502,8 @@ if __name__ == "__main__":
             else:
                 print("Insufficient launch options!")
         else:
-            AstroLauncher(args.path, disable_auto_update=args.noautoupdate)
+            AstroLauncher(
+                args.path, disable_auto_update=args.noautoupdate, launcherINI=args.launcherINI)
     except KeyboardInterrupt:
         pass
     except Exception as err:
