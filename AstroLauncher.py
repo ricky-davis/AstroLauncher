@@ -199,12 +199,21 @@ class AstroLauncher():
         if disable_auto_update is not None:
             self.launcherConfig.DisableAutoUpdate = disable_auto_update
         self.version = "v1.5.3"
+        AstroLogging.logPrint(
+            f"AstroLauncher - Unofficial Dedicated Server Launcher {self.version}")
+        AstroLogging.logPrint(
+            "If you encounter any bugs please open a new issue at:")
+        AstroLogging.logPrint(
+            "https://github.com/ricky-davis/AstroLauncher/issues")
+        AstroLogging.logPrint(
+            "To safely stop the launcher and server press CTRL+C")
         self.latestURL = "https://github.com/ricky-davis/AstroLauncher/releases/latest"
         self.isExecutable = os.path.samefile(sys.executable, sys.argv[0])
         self.headers = AstroAPI.base_headers
         self.DaemonProcess = None
         self.saveObserver = None
         self.backupObserver = None
+        self.hasUpdate = False
         self.affinity = self.launcherConfig.CPUAffinity
         try:
             if self.affinity != "":
@@ -221,14 +230,6 @@ class AstroLauncher():
         self.DedicatedServer = AstroDedicatedServer(
             self.astroPath, self)
 
-        AstroLogging.logPrint(
-            f"AstroLauncher - Unofficial Dedicated Server Launcher {self.version}")
-        AstroLogging.logPrint(
-            "If you encounter any bugs please open a new issue at:")
-        AstroLogging.logPrint(
-            "https://github.com/ricky-davis/AstroLauncher/issues")
-        AstroLogging.logPrint(
-            "To safely stop the launcher and server press CTRL+C")
         self.check_for_update()
 
         AstroLogging.logPrint("Starting a new session")
@@ -327,6 +328,7 @@ class AstroLauncher():
             data = ((requests.get(url)).json())
             latestVersion = data['tag_name']
             if latestVersion != self.version:
+                self.hasUpdate = latestVersion
                 AstroLogging.logPrint(
                     f"UPDATE: There is a newer version of the launcher out! {latestVersion}")
                 AstroLogging.logPrint(f"Download it at {self.latestURL}")

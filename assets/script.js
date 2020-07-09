@@ -58,6 +58,12 @@ const tick = async () => {
         const data = await res.json();
         // console.log(data);
 
+        if (data.hasUpdate != false) {
+            let ghLink = document.querySelector("#githubLink");
+            let tipInstance = ghLink._tippy;
+            tipInstance.setContent("Update Available: " + data.hasUpdate);
+            tipInstance.show();
+        }
         statusMsg(data.status);
         isAdmin = data.admin;
         if ($("#console").length && !isAdmin) {
@@ -354,7 +360,7 @@ const linkify = (text) => {
     const exp = /(\b(((https?|ftp|file):\/\/)|[-A-Z+&@#\/%=~_|]+\.)[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/gi;
     return text.replace(
         exp,
-        `<a href="$1" target="_blank" style="color: white;">$1</a>`
+        `<a href="$1" target="_blank" style="color: #baf;">$1</a>`
     );
 };
 
@@ -379,4 +385,13 @@ tippy(".ctc", {
     content: "Click to Copy",
     trigger: "mouseenter focus",
     placement: "right",
+});
+
+tippy("#githubLink", {
+    content: "Update Available",
+    placement: "right-end",
+    trigger: "manual",
+    hideOnClick: false,
+    theme: "update",
+    interactive: true,
 });

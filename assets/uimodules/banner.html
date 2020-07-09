@@ -10,12 +10,16 @@
         </div>
         <div class="col-12 col-md-10">
             <h2>
-                {{ title }}
+                {{ launcher.DedicatedServer.settings.ServerName }}
             </h2>
             <a
                 href="https://github.com/ricky-davis/AstroLauncher/releases/latest"
-                >AstroLauncher - Unofficial Dedicated Server Launcher</a
             >
+                <span id="githubLink">
+                    AstroLauncher {{ launcher.version }} - Unofficial Dedicated
+                    Server Launcher
+                </span>
+            </a>
         </div>
         <div class="col-12 col-md-1 align-self-end">
             <span id="authLink">

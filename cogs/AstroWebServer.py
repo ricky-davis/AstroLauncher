@@ -106,11 +106,10 @@ class MainHandler(BaseHandler):
 
     # @tornado.web.authenticated
     def get(self):
-        s = self.launcher.DedicatedServer.settings
         if not self.application.passwordHash == "":
             self.render(os.path.join(self.path, 'index.html'),
                         isAdmin=self.current_user == b"admin",
-                        title=s.ServerName)
+                        launcher=self.launcher)
         else:
             self.redirect("/login")
 
@@ -123,11 +122,10 @@ class LoginHandler(BaseHandler):
 
     def get(self):
         if not self.current_user == b"admin":
-            s = self.launcher.DedicatedServer.settings
             self.render(os.path.join(self.path, 'login.html'),
                         isAdmin=self.current_user == b"admin",
                         hashSet=not self.application.passwordHash == "",
-                        title=s.ServerName)
+                        launcher=self.launcher)
         else:
             self.redirect("/")
 
@@ -178,6 +176,7 @@ class APIRequestHandler(BaseHandler):
             "admin": isAdmin,
             "status": dedicatedServer.status,
             "stats": dedicatedServer.DSServerStats,
+            "hasUpdate": self.launcher.hasUpdate,
             "settings": {
                 "MaxServerFramerate": s.MaxServerFramerate,
                 "PublicIP": s.PublicIP,

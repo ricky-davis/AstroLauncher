@@ -1,7 +1,7 @@
 <html lang="en">
-    {% module HeadModule(title,isAdmin) %}
+    {% module HeadModule(launcher,isAdmin) %}
     <body>
-        {% module BannerModule(title,isAdmin) %}
+        {% module BannerModule(launcher,isAdmin) %}
         <div id="main" class="container-fluid my-5">
             <div class="row">
                 <div
@@ -55,6 +55,6 @@
             </div>
         </div>
     </body>
-    {% module ScriptsModule(title,isAdmin) %}
+    {% module ScriptsModule(launcher,isAdmin) %}
     <!--<script src="{{ static_url('script.js') }}"></script>-->
 </html>

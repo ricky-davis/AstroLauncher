@@ -7,11 +7,11 @@
     src: url(lib/Roboto-Light.ttf);
 }
 * {
-    color: #fff;
     font-family: Roboto-Light;
 }
 
 body {
+    color: #fff;
     background-color: rgba(50, 50, 50, 1);
 }
 
@@ -148,6 +148,14 @@ h5 {
 }
 .fa-download:hover {
     color: #777;
+}
+
+.tippy-box[data-theme~="update"] {
+    background-color: teal;
+    color: white;
+}
+.tippy-box[data-theme~="update"] > .tippy-arrow::before {
+    border-right-color: teal;
 }
 
 @media (min-width: 576px) {

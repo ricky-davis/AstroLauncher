@@ -1,7 +1,7 @@
 <html lang="en">
-    {% module HeadModule(title,isAdmin) %}
+    {% module HeadModule(launcher,isAdmin) %}
     <body>
-        {% module BannerModule(title,isAdmin) %}
+        {% module BannerModule(launcher,isAdmin) %}
         <div id="msg" class="bg-danger text-center collapse">
             <h5></h5>
         </div>
@@ -199,6 +199,6 @@
         </div>
     </body>
 
-    {% module ScriptsModule(title,isAdmin) %}
+    {% module ScriptsModule(launcher,isAdmin) %}
     <script src="{{ static_url('script.js') }}"></script>
 </html>
