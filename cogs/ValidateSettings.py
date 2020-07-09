@@ -19,7 +19,8 @@ def get_public_ip():
     return x['ip']
 
 
-def get_current_settings(curPath):
+def get_current_settings(launcher):
+    curPath = launcher.astroPath
 
     confPath = os.path.join(
         curPath, r"Astro\Saved\Config\WindowsServer\AstroServerSettings.ini")
@@ -28,6 +29,8 @@ def get_current_settings(curPath):
             "VerbosePlayerProperties": "True"
         }
     }
+    if launcher.launcherConfig.OverwritePublicIP:
+        ovrConfig["/Script/Astro.AstroServerSettings"]["PublicIP"] = get_public_ip()
     MultiConfig().overwrite_with(confPath, ovrConfig)
 
     baseConfig = {

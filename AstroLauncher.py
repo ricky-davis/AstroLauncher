@@ -43,12 +43,13 @@ class AstroLauncher():
         ServerStatusFrequency: float = 2
         PlayfabAPIFrequency: float = 2
         DisableBackupRetention: bool = False
-        BackupRetentionPeriodHours: float = 76
+        BackupRetentionPeriodHours: float = 72
         BackupRetentionFolderLocation: str = r"Astro\Saved\Backup\LauncherBackups"
         EnableAutoRestart: bool = False
         AutoRestartEveryHours: float = 24
         AutoRestartSyncTimestamp: str = "00:00"
         DisableNetworkCheck: bool = False
+        OverwritePublicIP: bool = False
         ShowServerFPSInConsole: bool = True
 
         DisableWebServer: bool = False

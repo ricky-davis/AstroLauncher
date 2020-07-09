@@ -100,7 +100,7 @@ class AstroDedicatedServer():
 
     def refresh_settings(self):
         self.settings = dataclasses.replace(
-            self.settings, **ValidateSettings.get_current_settings(self.astroPath))
+            self.settings, **ValidateSettings.get_current_settings(self.launcher))
         self.ipPortCombo = f'{self.settings.PublicIP}:{self.settings.Port}'
 
     def start(self):
