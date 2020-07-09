@@ -385,6 +385,13 @@ tippy(".ctc", {
     content: "Click to Copy",
     trigger: "mouseenter focus",
     placement: "right",
+    onTrigger(instance, event) {
+        if (tippy.currentInput.isTouch) {
+            instance.disable();
+        } else {
+            instance.enable();
+        }
+    },
 });
 
 tippy("#githubLink", {
