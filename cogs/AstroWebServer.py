@@ -51,7 +51,7 @@ class WebServer(tornado.web.Application):
 
         handlers = [(r'/', MainHandler, dict(path=settings['static_path'], launcher=self.launcher)),
                     (r"/login", LoginHandler,
-                     {"path": settings['static_path']}),
+                     dict(path=settings['static_path'], launcher=self.launcher)),
                     (r'/logout', LogoutHandler, dict(launcher=self.launcher)),
                     (r"/api", APIRequestHandler, dict(launcher=self.launcher)),
                     (r"/api/savegame", SaveRequestHandler,
@@ -117,8 +117,9 @@ class MainHandler(BaseHandler):
 
 class LoginHandler(BaseHandler):
     # pylint: disable=arguments-differ
-    def initialize(self, path):
+    def initialize(self, path, launcher):
         self.path = path
+        self.launcher = launcher
 
     def get(self):
         if not self.current_user == b"admin":
