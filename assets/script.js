@@ -137,9 +137,9 @@ const tick = async () => {
         }
         if (!compareObj(oldSettings, s)) {
             oldSettings = s;
-            $("#titleIP").html(`${s.PublicIP}:${s.Port}`);
 
             $("#serverName").html(s.ServerName);
+            $("#serverPort").html(`${s.PublicIP}:${s.Port}`);
             $("#owner").html(s.OwnerName);
         }
         if (
@@ -357,3 +357,26 @@ const linkify = (text) => {
         `<a href="$1" target="_blank" style="color: white;">$1</a>`
     );
 };
+
+var clipboard = new ClipboardJS(".ctc");
+
+clipboard.on("success", function (e) {
+    e.clearSelection();
+});
+
+tippy(".ctc", {
+    content: "Copied!",
+    trigger: "click",
+    onShow(instance) {
+        setTimeout(() => {
+            instance.hide();
+        }, 1500);
+    },
+    placement: "right",
+});
+
+tippy(".ctc", {
+    content: "Click to Copy",
+    trigger: "mouseenter focus",
+    placement: "right",
+});
