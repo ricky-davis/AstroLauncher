@@ -111,6 +111,8 @@ class AstroDedicatedServer():
         self.process = subprocess.Popen(cmd)
 
     def saveGame(self):
+        if not self.AstroRCON.connected:
+            return False
         self.setStatus("saving")
         self.busy = True
         # time.sleep(1)
@@ -119,6 +121,8 @@ class AstroDedicatedServer():
         self.busy = False
 
     def shutdownServer(self):
+        if not self.AstroRCON.connected:
+            return False
         self.setStatus("shutdown")
         self.busy = True
         # time.sleep(1)
@@ -127,6 +131,8 @@ class AstroDedicatedServer():
         AstroLogging.logPrint("Server shutdown.")
 
     def save_and_shutdown(self):
+        if not self.AstroRCON.connected:
+            return False
         self.saveGame()
         self.busy = True
         self.shutdownServer()
@@ -140,6 +146,8 @@ class AstroDedicatedServer():
     def quickToggleWhitelist(self):
         '''Toggling the whitelist is good for forcing the server to put every player who has joined the current save's Guid into the INI'''
 
+        if not self.AstroRCON.connected:
+            return False
         wLOn = self.settings.DenyUnlistedPlayers
         self.AstroRCON.DSSetDenyUnlisted(not wLOn)
         self.AstroRCON.DSSetDenyUnlisted(wLOn)

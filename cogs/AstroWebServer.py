@@ -201,7 +201,6 @@ class SaveRequestHandler(BaseHandler):
     def post(self):
         if self.current_user == b"admin":
             if not self.launcher.DedicatedServer.busy:
-                self.launcher.DedicatedServer.busy = True
                 t = Thread(
                     target=self.launcher.DedicatedServer.saveGame, args=())
                 t.daemon = True
@@ -215,7 +214,6 @@ class RebootRequestHandler(BaseHandler):
     def post(self):
         if self.current_user == b"admin":
             if not self.launcher.DedicatedServer.busy:
-                self.launcher.DedicatedServer.busy = True
                 t = Thread(
                     target=self.launcher.DedicatedServer.save_and_shutdown, args=())
                 t.daemon = True
@@ -229,7 +227,6 @@ class ShutdownRequestHandler(BaseHandler):
     def post(self):
         if self.current_user == b"admin":
             if not self.launcher.DedicatedServer.busy:
-                self.launcher.DedicatedServer.busy = True
                 t = Thread(
                     target=self.launcher.DedicatedServer.kill_server, args=("Website Request", True))
                 t.daemon = True
