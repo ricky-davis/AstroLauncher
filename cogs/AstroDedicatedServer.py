@@ -104,7 +104,7 @@ class AstroDedicatedServer():
         self.ipPortCombo = f'{self.settings.PublicIP}:{self.settings.Port}'
 
     def start(self):
-        if self.launcher.launcherConfig.DisableServerConsolePopup:
+        if self.launcher.launcherConfig.HideServerConsoleWindow:
             cmd = [os.path.join(self.astroPath, "AstroServer.exe")]
         else:
             cmd = [os.path.join(self.astroPath, "AstroServer.exe"), '-log']
