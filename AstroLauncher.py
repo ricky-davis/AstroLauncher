@@ -8,7 +8,6 @@ import shutil
 import subprocess
 import sys
 import time
-import ctypes
 from threading import Thread
 
 import psutil
@@ -40,8 +39,8 @@ class AstroLauncher():
     class LauncherConfig():
         DisableAutoUpdate: bool = False
         UpdateOnServerRestart: bool = True
-        DisableServerConsolePopup: bool = False
         HideServerConsoleWindow: bool = False
+        HideLauncherConsoleWindow: bool = False
         ServerStatusFrequency: float = 2
         PlayfabAPIFrequency: float = 2
         DisableBackupRetention: bool = False
@@ -253,11 +252,12 @@ class AstroLauncher():
             # AstroLogging.logPrint(
             #    f"HTTP Server started at 127.0.0.1:{self.launcherConfig.WebServerPort}")
 
-        if self.launcherConfig.HideServerConsoleWindow:
-            #hide window 
-            AstroLogging.logPrint("HideServerConsoleWindow is true, hiding window in 5 seconds...")
+        if self.launcherConfig.HideLauncherConsoleWindow:
+            # hide window
+            AstroLogging.logPrint(
+                "HideLauncherConsoleWindow enabled, Hiding window in 5 seconds...")
             time.sleep(5)
-
+            # pylint: disable=redefined-outer-name
             kernel32 = ctypes.WinDLL('kernel32')
             user32 = ctypes.WinDLL('user32')
 
