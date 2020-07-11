@@ -170,7 +170,9 @@ const tick = async () => {
                         data.players.playerInfo.forEach((p) => {
                             let row = document.createElement("tr");
                             row.innerHTML = `<td>${p.playerName}</td>
-                            <td>${p.playerCategory}</td>`;
+                            <td>${p.playerCategory}</td>
+                            <td>${p.playerGuid}</td>`;
+
                             if (p.inGame == true) {
                                 if (isAdmin) {
                                     row.innerHTML +=
@@ -205,58 +207,69 @@ setInterval(tick, 1000);
 tick();
 
 const createActionButtons = function (status, player) {
+    dropDownDiv = $("<div/>").attr({ class: "btn-group dropup" });
+    DDButton = $("<button/>")
+        .attr({
+            type: "button",
+            class: "btn btn-secondary dropdown-toggle",
+            "data-toggle": "dropdown",
+            "aria-haspopup": "true",
+            "aria-expanded": "false",
+            id: "dropdownMenu2",
+        })
+        .text("Actions");
+    DDMenu = $("<div/>").attr({
+        class: "dropdown-menu",
+        "aria-labelledby": "dropdownMenu2",
+    });
+    dropDownDiv.append(DDButton);
+    dropDownDiv.append(DDMenu);
+    sButton = $("<button/>").attr({
+        type: "button",
+        class: "dropdown-item pBtn",
+        "data-guid": player.playerGuid,
+    });
+
     actionButtonBufferList = [];
     if (player.playerCategory != "Owner") {
-        stockButton = $("<input/>")
-            .attr({ type: "button", class: "btn pBtn mx-1" })
-            .attr("data-guid", player.playerGuid);
+        kickButton = sButton.clone().attr("data-action", "kick").text("Kick");
+        actionButtonBufferList.push(kickButton);
 
-        if (status == "online") {
-            kickButton = stockButton
-                .clone()
-                .addClass("btn-warning")
-                .attr("data-action", "kick")
-                .val("Kick");
-            actionButtonBufferList.push(kickButton);
-        }
-        if (player.playerCategory != "Blacklisted") {
-            banButton = stockButton
-                .clone()
-                .addClass("btn-danger")
-                .attr("data-action", "ban")
-                .val("Ban");
-            actionButtonBufferList.push(banButton);
-        }
+        banButton = sButton.clone().attr("data-action", "ban").text("Ban");
+        actionButtonBufferList.push(banButton);
 
-        if (player.playerCategory != "Whitelisted") {
-            WLButton = stockButton
-                .clone()
-                .addClass("btn-primary")
-                .attr("data-action", "WL")
-                .val("Whitelist");
-            actionButtonBufferList.push(WLButton);
-        }
+        WLButton = sButton.clone().attr("data-action", "WL").text("Whitelist");
+        actionButtonBufferList.push(WLButton);
 
-        if (player.playerCategory != "Admin") {
-            AdminButton = stockButton
-                .clone()
-                .addClass("btn-info")
-                .attr("data-action", "admin")
-                .val("Give Admin");
-            actionButtonBufferList.push(AdminButton);
-        }
-        ResetButton = stockButton
+        AdminButton = sButton
             .clone()
-            .addClass("btn-warning")
+            .attr("data-action", "admin")
+            .text("Give Admin");
+        actionButtonBufferList.push(AdminButton);
+
+        ResetButton = sButton
+            .clone()
             .attr("data-action", "reset")
-            .val("Reset Perms");
+            .text("Reset Perms");
         actionButtonBufferList.push(ResetButton);
+
+        if (status != "online") {
+            kickButton.addClass("disabled");
+        }
+        if (player.playerCategory == "Blacklisted") {
+            banButton.addClass("disabled");
+        }
+        if (player.playerCategory == "Whitelisted") {
+            WLButton.addClass("disabled");
+        }
+        if (player.playerCategory == "Admin") {
+            AdminButton.addClass("disabled");
+        }
     }
-    actionButtonBuffer = "";
     actionButtonBufferList.forEach((element) => {
-        actionButtonBuffer += element.prop("outerHTML");
+        DDMenu.append(element);
     });
-    return actionButtonBuffer;
+    return dropDownDiv.prop("outerHTML");
 };
 
 $(document).on("click", ".pBtn", function (e) {

@@ -198,3 +198,49 @@ h5 {
         font-size: 2.5em;
     }
 }
+
+/*drop-down override*/
+div.btn-group.show div.dropdown-menu.show {
+    background-color: #4b4b4b;
+}
+
+div.btn-group.show div.dropdown-menu.show button.dropdown-item {
+    color: #e1e1e1;
+}
+div.btn-group.show div.dropdown-menu.show button.dropdown-item.disabled {
+    background-color: transparent;
+    color: #222;
+}
+div.btn-group.show
+    div.dropdown-menu.show
+    button.dropdown-item[data-action="ban"]:not(.disabled) {
+    background-color: #c82333 !important;
+}
+div.btn-group.show
+    div.dropdown-menu.show
+    button.dropdown-item[data-action="WL"]:not(.disabled) {
+    background-color: #0069d9 !important;
+}
+div.btn-group.show
+    div.dropdown-menu.show
+    button.dropdown-item[data-action="kick"]:not(.disabled),
+div.btn-group.show
+    div.dropdown-menu.show
+    button.dropdown-item[data-action="reset"]:not(.disabled) {
+    background-color: #e0a800 !important;
+}
+div.btn-group.show
+    div.dropdown-menu.show
+    button.dropdown-item[data-action="admin"]:not(.disabled) {
+    background-color: #17a2b8 !important;
+}
+
+div.btn-group.show div.dropdown-menu.show div.dropdown-divider {
+    border-top: 1px solid rgba(50, 50, 50, 0.9);
+}
+
+div.btn-group.show div.dropdown-menu.show button.dropdown-item:hover,
+div.btn-group.show div.dropdown-menu.show button.dropdown-item:focus {
+    background-color: #1e1e1e;
+    color: #f0f0f0;
+}
