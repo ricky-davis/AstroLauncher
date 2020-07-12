@@ -226,8 +226,9 @@ const createActionButtons = function (status, player) {
     dropDownDiv.append(DDMenu);
     sButton = $("<button/>").attr({
         type: "button",
-        class: "dropdown-item pBtn",
+        class: "dropdown-item pBtn p-1",
         "data-guid": player.playerGuid,
+        "data-name": player.playerName,
     });
 
     actionButtonBufferList = [];
@@ -253,6 +254,12 @@ const createActionButtons = function (status, player) {
             .text("Reset Perms");
         actionButtonBufferList.push(ResetButton);
 
+        RemoveButton = sButton
+            .clone()
+            .attr("data-action", "remove")
+            .text("Remove");
+        actionButtonBufferList.push(RemoveButton);
+
         if (status != "online") {
             kickButton.addClass("disabled");
         }
@@ -271,17 +278,22 @@ const createActionButtons = function (status, player) {
     });
     return dropDownDiv.prop("outerHTML");
 };
+$(document).on("input", "#WLPlayerInp", function (e) {
+    console.log($(e.target).val());
+    $("#WLPlayerBtn").attr({ "data-name": $(e.target).val() });
+});
 
 $(document).on("click", ".pBtn", function (e) {
     e.preventDefault();
     pGuid = $(e.target).attr("data-guid");
+    pName = $(e.target).attr("data-name");
     pAction = $(e.target).attr("data-action");
 
     $.ajax({
         type: "POST",
         url: apiURL + "/player",
         dataType: "json",
-        data: JSON.stringify({ guid: pGuid, action: pAction }),
+        data: JSON.stringify({ guid: pGuid, action: pAction, name: pName }),
         success: function (result) {},
         error: function (result) {
             console.log(result);

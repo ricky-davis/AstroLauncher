@@ -53,6 +53,7 @@ class AstroDedicatedServer():
         self.ipPortCombo = None
         self.process = None
         self.players = {}
+        self.stripPlayers = []
         self.onlinePlayers = []
         self.registered = False
         self.LobbyID = None
@@ -206,6 +207,8 @@ class AstroDedicatedServer():
                         playerDif = list(set(curPlayers) -
                                          set(self.onlinePlayers))[0]
                         self.onlinePlayers = curPlayers
+                        if playerDif in self.stripPlayers:
+                            self.stripPlayers.remove(playerDif)
 
                         AstroLogging.logPrint(
                             f"Player joining: {playerDif}")
@@ -225,6 +228,9 @@ class AstroDedicatedServer():
                         self.onlinePlayers = curPlayers
                         AstroLogging.logPrint(
                             f"Player left: {playerDif}")
+
+                    self.players['playerInfo'] = [
+                        x for x in playerList['playerInfo'] if x['playerName'] not in self.stripPlayers]
             time.sleep(
                 self.launcher.launcherConfig.ServerStatusFrequency)
 

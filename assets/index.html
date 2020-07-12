@@ -18,13 +18,13 @@
                             aria-expanded="true"
                             aria-controls="consoleTextCardBody"
                         >
-                            <h3>
+                            <h4>
                                 <span class="collapseArrows pr-2"></span>Console
                                 <i
                                     class="fa fa-download"
                                     aria-hidden="true"
                                 ></i>
-                            </h3>
+                            </h4>
                         </div>
                         <div
                             id="consoleTextCardBody"
@@ -46,7 +46,7 @@
                             aria-expanded="true"
                             aria-controls="serverStatusCardBody"
                         >
-                            <h3>
+                            <h4>
                                 <span class="collapseArrows pr-2"></span>
                                 Server Info
                                 <span
@@ -54,7 +54,7 @@
                                     class="text-danger col-12 float-right px-0 text-md-left col-lg-5 text-lg-right float-lg-right"
                                     >Offline</span
                                 >
-                            </h3>
+                            </h4>
                         </div>
 
                         <div
@@ -101,28 +101,30 @@
                             </table>
                         </div>
                         {% if isAdmin %}
-                        <div id="serverStatusFooter" class="card-footer row">
-                            <button
-                                id="saveGameBtn"
-                                type="button"
-                                class="btn btn-success m-1 col-12 col-xl-4"
-                            >
-                                Save Game
-                            </button>
-                            <button
-                                id="rebootServerBtn"
-                                type="button"
-                                class="btn btn-warning m-1 col-12 col-xl-3"
-                            >
-                                Reboot
-                            </button>
-                            <button
-                                id="stopLauncherBtn"
-                                type="button"
-                                class="btn btn-danger m-1 col-12 col-xl-4"
-                            >
-                                Stop Launcher & Server
-                            </button>
+                        <div id="serverStatusFooter" class="card-footer">
+                            <div class="row">
+                                <button
+                                    id="saveGameBtn"
+                                    type="button"
+                                    class="btn btn-success m-1 col-12 col-xl-4"
+                                >
+                                    Save Game
+                                </button>
+                                <button
+                                    id="rebootServerBtn"
+                                    type="button"
+                                    class="btn btn-warning m-1 col-12 col-xl-3"
+                                >
+                                    Reboot
+                                </button>
+                                <button
+                                    id="stopLauncherBtn"
+                                    type="button"
+                                    class="btn btn-danger m-1 col-12 col-xl-4"
+                                >
+                                    Stop Launcher & Server
+                                </button>
+                            </div>
                         </div>
                         {% end %}
                     </div>
@@ -137,10 +139,10 @@
                             aria-expanded="true"
                             aria-controls="onlinePlayersCardBody"
                         >
-                            <h3>
+                            <h4>
                                 <span class="collapseArrows pr-2"></span>
                                 Online Players
-                            </h3>
+                            </h4>
                         </div>
                         <div
                             id="onlinePlayersCardBody"
@@ -164,6 +166,25 @@
                             </table>
                         </div>
                     </div>
+                    
+                    {% if isAdmin %}
+                    <div id="whiteListPlayers" class="card my-4 astroCard">
+                        <div
+                            id="whiteListPlayersCardBody"
+                            class="card-body collapse show"
+                        >
+                            <div class="input-group">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text">Whitelist Player:</span>
+                                </div>
+                                <input type="text" class="form-control" id="WLPlayerInp" placeholder="Player Name" aria-label="Player Name">
+                                <div class="input-group-append">
+                                    <button class="btn btn-secondary pBtn" id="WLPlayerBtn" data-action="WL" type="button">Submit</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% end %}
                     <div id="offinePlayersRow" class="card my-4 astroCard">
                         <div
                             class="card-header pt-4 px-4"
@@ -172,10 +193,10 @@
                             aria-expanded="true"
                             aria-controls="offlinePlayersCardBody"
                         >
-                            <h3>
+                            <h4>
                                 <span class="collapseArrows pr-2"></span>
                                 Offline Players
-                            </h3>
+                            </h4>
                         </div>
                         <div
                             id="offlinePlayersCardBody"

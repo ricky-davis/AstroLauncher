@@ -201,7 +201,7 @@ h5 {
 
 /*drop-down override*/
 div.btn-group.show div.dropdown-menu.show {
-    background-color: #4b4b4b;
+    background-color: #4b4b50;
 }
 
 div.btn-group.show div.dropdown-menu.show button.dropdown-item {
@@ -211,32 +211,35 @@ div.btn-group.show div.dropdown-menu.show button.dropdown-item.disabled {
     background-color: transparent;
     color: #222;
 }
-div.btn-group.show
-    div.dropdown-menu.show
-    button.dropdown-item[data-action="ban"]:not(.disabled) {
-    background-color: #c82333 !important;
+.pBtn::before {
+    text-align: left;
+    content: "";
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    -moz-border-radius: 7.5px;
+    -webkit-border-radius: 7.5px;
+    border-radius: 7.5px;
+    margin-right: 5px;
+    vertical-align: 1px;
 }
-div.btn-group.show
-    div.dropdown-menu.show
-    button.dropdown-item[data-action="WL"]:not(.disabled) {
-    background-color: #0069d9 !important;
+.pBtn[data-action="kick"]:not(.disabled)::before {
+    background-color: rgb(255, 123, 0) !important;
 }
-div.btn-group.show
-    div.dropdown-menu.show
-    button.dropdown-item[data-action="kick"]:not(.disabled),
-div.btn-group.show
-    div.dropdown-menu.show
-    button.dropdown-item[data-action="reset"]:not(.disabled) {
-    background-color: #e0a800 !important;
+.pBtn[data-action="ban"]:not(.disabled)::before {
+    background-color: red !important;
 }
-div.btn-group.show
-    div.dropdown-menu.show
-    button.dropdown-item[data-action="admin"]:not(.disabled) {
-    background-color: #17a2b8 !important;
+.pBtn[data-action="WL"]:not(.disabled)::before {
+    background-color: #0f0 !important;
 }
-
-div.btn-group.show div.dropdown-menu.show div.dropdown-divider {
-    border-top: 1px solid rgba(50, 50, 50, 0.9);
+.pBtn[data-action="admin"]:not(.disabled)::before {
+    background-color: #da70d6 !important;
+}
+.pBtn[data-action="reset"]:not(.disabled)::before {
+    background-color: white !important;
+}
+.pBtn[data-action="remove"]:not(.disabled)::before {
+    background-color: goldenrod !important;
 }
 
 div.btn-group.show div.dropdown-menu.show button.dropdown-item:hover,
