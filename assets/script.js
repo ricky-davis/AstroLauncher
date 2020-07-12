@@ -181,7 +181,7 @@ const tick = async () => {
                                         "</td>";
                                 }
                                 $("#onlinePlayersTable>tbody").append(row);
-                            } else if (p.playerName != "") {
+                            } else {
                                 $("#offlinePlayersTable>tbody").append(row);
                                 if (isAdmin) {
                                     row.innerHTML +=
@@ -254,12 +254,13 @@ const createActionButtons = function (status, player) {
             .text("Reset Perms");
         actionButtonBufferList.push(ResetButton);
 
+        /*
         RemoveButton = sButton
             .clone()
             .attr("data-action", "remove")
             .text("Remove");
         actionButtonBufferList.push(RemoveButton);
-
+        */
         if (status != "online") {
             kickButton.addClass("disabled");
         }
@@ -271,6 +272,13 @@ const createActionButtons = function (status, player) {
         }
         if (player.playerCategory == "Admin") {
             AdminButton.addClass("disabled");
+        }
+        if (player.playerName == "") {
+            kickButton.addClass("disabled");
+            banButton.addClass("disabled");
+            WLButton.addClass("disabled");
+            AdminButton.addClass("disabled");
+            ResetButton.addClass("disabled");
         }
     }
     actionButtonBufferList.forEach((element) => {

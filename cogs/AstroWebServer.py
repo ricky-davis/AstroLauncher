@@ -244,18 +244,18 @@ class PlayerRequestHandler(BaseHandler):
             players = self.launcher.DedicatedServer.players['playerInfo']
         except:
             return
-        guid = None
+        playerGUID = None
         playerName = None
         player = None
         if "guid" in data and data["guid"] is not None:
-            guid = data["guid"]
+            playerGUID = data["guid"]
 
-        if guid:
-            playerGUID = guid
+        if playerGUID:
             player = [x for x in players if x['playerGuid']
-                      == playerGUID and x["playerName"] != ""][0]
-
+                      == playerGUID][0]
             playerName = player["playerName"]
+            if playerName == "":
+                playerName = None
         if "name" in data:
             playerName = data["name"]
             try:
@@ -263,7 +263,7 @@ class PlayerRequestHandler(BaseHandler):
                           == playerName][0]
             except:
                 pass
-        if guid is None and playerName is None:
+        if playerGUID is None and playerName is None:
             self.write({"message": "Missing variable! (name or guid)"})
             return
 
@@ -275,46 +275,58 @@ class PlayerRequestHandler(BaseHandler):
                 playerName)
         action = data['action']
         if self.current_user == b"admin":
-            if guid:
+            if playerGUID:
                 if action == "kick":
                     self.launcher.DedicatedServer.AstroRCON.DSKickPlayerGuid(
                         playerGUID)
                     AstroLogging.logPrint(f"Kicking player: {playerName}")
 
             if action == "ban":
-                if guid:
+                if playerGUID:
                     if len([x for x in players if x["playerName"] == playerName and x["inGame"]]) > 0:
                         self.launcher.DedicatedServer.AstroRCON.DSKickPlayerGuid(
                             playerGUID)
-                self.launcher.DedicatedServer.AstroRCON.DSSetPlayerCategoryForPlayerName(
-                    playerName, "Blacklisted")
-                self.launcher.DedicatedServer.refresh_settings()
-                AstroLogging.logPrint(f"Banning player: {playerName}")
+                if playerName:
+                    self.launcher.DedicatedServer.AstroRCON.DSSetPlayerCategoryForPlayerName(
+                        playerName, "Blacklisted")
+                    self.launcher.DedicatedServer.refresh_settings()
+                    AstroLogging.logPrint(f"Banning player: {playerName}")
 
             if action == "WL":
-                self.launcher.DedicatedServer.AstroRCON.DSSetPlayerCategoryForPlayerName(
-                    playerName, "Whitelisted")
-                self.launcher.DedicatedServer.refresh_settings()
-                AstroLogging.logPrint(f"Whitelisting player: {playerName}")
+                if playerName:
+                    self.launcher.DedicatedServer.AstroRCON.DSSetPlayerCategoryForPlayerName(
+                        playerName, "Whitelisted")
+                    self.launcher.DedicatedServer.refresh_settings()
+                    AstroLogging.logPrint(f"Whitelisting player: {playerName}")
 
             if action == "admin":
-                self.launcher.DedicatedServer.AstroRCON.DSSetPlayerCategoryForPlayerName(
-                    playerName, "Admin")
-                self.launcher.DedicatedServer.refresh_settings()
-                AstroLogging.logPrint(f"Setting player as Admin: {playerName}")
+                if playerName:
+                    self.launcher.DedicatedServer.AstroRCON.DSSetPlayerCategoryForPlayerName(
+                        playerName, "Admin")
+                    self.launcher.DedicatedServer.refresh_settings()
+                    AstroLogging.logPrint(
+                        f"Setting player as Admin: {playerName}")
 
             if action == "reset":
-                self.launcher.DedicatedServer.AstroRCON.DSSetPlayerCategoryForPlayerName(
-                    playerName, "Unlisted")
-                self.launcher.DedicatedServer.refresh_settings()
-                AstroLogging.logPrint(
-                    f"Resetting perms for player: {playerName}")
+                if playerName:
+                    self.launcher.DedicatedServer.AstroRCON.DSSetPlayerCategoryForPlayerName(
+                        playerName, "Unlisted")
+                    self.launcher.DedicatedServer.refresh_settings()
+                    AstroLogging.logPrint(
+                        f"Resetting perms for player: {playerName}")
 
             if action == "remove":
+                self.launcher.DedicatedServer.AstroRCON.DSSetPlayerCategoryForPlayerName(
+                    playerName, "Unlisted")
                 pp = list(
                     self.launcher.DedicatedServer.settings.PlayerProperties)
+
                 pp = [
-                    x for x in pp if f'PlayerFirstJoinName="{playerName}"' not in x and f'PlayerRecentJoinName="{playerName}"' not in x]
+                    x for x in pp if not (((f'PlayerFirstJoinName="{playerName}"' in x
+                                            and 'PlayerRecentJoinName=""' in x) or
+                                           ('PlayerFirstJoinName=""' in x
+                                            and f'PlayerRecentJoinName="{playerName}"' in x))
+                                          or f'PlayerGuid="{playerGUID}"' in x)]
 
                 confPath = os.path.join(
                     self.launcher.astroPath, r"Astro\Saved\Config\WindowsServer\AstroServerSettings.ini")

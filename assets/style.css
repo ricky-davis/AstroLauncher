@@ -36,7 +36,9 @@ h5 {
     margin: 0;
     line-height: 200%;
 }
-
+#onlinePlayersRow {
+    z-index: 10000;
+}
 #banner {
     background: #17142f;
     white-space: nowrap;
