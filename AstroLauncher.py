@@ -39,7 +39,8 @@ class AstroLauncher():
     class LauncherConfig():
         DisableAutoUpdate: bool = False
         UpdateOnServerRestart: bool = True
-        DisableServerConsolePopup: bool = False
+        HideServerConsoleWindow: bool = False
+        HideLauncherConsoleWindow: bool = False
         ServerStatusFrequency: float = 2
         PlayfabAPIFrequency: float = 2
         DisableBackupRetention: bool = False
@@ -199,7 +200,7 @@ class AstroLauncher():
         self.refresh_launcher_config()
         if disable_auto_update is not None:
             self.launcherConfig.DisableAutoUpdate = disable_auto_update
-        self.version = "v1.5.3"
+        self.version = "v1.6.0"
         AstroLogging.logPrint(
             f"AstroLauncher - Unofficial Dedicated Server Launcher {self.version}")
         AstroLogging.logPrint(
@@ -250,6 +251,18 @@ class AstroLauncher():
             self.webServer = self.start_WebServer()
             # AstroLogging.logPrint(
             #    f"HTTP Server started at 127.0.0.1:{self.launcherConfig.WebServerPort}")
+
+        if self.launcherConfig.HideLauncherConsoleWindow:
+            # hide window
+            AstroLogging.logPrint(
+                "HideLauncherConsoleWindow enabled, Hiding window in 5 seconds...")
+            time.sleep(5)
+            # pylint: disable=redefined-outer-name
+            kernel32 = ctypes.WinDLL('kernel32')
+            user32 = ctypes.WinDLL('user32')
+
+            hWnd = kernel32.GetConsoleWindow()
+            user32.ShowWindow(hWnd, 0)
 
         self.start_server(firstLaunch=True)
 

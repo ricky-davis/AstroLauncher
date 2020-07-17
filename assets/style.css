@@ -36,7 +36,9 @@ h5 {
     margin: 0;
     line-height: 200%;
 }
-
+#onlinePlayersRow {
+    z-index: 10000;
+}
 #banner {
     background: #17142f;
     white-space: nowrap;
@@ -197,4 +199,53 @@ h5 {
     h2 {
         font-size: 2.5em;
     }
+}
+
+/*drop-down override*/
+div.btn-group.show div.dropdown-menu.show {
+    background-color: #4b4b50;
+}
+
+div.btn-group.show div.dropdown-menu.show button.dropdown-item {
+    color: #e1e1e1;
+}
+div.btn-group.show div.dropdown-menu.show button.dropdown-item.disabled {
+    background-color: transparent;
+    color: #222;
+}
+.pBtn::before {
+    text-align: left;
+    content: "";
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    -moz-border-radius: 7.5px;
+    -webkit-border-radius: 7.5px;
+    border-radius: 7.5px;
+    margin-right: 5px;
+    vertical-align: 1px;
+}
+.pBtn[data-action="kick"]:not(.disabled)::before {
+    background-color: rgb(255, 123, 0) !important;
+}
+.pBtn[data-action="ban"]:not(.disabled)::before {
+    background-color: red !important;
+}
+.pBtn[data-action="WL"]:not(.disabled)::before {
+    background-color: #0f0 !important;
+}
+.pBtn[data-action="admin"]:not(.disabled)::before {
+    background-color: #da70d6 !important;
+}
+.pBtn[data-action="reset"]:not(.disabled)::before {
+    background-color: white !important;
+}
+.pBtn[data-action="remove"]:not(.disabled)::before {
+    background-color: goldenrod !important;
+}
+
+div.btn-group.show div.dropdown-menu.show button.dropdown-item:hover,
+div.btn-group.show div.dropdown-menu.show button.dropdown-item:focus {
+    background-color: #1e1e1e;
+    color: #f0f0f0;
 }

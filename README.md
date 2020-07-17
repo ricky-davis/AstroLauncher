@@ -68,7 +68,10 @@ DisableAutoUpdate = False
 UpdateOnServerRestart=True
 
 # Disable the server console popup window.
-DisableServerConsolePopup=False
+HideServerConsoleWindow=False
+
+# Disable the Launcher console popup window.
+HideLauncherConsoleWindow=False
 
 # Specifies how often the launcher will check for players joining/leaving
 ServerStatusFrequency = 2

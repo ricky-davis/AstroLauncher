@@ -12,6 +12,7 @@ from AstroLauncher import AstroLauncher
 from cogs import UIModules
 from cogs.AstroLogging import AstroLogging
 
+from cogs.MultiConfig import MultiConfig
 # pylint: disable=abstract-method,attribute-defined-outside-init,no-member
 
 
@@ -201,7 +202,6 @@ class SaveRequestHandler(BaseHandler):
     def post(self):
         if self.current_user == b"admin":
             if not self.launcher.DedicatedServer.busy:
-                self.launcher.DedicatedServer.busy = True
                 t = Thread(
                     target=self.launcher.DedicatedServer.saveGame, args=())
                 t.daemon = True
@@ -215,7 +215,6 @@ class RebootRequestHandler(BaseHandler):
     def post(self):
         if self.current_user == b"admin":
             if not self.launcher.DedicatedServer.busy:
-                self.launcher.DedicatedServer.busy = True
                 t = Thread(
                     target=self.launcher.DedicatedServer.save_and_shutdown, args=())
                 t.daemon = True
@@ -229,7 +228,6 @@ class ShutdownRequestHandler(BaseHandler):
     def post(self):
         if self.current_user == b"admin":
             if not self.launcher.DedicatedServer.busy:
-                self.launcher.DedicatedServer.busy = True
                 t = Thread(
                     target=self.launcher.DedicatedServer.kill_server, args=("Website Request", True))
                 t.daemon = True
@@ -242,48 +240,110 @@ class ShutdownRequestHandler(BaseHandler):
 class PlayerRequestHandler(BaseHandler):
     def post(self):
         data = tornado.escape.json_decode(self.request.body)
-        players = self.launcher.DedicatedServer.players['playerInfo']
-        playerGUID = data["guid"]
-        player = [x for x in players if x['playerGuid']
-                  == playerGUID and x["playerName"] != ""][0]
-        playerName = player["playerName"]
-        action = data['action']
-        if player["playerCategory"] == "Owner":
+        try:
+            players = self.launcher.DedicatedServer.players['playerInfo']
+        except:
+            return
+        playerGUID = None
+        playerName = None
+        player = None
+        if "guid" in data and data["guid"] is not None:
+            playerGUID = data["guid"]
+
+        if playerGUID:
+            player = [x for x in players if x['playerGuid']
+                      == playerGUID][0]
+            playerName = player["playerName"]
+            if playerName == "":
+                playerName = None
+        if "name" in data:
+            playerName = data["name"]
+            try:
+                player = [x for x in players if x['playerName']
+                          == playerName][0]
+            except:
+                pass
+        if playerGUID is None and playerName is None:
+            self.write({"message": "Missing variable! (name or guid)"})
+            return
+
+        if player and player["playerCategory"] == "Owner":
             self.write({"message": "Cannot touch the Owner!"})
             return
+        if playerName in self.launcher.DedicatedServer.stripPlayers:
+            self.launcher.DedicatedServer.stripPlayers.remove(
+                playerName)
+        action = data['action']
         if self.current_user == b"admin":
-            if action == "kick":
-                self.launcher.DedicatedServer.AstroRCON.DSKickPlayerGuid(
-                    playerGUID)
-                AstroLogging.logPrint(f"Kicking player: {playerName}")
-
-            if action == "ban":
-                if len([x for x in players if x["playerName"] == playerName and x["inGame"]]) > 0:
+            if playerGUID:
+                if action == "kick":
                     self.launcher.DedicatedServer.AstroRCON.DSKickPlayerGuid(
                         playerGUID)
-                self.launcher.DedicatedServer.AstroRCON.DSSetPlayerCategoryForPlayerName(
-                    playerName, "Blacklisted")
-                self.launcher.DedicatedServer.refresh_settings()
-                AstroLogging.logPrint(f"Banning player: {playerName}")
+                    AstroLogging.logPrint(f"Kicking player: {playerName}")
+
+            if action == "ban":
+                if playerGUID:
+                    if len([x for x in players if x["playerName"] == playerName and x["inGame"]]) > 0:
+                        self.launcher.DedicatedServer.AstroRCON.DSKickPlayerGuid(
+                            playerGUID)
+                if playerName:
+                    self.launcher.DedicatedServer.AstroRCON.DSSetPlayerCategoryForPlayerName(
+                        playerName, "Blacklisted")
+                    self.launcher.DedicatedServer.refresh_settings()
+                    AstroLogging.logPrint(f"Banning player: {playerName}")
 
             if action == "WL":
-                self.launcher.DedicatedServer.AstroRCON.DSSetPlayerCategoryForPlayerName(
-                    playerName, "Whitelisted")
-                self.launcher.DedicatedServer.refresh_settings()
-                AstroLogging.logPrint(f"Whitelisting player: {playerName}")
+                if playerName:
+                    self.launcher.DedicatedServer.AstroRCON.DSSetPlayerCategoryForPlayerName(
+                        playerName, "Whitelisted")
+                    self.launcher.DedicatedServer.refresh_settings()
+                    AstroLogging.logPrint(f"Whitelisting player: {playerName}")
 
             if action == "admin":
-                self.launcher.DedicatedServer.AstroRCON.DSSetPlayerCategoryForPlayerName(
-                    playerName, "Admin")
-                self.launcher.DedicatedServer.refresh_settings()
-                AstroLogging.logPrint(f"Setting player as Admin: {playerName}")
+                if playerName:
+                    self.launcher.DedicatedServer.AstroRCON.DSSetPlayerCategoryForPlayerName(
+                        playerName, "Admin")
+                    self.launcher.DedicatedServer.refresh_settings()
+                    AstroLogging.logPrint(
+                        f"Setting player as Admin: {playerName}")
 
             if action == "reset":
+                if playerName:
+                    self.launcher.DedicatedServer.AstroRCON.DSSetPlayerCategoryForPlayerName(
+                        playerName, "Unlisted")
+                    self.launcher.DedicatedServer.refresh_settings()
+                    AstroLogging.logPrint(
+                        f"Resetting perms for player: {playerName}")
+
+            if action == "remove":
                 self.launcher.DedicatedServer.AstroRCON.DSSetPlayerCategoryForPlayerName(
                     playerName, "Unlisted")
+                pp = list(
+                    self.launcher.DedicatedServer.settings.PlayerProperties)
+
+                pp = [
+                    x for x in pp if not (((f'PlayerFirstJoinName="{playerName}"' in x
+                                            and 'PlayerRecentJoinName=""' in x) or
+                                           ('PlayerFirstJoinName=""' in x
+                                            and f'PlayerRecentJoinName="{playerName}"' in x))
+                                          or f'PlayerGuid="{playerGUID}"' in x)]
+
+                confPath = os.path.join(
+                    self.launcher.astroPath, r"Astro\Saved\Config\WindowsServer\AstroServerSettings.ini")
+
+                ovrConfig = {
+                    "/Script/Astro.AstroServerSettings": {
+                        "PlayerProperties": pp
+                    }
+                }
+                MultiConfig().overwrite_with(confPath, ovrConfig)
+                self.launcher.DedicatedServer.stripPlayers.append(playerName)
+                self.launcher.DedicatedServer.players['playerInfo'] = [
+                    x for x in self.launcher.DedicatedServer.players['playerInfo']
+                    if x['playerName'] not in self.launcher.DedicatedServer.stripPlayers]
                 self.launcher.DedicatedServer.refresh_settings()
                 AstroLogging.logPrint(
-                    f"Resetting perms for player: {playerName}")
+                    f"Removing player data: {playerName}")
 
             playerList = self.launcher.DedicatedServer.AstroRCON.DSListPlayers()
             if playerList is not None:
