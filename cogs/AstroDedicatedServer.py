@@ -175,6 +175,8 @@ class AstroDedicatedServer():
                 if (((datetime.datetime.now() - self.lastRestart).total_seconds() > 60) and ((self.nextRestartTime - datetime.datetime.now()).total_seconds() < 0)):
                     AstroLogging.logPrint(
                         "Preparing to shutdown the server.")
+                    if self.launcher.launcherConfig.OverwritePublicIP:
+                        self.refresh_settings() # overwrites public IP
                     self.lastRestart = datetime.datetime.now()
                     self.nextRestartTime += datetime.timedelta(
                         hours=self.launcher.launcherConfig.AutoRestartEveryHours)
