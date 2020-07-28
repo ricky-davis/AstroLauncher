@@ -51,12 +51,12 @@ This tool is perfect for you if you are hosting your own dedicated server for As
 6. Keeps a log of everything in the logs folder
 7. Auto Restart every X hours
 8. Backup Retention for X hours
-9. Web Interface w/ login to monitor server data, force saves and restarts
+9. Web Interface w/ login to monitor server data, force saves and restarts, and manage users (kick, ban, whitelist, admin)
 
 ## TODO
 
-1. Build out Web Interface to have more management functions, including ban, kick, whitelist, and promote player
-
+1. Detect servers running on same port
+2. Refactor error handling to be more verbose
 
 ## INI File options
 
@@ -241,6 +241,8 @@ Distributed under the MIT License. See `LICENSE` for more information.
 ## Contact
 
 Ricky Davis - Discord: @Spyci#0001
+
+If you have any questions you can DM me, or preferrably, join the Astroneer discord (discord.gg/Astroneer) and ask in the #self_host_talk channel
 
 Project Link: [https://github.com/ricky-davis/AstroLauncher](https://github.com/ricky-davis/AstroLauncher)
 
