@@ -56,7 +56,7 @@ const tick = async () => {
     try {
         let res = await fetch(apiURL);
         const data = await res.json();
-        // console.log(data);
+        console.log(data);
 
         if (data.hasUpdate != false) {
             let ghLink = document.querySelector("#githubLink");
@@ -131,15 +131,6 @@ const tick = async () => {
                     parseInt(s.MaxServerFramerate) +
                     " FPS"
             );
-        } else {
-            if (
-                data.status == "starting" ||
-                data.status == "off" ||
-                data.status == "shutdown"
-            ) {
-                $("#serverVersion").html("");
-                $("#framerateStats").html("");
-            }
         }
         if (!compareObj(oldSettings, s)) {
             oldSettings = s;
@@ -154,6 +145,8 @@ const tick = async () => {
             data.status == "shutdown"
         ) {
             $("#playersStats").text("");
+            $("#serverVersion").html("");
+            $("#framerateStats").html("");
         } else {
             if (!compareObj(oldPlayers, data.players)) {
                 oldPlayers = data.players;
