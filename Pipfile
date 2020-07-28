@@ -17,6 +17,7 @@ watchdog = "*"
 colorlog = "*"
 tornado = "*"
 asyncio = "*"
+ipy = "*"
 
 [requires]
 python_version = "3.7"

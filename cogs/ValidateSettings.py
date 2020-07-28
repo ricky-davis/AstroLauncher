@@ -9,8 +9,10 @@ from contextlib import contextmanager
 import time
 
 import requests
+from IPy import IP
 
 from cogs.MultiConfig import MultiConfig
+from cogs.AstroLogging import AstroLogging
 
 
 def get_public_ip():
@@ -19,7 +21,15 @@ def get_public_ip():
     return x['ip']
 
 
-def get_current_settings(launcher):
+def valid_ip(address):
+    try:
+        socket.inet_aton(address)
+        return True
+    except:
+        return False
+
+
+def get_current_settings(launcher, ovrIP=False):
     curPath = launcher.astroPath
 
     confPath = os.path.join(
@@ -29,8 +39,26 @@ def get_current_settings(launcher):
             "VerbosePlayerProperties": "True"
         }
     }
-    if launcher.launcherConfig.OverwritePublicIP:
-        ovrConfig["/Script/Astro.AstroServerSettings"]["PublicIP"] = get_public_ip()
+    tConfig = MultiConfig().baseline(confPath, {})
+    bIP = tConfig.getdict()[
+        '/Script/Astro.AstroServerSettings'].get("PublicIP")
+    validIP = valid_ip(bIP)
+    if validIP and IP(bIP).iptype() != 'PUBLIC':
+        validIP = False
+        AstroLogging.logPrint(
+            "PublicIP field (AstroServerSettings.ini) contained a Private IP!", "warning")
+        AstroLogging.logPrint(
+            "This will be automatically fixed..", "warning")
+
+    try:
+        if ovrIP:
+            if launcher.launcherConfig.OverwritePublicIP or not validIP:
+                ovrConfig["/Script/Astro.AstroServerSettings"]["PublicIP"] = get_public_ip()
+    except:
+        t = "warning"
+        if not validIP:
+            t = "error"
+        AstroLogging.logPrint("Could not update PublicIP!", t)
     MultiConfig().overwrite_with(confPath, ovrConfig)
 
     baseConfig = {
@@ -39,7 +67,7 @@ def get_current_settings(launcher):
             "MaxServerFramerate": "30.000000",
             "MaxServerIdleFramerate": "3.000000",
             "bWaitForPlayersBeforeShutdown": "False",
-            "PublicIP": get_public_ip(),
+            "PublicIP": "",
             "ServerName": "Astroneer Dedicated Server",
             "MaximumPlayerCount": "12",
             "OwnerName": "",

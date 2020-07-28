@@ -91,7 +91,7 @@ class AstroDedicatedServer():
         self.status = "off"
         self.busy = False
 
-        self.refresh_settings()
+        self.refresh_settings(ovrIP=True)
         self.AstroRCON = self.start_RCON()
 
     def start_RCON(self):
@@ -99,9 +99,9 @@ class AstroDedicatedServer():
         rc.run()
         return rc
 
-    def refresh_settings(self):
+    def refresh_settings(self, ovrIP=False):
         self.settings = dataclasses.replace(
-            self.settings, **ValidateSettings.get_current_settings(self.launcher))
+            self.settings, **ValidateSettings.get_current_settings(self.launcher, ovrIP=ovrIP))
         self.ipPortCombo = f'{self.settings.PublicIP}:{self.settings.Port}'
 
     def start(self):
@@ -175,8 +175,6 @@ class AstroDedicatedServer():
                 if (((datetime.datetime.now() - self.lastRestart).total_seconds() > 60) and ((self.nextRestartTime - datetime.datetime.now()).total_seconds() < 0)):
                     AstroLogging.logPrint(
                         "Preparing to shutdown the server.")
-                    if self.launcher.launcherConfig.OverwritePublicIP:
-                        self.refresh_settings() # overwrites public IP
                     self.lastRestart = datetime.datetime.now()
                     self.nextRestartTime += datetime.timedelta(
                         hours=self.launcher.launcherConfig.AutoRestartEveryHours)
