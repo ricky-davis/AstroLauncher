@@ -17,7 +17,8 @@
     <a href="https://github.com/ricky-davis/AstroLauncher/issues">Request Feature</a>
   </p>
 </p>
-<img src = "https://user-images.githubusercontent.com/48695279/88700095-d47c2400-d0cd-11ea-9fda-cc9af08e6315.png">
+<img src = "https://user-images.githubusercontent.com/48695279/88713614-31350a00-d0e1-11ea-846a-a60c3ffedbc4.png">
+<img src = "https://user-images.githubusercontent.com/48695279/88713912-a4d71700-d0e1-11ea-85e8-2788a7c2053e.png">
 <!-- TABLE OF CONTENTS -->
 
 ## Table of Contents
