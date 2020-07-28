@@ -66,13 +66,13 @@ Below are the descriptions and defaults for the INI file options. Do not copy/pa
 DisableAutoUpdate = False
 
 # Allows the launcher to autoUpdate every time the server restarts
-UpdateOnServerRestart=True
+UpdateOnServerRestart = True
 
 # Disable the server console popup window.
-HideServerConsoleWindow=False
+HideServerConsoleWindow = False
 
 # Disable the Launcher console popup window.
-HideLauncherConsoleWindow=False
+HideLauncherConsoleWindow = False
 
 # Specifies how often the launcher will check for players joining/leaving
 ServerStatusFrequency = 2
@@ -103,34 +103,34 @@ AutoRestartEveryHours = 24
 DisableNetworkCheck = False
 
 # Always Overwrite the PublicIP setting in AstroServerSettings.ini
-OverwritePublicIP: bool = False
+OverwritePublicIP = False
 
 # Enable/Disable showing server FPS in console. This will probably spam your console when playing are in your server
 ShowServerFPSInConsole = True
 
 # Disable the Web Management Server
-DisableWebServer=False
+DisableWebServer = False
 
 # Set the port you want the Web Management Server to run on
-WebServerPort=5000
+WebServerPort = 5000
 
 # Automatically generated SHA256 password hash for the admin panel in the webserver
-WebServerPasswordHash=
+WebServerPasswordHash =
 
 # Enable HTTPS for the webserver. If no/wrong Cert/Key files are specified, defaults to False
-EnableWebServerSSL=False
+EnableWebServerSSL = False
 
 # Port you want to use if SSL works
-SSLPort=443
+SSLPort = 443
 
 # Paths to Cert and Key files
-SSLCertFile=
-SSLKeyFile=
+SSLCertFile =
+SSLKeyFile =
 
 # CPU Affinity - Specify logical cores to run on. Automatically chooses if empty.
 # ex:
 #  CPUAffinity=0,1,3,5,9
-CPUAffinity=
+CPUAffinity =
 
 ```
 
