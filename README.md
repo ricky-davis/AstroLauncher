@@ -83,7 +83,7 @@ PlayfabAPIFrequency = 2
 DisableBackupRetention = False
 
 # How many hours of saves should the launcher retain
-BackupRetentionPeriodHours= 76
+BackupRetentionPeriodHours= 72
 
 # Location to backup the save files to
 BackupRetentionFolderLocation = Astro\Saved\Backup\LauncherBackups
@@ -100,6 +100,9 @@ AutoRestartEveryHours = 24
 
 # Disable the Port Forward / NAT Loopback check on startup
 DisableNetworkCheck = False
+
+# Always Overwrite the PublicIP setting in AstroServerSettings.ini
+OverwritePublicIP: bool = False
 
 # Enable/Disable showing server FPS in console. This will probably spam your console when playing are in your server
 ShowServerFPSInConsole = True
