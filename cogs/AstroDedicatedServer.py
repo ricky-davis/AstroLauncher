@@ -194,7 +194,7 @@ class AstroDedicatedServer():
                             float(self.settings.MaxServerFramerate) / 10)
                         if self.oldServerStats is None or (abs(float(self.DSServerStats['averageFPS']) - float(self.oldServerStats['averageFPS'])) > FPSJumpRate):
                             AstroLogging.logPrint(
-                                f"Server FPS: {self.DSServerStats['averageFPS']}")
+                                f"Server FPS: {round(self.DSServerStats['averageFPS'])}")
                     self.oldServerStats = self.DSServerStats
 
                 playerList = self.AstroRCON.DSListPlayers()

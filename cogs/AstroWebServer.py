@@ -26,8 +26,7 @@ class WebServer(tornado.web.Application):
         if self.launcher.isExecutable:
             curDir = sys._MEIPASS
         self.assetDir = os.path.join(curDir, "assets")
-        # temp
-        # these will later be saved and loaded from/to an .ini
+
         self.cookieSecret = secrets.token_hex(16).encode()
         self.passwordHash = self.launcher.launcherConfig.WebServerPasswordHash
         cfgOvr = {}
