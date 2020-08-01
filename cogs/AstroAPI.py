@@ -50,6 +50,34 @@ def deregister_server(lobbyID, headers):
     return x
 
 
+def heartbeat_server(serverData, headers, dataToChange=None):
+    url = (
+        "https://5EA1.playfabapi.com/Client/ExecuteCloudScript?sdk=UE4MKPL-1.19.190610"
+    )
+    requestObj = {
+        "FunctionName": "heartbeatDedicatedServer",
+        "FunctionParameter": {
+            "serverName": serverData['Tags']['serverName'],
+            "buildVersion": serverData['Tags']['gameBuild'],
+            "gameMode": serverData['GameMode'],
+            "ipAddress": serverData['ServerIPV4Address'],
+            "port": serverData['ServerPort'],
+            "matchmakerBuild": serverData['BuildVersion'],
+            "maxPlayers": serverData['Tags']['maxPlayers'],
+            "numPlayers": str(len(serverData['PlayerUserIds'])),
+            "lobbyId": serverData['LobbyID'],
+            "publicSigningKey": serverData['Tags']['publicSigningKey'],
+            "requiresPassword": serverData['Tags']['requiresPassword']
+        },
+        "GeneratePlayStreamEvent": True
+    }
+    if dataToChange is not None:
+        requestObj['FunctionParameter'].update(dataToChange)
+
+    x = (requests.post(url, headers=headers, json=requestObj)).json()
+    return x
+
+
 def getInstallPath():
 
     # query steam install path from registry

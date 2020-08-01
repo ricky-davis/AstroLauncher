@@ -36,7 +36,8 @@ def get_current_settings(launcher, ovrIP=False):
         curPath, r"Astro\Saved\Config\WindowsServer\AstroServerSettings.ini")
     ovrConfig = {
         "/Script/Astro.AstroServerSettings": {
-            "VerbosePlayerProperties": "True"
+            "VerbosePlayerProperties": "True",
+            "HeartbeatInterval": "0"
         }
     }
     tConfig = MultiConfig().baseline(confPath, {})
