@@ -62,51 +62,61 @@ def get_current_settings(launcher, ovrIP=False):
         if not validIP:
             t = "error"
         AstroLogging.logPrint("Could not update PublicIP!", t)
-    MultiConfig().overwrite_with(confPath, ovrConfig)
 
-    baseConfig = {
-        "/Script/Astro.AstroServerSettings": {
-            "bLoadAutoSave": "True",
-            "MaxServerFramerate": "30.000000",
-            "MaxServerIdleFramerate": "3.000000",
-            "bWaitForPlayersBeforeShutdown": "False",
-            "PublicIP": "",
-            "ServerName": "Astroneer Dedicated Server",
-            "MaximumPlayerCount": "12",
-            "OwnerName": "",
-            "OwnerGuid": "",
-            "PlayerActivityTimeout": "0",
-            "ServerPassword": "",
-            "bDisableServerTravel": "False",
-            "DenyUnlistedPlayers": "False",
-            "VerbosePlayerProperties": "True",
-            "AutoSaveGameInterval": "900",
-            "BackupSaveGamesInterval": "7200",
-            "ServerGuid": uuid.uuid4().hex,
-            "ActiveSaveFileDescriptiveName": "SAVE_1",
-            "ServerAdvertisedName": "",
-            "ConsolePort": "1234"
+    try:
+        MultiConfig().overwrite_with(confPath, ovrConfig)
+
+        baseConfig = {
+            "/Script/Astro.AstroServerSettings": {
+                "bLoadAutoSave": "True",
+                "MaxServerFramerate": "30.000000",
+                "MaxServerIdleFramerate": "3.000000",
+                "bWaitForPlayersBeforeShutdown": "False",
+                "PublicIP": "",
+                "ServerName": "Astroneer Dedicated Server",
+                "MaximumPlayerCount": "12",
+                "OwnerName": "",
+                "OwnerGuid": "",
+                "PlayerActivityTimeout": "0",
+                "ServerPassword": "",
+                "bDisableServerTravel": "False",
+                "DenyUnlistedPlayers": "False",
+                "VerbosePlayerProperties": "True",
+                "AutoSaveGameInterval": "900",
+                "BackupSaveGamesInterval": "7200",
+                "ServerGuid": uuid.uuid4().hex,
+                "ActiveSaveFileDescriptiveName": "SAVE_1",
+                "ServerAdvertisedName": "",
+                "ConsolePort": "1234"
+            }
         }
-    }
-    config = MultiConfig().baseline(confPath, baseConfig)
+        config = MultiConfig().baseline(confPath, baseConfig)
 
-    settings = config.getdict()['/Script/Astro.AstroServerSettings']
+        settings = config.getdict()['/Script/Astro.AstroServerSettings']
 
-    baseConfig = {
-        "URL": {
-            "Port": "7777"
-        },
-        "/Script/OnlineSubsystemUtils.IpNetDriver": {
-            "MaxClientRate": "1000000",
-            "MaxInternetClientRate": "1000000"
+        baseConfig = {
+            "URL": {
+                "Port": "7777"
+            },
+            "/Script/OnlineSubsystemUtils.IpNetDriver": {
+                "MaxClientRate": "1000000",
+                "MaxInternetClientRate": "1000000"
+            }
         }
-    }
-    config = MultiConfig().baseline(os.path.join(
-        curPath, r"Astro\Saved\Config\WindowsServer\Engine.ini"), baseConfig)
-    # print(settings)
-    settings.update(config.getdict()['URL'])
-    # print(settings)
-    return settings
+        config = MultiConfig().baseline(os.path.join(
+            curPath, r"Astro\Saved\Config\WindowsServer\Engine.ini"), baseConfig)
+        # print(settings)
+        settings.update(config.getdict()['URL'])
+        # print(settings)
+        return settings
+    except:
+        AstroLogging.logPrint("Could not retrieve INI settings!", "critical")
+        AstroLogging.logPrint(
+            "Please ensure everything is correctly formatted...", "critical")
+        AstroLogging.logPrint(
+            "or delete the INI and allow the launcher to recreate it!", "critical")
+
+        launcher.kill_launcher()
 
 
 def socket_server(port, secret, tcp):

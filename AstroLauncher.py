@@ -488,6 +488,18 @@ class AstroLauncher():
         t.start()
         return ws
 
+    def kill_launcher(self):
+        try:
+            for child in psutil.Process(os.getpid()).children():
+                child.kill()
+        except:
+            pass
+        # Kill current process
+        try:
+            os.kill(os.getpid(), 9)
+        except:
+            pass
+
 
 if __name__ == "__main__":
     try:
