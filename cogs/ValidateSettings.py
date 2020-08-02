@@ -83,7 +83,8 @@ def get_current_settings(launcher, ovrIP=False):
             "ServerGuid": uuid.uuid4().hex,
             "ActiveSaveFileDescriptiveName": "SAVE_1",
             "ServerAdvertisedName": "",
-            "ConsolePort": "1234"
+            "ConsolePort": "1234",
+            "HeartbeatInterval": "0"
         }
     }
     config = MultiConfig().baseline(confPath, baseConfig)
