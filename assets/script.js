@@ -2,10 +2,12 @@ console.log("Hi there! Feel to explore the code!");
 //let apiURL = 'http://127.0.0.1:80/api'
 let apiURL = "/api";
 let playersTableOriginal = $("#onlinePlayersTable").html();
+let saveGamesTableOriginal = $("#saveGamesTable").html();
 
 let oldMsg = "";
 let oldSettings = {};
 let oldPlayers = {};
+let oldSaves = {};
 let isAdmin = false;
 
 const statusMsg = (msg) => {
@@ -43,6 +45,21 @@ const statusMsg = (msg) => {
             $("#serverStatus").text("Ready");
             $("#serverStatus").addClass("text-success");
             $("#msg h5").text("Server is ready");
+            $("#msg").collapse("hide");
+        } else if (msg == "delsave") {
+            $("#serverStatus").text("Deleting Save");
+            $("#serverStatus").addClass("text-danger");
+            $("#msg h5").text("Server is deleting a Save");
+            $("#msg").collapse("hide");
+        } else if (msg == "loadsave") {
+            $("#serverStatus").text("Loading Save");
+            $("#serverStatus").addClass("text-warning");
+            $("#msg h5").text("Server is loading a Save");
+            $("#msg").collapse("hide");
+        } else if (msg == "newsave") {
+            $("#serverStatus").text("Creating New Save");
+            $("#serverStatus").addClass("text-success");
+            $("#msg h5").text("Server is creating a new Save");
             $("#msg").collapse("hide");
         }
     }
@@ -148,6 +165,39 @@ const tick = async () => {
             $("#serverVersion").html("");
             $("#framerateStats").html("");
         } else {
+            if (data.hasOwnProperty("savegames")) {
+                if (!compareObj(oldSaves, data.savegames)) {
+                    $("#saveGamesTable").html(saveGamesTableOriginal);
+                    if (data.savegames.hasOwnProperty("gameList")) {
+                        let gameList = Object.create(data.savegames.gameList);
+                        gameList.sort((a, b) =>
+                            a.active < b.active
+                                ? 1
+                                : a.active === b.active
+                                ? a.name > b.name
+                                    ? 1
+                                    : -1
+                                : -1
+                        );
+                        gameList.forEach((sg) => {
+                            let row = document.createElement("tr");
+                            row.innerHTML = `<td>${sg.active}</td>
+                                <td>${sg.name}</td>
+                                <td>${sg.date}</td>
+                                <td>${sg.bHasBeenFlaggedAsCreativeModeSave}</td>
+                                <td>${sg.size}</td>
+                                <td>${createSaveActionButtons(
+                                    sg.active,
+                                    sg
+                                )}</td>`;
+
+                            $("#saveGamesTable>tbody").append(row);
+                        });
+                        oldSaves = data.savegames;
+                    }
+                }
+            }
+
             if (!compareObj(oldPlayers, data.players)) {
                 oldPlayers = data.players;
                 $("#onlinePlayersTable").html(playersTableOriginal);
@@ -170,7 +220,7 @@ const tick = async () => {
                                 if (isAdmin) {
                                     row.innerHTML +=
                                         "<td>" +
-                                        createActionButtons("online", p) +
+                                        createPlayerActionButtons("online", p) +
                                         "</td>";
                                 }
                                 $("#onlinePlayersTable>tbody").append(row);
@@ -179,7 +229,10 @@ const tick = async () => {
                                 if (isAdmin) {
                                     row.innerHTML +=
                                         "<td>" +
-                                        createActionButtons("offline", p) +
+                                        createPlayerActionButtons(
+                                            "offline",
+                                            p
+                                        ) +
                                         "</td>";
                                 }
                             }
@@ -199,7 +252,60 @@ const tick = async () => {
 setInterval(tick, 1000);
 tick();
 
-const createActionButtons = function (status, player) {
+const createSaveActionButtons = function (status, save) {
+    dropDownDiv = $("<div/>").attr({ class: "btn-group dropup" });
+    DDButton = $("<button/>")
+        .attr({
+            type: "button",
+            class: "btn btn-secondary dropdown-toggle",
+            "data-toggle": "dropdown",
+            "aria-haspopup": "true",
+            "aria-expanded": "false",
+            id: "dropdownMenu2",
+        })
+        .text("Actions");
+    DDMenu = $("<div/>").attr({
+        class: "dropdown-menu",
+        "aria-labelledby": "dropdownMenu2",
+    });
+    dropDownDiv.append(DDButton);
+    dropDownDiv.append(DDMenu);
+    sButton = $("<button/>").attr({
+        type: "button",
+        class: "dropdown-item p-1",
+        "data-name": save.name,
+    });
+
+    actionButtonBufferList = [];
+
+    loadButton = sButton
+        .clone()
+        .attr("data-action", "load")
+        .addClass("sBtn")
+        .text("Load");
+    actionButtonBufferList.push(loadButton);
+
+    deleteButton = sButton
+        .clone()
+        .addClass("sdBtn")
+        .attr("data-action", "delete")
+        .attr("data-toggle", "modal")
+        .attr("data-target", "#deleteSaveModal")
+        .text("Delete");
+    actionButtonBufferList.push(deleteButton);
+
+    if (status == "Active") {
+        loadButton.addClass("disabled");
+        deleteButton.addClass("disabled");
+    }
+
+    actionButtonBufferList.forEach((element) => {
+        DDMenu.append(element);
+    });
+    return dropDownDiv.prop("outerHTML");
+};
+
+const createPlayerActionButtons = function (status, player) {
     dropDownDiv = $("<div/>").attr({ class: "btn-group dropup" });
     DDButton = $("<button/>")
         .attr({
@@ -303,6 +409,43 @@ $(document).on("click", ".pBtn", function (e) {
     });
 });
 
+$(document).on("click", ".sBtn", function (e) {
+    e.preventDefault();
+    sName = $(e.target).attr("data-name");
+    sAction = $(e.target).attr("data-action");
+    $.ajax({
+        type: "POST",
+        url: apiURL + "/savegame/" + sAction,
+        dataType: "json",
+        data: JSON.stringify({ name: sName }),
+        success: function (result) {},
+        error: function (result) {
+            console.log(result);
+            alert("Error");
+        },
+    });
+});
+
+$("#deleteSaveModal").on("show.bs.modal", function (event) {
+    var button = $(event.relatedTarget); // Button that triggered the modal
+    var saveName = button.data("name"); // Extract info from data-* attributes
+    // If necessary, you could initiate an AJAX request here (and then do the updating in a callback).
+    // Update the modal's content. We'll use jQuery here, but you could use a data binding library or other methods instead.
+    var save = oldSaves["gameList"].find((obj) => {
+        return obj.name === saveName;
+    });
+    var fullSaveName = save["name"] + "$" + save["date"] + ".savegame";
+    var modal = $(this);
+    modal
+        .find(".modal-title")
+        .text("Are you sure you wish to delete this save? ");
+    modal.find(".modal-body").text(fullSaveName + " -- " + save["size"]);
+    modal
+        .find(".modal-footer .btn-danger")
+        .attr("data-action", "delete")
+        .attr("data-name", saveName);
+});
+
 const saveLog = function (filename, data) {
     var blob = new Blob([data], { type: "text/csv" });
     if (window.navigator.msSaveOrOpenBlob) {
@@ -379,6 +522,22 @@ $("#stopLauncherBtn").click(function (e) {
             },
         });
     }
+});
+
+$("#newSaveBtn").click(function (e) {
+    e.preventDefault();
+    e.stopPropagation();
+    statusMsg("saving");
+    $.ajax({
+        type: "POST",
+        url: apiURL + "/newsave",
+        dataType: "json",
+        success: function (result) {},
+        error: function (result) {
+            console.log(result);
+            alert("Error");
+        },
+    });
 });
 
 const linkify = (text) => {

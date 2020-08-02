@@ -1,6 +1,6 @@
 <html lang="en">
     {% module HeadModule(launcher,isAdmin) %}
-    <body>
+    <body class='p-0'>
         {% module BannerModule(launcher,isAdmin) %}
         <div id="msg" class="bg-danger text-center collapse">
             <h5></h5>
@@ -37,7 +37,7 @@
             </div>
             {% end %}
             <div class="row mt-4">
-                <div id="left" class="col-12 col-md-4 px-4">
+                <div id="left" class="col-12 col-md-5 px-4">
                     <div id="stats" class="card astroCard">
                         <div
                             class="card-header pt-4 px-4"
@@ -128,6 +128,50 @@
                         </div>
                         {% end %}
                     </div>
+                    {% if isAdmin %}
+                    <div id="saveGamesRow" class="card my-4 astroCard">
+                        <div
+                            class="card-header pt-4 px-4"
+                            data-toggle="collapse"
+                            data-target="#saveGamesCardBody"
+                            aria-expanded="true"
+                            aria-controls="saveGamesCardBody"
+                        >
+                            <h4>
+                                <span class="collapseArrows pr-2"></span>
+                                Save Games
+                                <button
+                                    id="newSaveBtn"
+                                    type="button"
+                                    class="btn btn-success m-1 col-12 col-xl-2 float-right px-0"
+                                >
+                                    New Save
+                                </button>
+                            </h4>
+                        </div>
+                        <div
+                            id="saveGamesCardBody"
+                            class="card-body pt-0 collapse show"
+                        >
+                            <table
+                                id="saveGamesTable"
+                                class="table table-dark table-striped"
+                            >
+                                <thead>
+                                    <tr>
+                                        <th>Active</th>
+                                        <th>Save Name</th>
+                                        <th>Last Modified</th>
+                                        <th>Creative</th>
+                                        <th>Size</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                    </div>
+                    {% end %}
                 </div>
 
                 <div id="right" class="col-12 mt-5 mt-md-0 col-md px-4">
@@ -221,6 +265,26 @@
             </div>
         </div>
     </body>
+    {% if isAdmin %}
+    <div class="modal fade p-0" id="deleteSaveModal" tabindex="-1" role="dialog" aria-labelledby="deleteSaveModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteSaveModalLabel">Are you sure you wish to delete this save? </h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button type="button" class="btn sBtn btn-danger" data-dismiss="modal">Delete</button>
+            </div>
+            </div>
+        </div>
+    </div>
+    {% end %}
 
     {% module ScriptsModule(launcher,isAdmin) %}
     <script src="{{ static_url('script.js') }}"></script>

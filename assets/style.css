@@ -37,7 +37,7 @@ h5 {
     line-height: 200%;
 }
 #onlinePlayersRow {
-    z-index: 10000;
+    z-index: 10;
 }
 #banner {
     background: #17142f;
@@ -213,7 +213,9 @@ div.btn-group.show div.dropdown-menu.show button.dropdown-item.disabled {
     background-color: transparent;
     color: #222;
 }
-.pBtn::before {
+.pBtn::before,
+.sBtn:not([data-action="delete"])::before,
+.sdBtn::before {
     text-align: left;
     content: "";
     display: inline-block;
@@ -228,7 +230,8 @@ div.btn-group.show div.dropdown-menu.show button.dropdown-item.disabled {
 .pBtn[data-action="kick"]:not(.disabled)::before {
     background-color: rgb(255, 123, 0) !important;
 }
-.pBtn[data-action="ban"]:not(.disabled)::before {
+.pBtn[data-action="ban"]:not(.disabled)::before,
+.sdBtn[data-action="delete"]:not(.disabled)::before {
     background-color: red !important;
 }
 .pBtn[data-action="WL"]:not(.disabled)::before {
@@ -240,7 +243,8 @@ div.btn-group.show div.dropdown-menu.show button.dropdown-item.disabled {
 .pBtn[data-action="reset"]:not(.disabled)::before {
     background-color: white !important;
 }
-.pBtn[data-action="remove"]:not(.disabled)::before {
+.pBtn[data-action="remove"]:not(.disabled)::before,
+.sBtn[data-action="load"]:not(.disabled)::before {
     background-color: goldenrod !important;
 }
 
@@ -248,4 +252,10 @@ div.btn-group.show div.dropdown-menu.show button.dropdown-item:hover,
 div.btn-group.show div.dropdown-menu.show button.dropdown-item:focus {
     background-color: #1e1e1e;
     color: #f0f0f0;
+}
+.modal-open {
+    overflow-y: auto;
+}
+.modal-content {
+    background-color: #2e2e2e;
 }
