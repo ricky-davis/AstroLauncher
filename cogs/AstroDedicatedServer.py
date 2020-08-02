@@ -162,7 +162,7 @@ class AstroDedicatedServer():
             if self.lastHeartbeat is None or (datetime.datetime.now() - self.lastHeartbeat).total_seconds() > 30:
                 hbServerName = {
                     "Name": self.settings.ServerName,
-                    "Type": "AstroLauncherEXE" if self.launcher.isExecutable else "AstroLauncherPy"
+                    "Type": ("AstroLauncherEXE" if self.launcher.isExecutable else "AstroLauncherPy") + f" {self.launcher.version}"
                 }
                 AstroAPI.heartbeat_server(
                     self.serverData, self.launcher.headers, {"serverName": json.dumps(hbServerName)})
