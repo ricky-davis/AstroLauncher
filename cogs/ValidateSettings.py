@@ -39,16 +39,19 @@ def get_current_settings(launcher, ovrIP=False):
             "VerbosePlayerProperties": "True"
         }
     }
-    tConfig = MultiConfig().baseline(confPath, {})
-    bIP = tConfig.getdict()[
-        '/Script/Astro.AstroServerSettings'].get("PublicIP")
-    validIP = valid_ip(bIP)
-    if validIP and IP(bIP).iptype() != 'PUBLIC':
+    try:
+        tConfig = MultiConfig().baseline(confPath, {})
+        bIP = tConfig.getdict()[
+            '/Script/Astro.AstroServerSettings'].get("PublicIP")
+        validIP = valid_ip(bIP)
+        if validIP and IP(bIP).iptype() != 'PUBLIC':
+            validIP = False
+            AstroLogging.logPrint(
+                "PublicIP field (AstroServerSettings.ini) contained a Private IP!", "warning")
+            AstroLogging.logPrint(
+                "This will be automatically fixed..", "warning")
+    except:
         validIP = False
-        AstroLogging.logPrint(
-            "PublicIP field (AstroServerSettings.ini) contained a Private IP!", "warning")
-        AstroLogging.logPrint(
-            "This will be automatically fixed..", "warning")
 
     try:
         if ovrIP:
