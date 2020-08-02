@@ -1,6 +1,7 @@
 
 import dataclasses
 import datetime
+import math
 import os
 import subprocess
 import time
@@ -89,6 +90,7 @@ class AstroDedicatedServer():
                     datetime.timedelta(
                         hours=self.launcher.launcherConfig.AutoRestartEveryHours)
         self.status = "off"
+        self.DSListGames = ""
         self.busy = False
 
         self.refresh_settings(ovrIP=True)
@@ -111,6 +113,38 @@ class AstroDedicatedServer():
             cmd = [os.path.join(self.astroPath, "AstroServer.exe"), '-log']
         self.process = subprocess.Popen(cmd)
 
+    @staticmethod
+    def convert_size(size_bytes):
+        if size_bytes == 0:
+            return "0B"
+        size_name = ("B", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB")
+        i = int(math.floor(math.log(size_bytes, 1024)))
+        p = math.pow(1024, i)
+        s = round(size_bytes / p, 2)
+        return "%s %s" % (s, size_name[i])
+
+    def getSaves(self):
+        if not self.AstroRCON.connected:
+            return False
+        self.busy = True
+        saveGamePath = r"Astro\Saved\SaveGames"
+        saveGamePath = os.path.join(
+            self.astroPath, saveGamePath)
+        self.DSListGames = self.AstroRCON.DSListGames()
+        if self.DSListGames is not None:
+            for save in self.DSListGames["gameList"]:
+                saveFileName = f"{save['name']}${save['date']}.savegame"
+                sfPath = os.path.join(saveGamePath, saveFileName)
+                size = AstroDedicatedServer.convert_size(
+                    os.path.getsize(sfPath))
+                save["size"] = size
+                if save['name'] == self.DSListGames['activeSaveName']:
+                    save['active'] = "Active"
+                else:
+                    save['active'] = ""
+
+        self.busy = False
+
     def saveGame(self):
         if not self.AstroRCON.connected:
             return False
@@ -119,6 +153,54 @@ class AstroDedicatedServer():
         # time.sleep(1)
         AstroLogging.logPrint("Saving the current game...")
         self.AstroRCON.DSSaveGame()
+        self.getSaves()
+        self.busy = False
+
+    def newSaveGame(self):
+        if not self.AstroRCON.connected:
+            return False
+        self.setStatus("newsave")
+        self.busy = True
+        curGame = self.DSListGames['activeSaveName']
+        # time.sleep(1)
+        AstroLogging.logPrint("Starting a new savegame...")
+        self.AstroRCON.DSNewGame()
+        self.getSaves()
+        newGame = self.DSListGames['activeSaveName']
+        self.AstroRCON.DSLoadGame(curGame)
+        self.AstroRCON.DSLoadGame(newGame)
+        self.getSaves()
+        self.busy = False
+
+    def loadSaveGame(self, name):
+        if not self.AstroRCON.connected:
+            return False
+        self.setStatus("loadsave")
+        self.busy = True
+        # time.sleep(1)
+        AstroLogging.logPrint(f"Loading save: {name}")
+        self.AstroRCON.DSLoadGame(name)
+        self.getSaves()
+        self.busy = False
+
+    def deleteSaveGame(self, name):
+        if not self.AstroRCON.connected:
+            return False
+        self.setStatus("delsave")
+        self.busy = True
+        saveGamePath = r"Astro\Saved\SaveGames"
+        saveGamePath = os.path.join(
+            self.astroPath, saveGamePath)
+        save = [x for x in self.DSListGames['gameList'] if x['name'] == name]
+        if len(save) > 0:
+            save = save[0]
+            saveFileName = f"{save['name']}${save['date']}.savegame"
+            sfPath = os.path.join(saveGamePath, saveFileName)
+            # time.sleep(1)
+            AstroLogging.logPrint(f"Deleting save: {saveFileName}")
+            if os.path.exists(sfPath):
+                os.remove(sfPath)
+            self.getSaves()
         self.busy = False
 
     def shutdownServer(self):
@@ -187,6 +269,10 @@ class AstroDedicatedServer():
 
             if not self.busy:
                 self.setStatus("ready")
+                self.getSaves()
+
+            if not self.busy:
+                self.setStatus("ready")
                 self.DSServerStats = self.AstroRCON.DSServerStatistics()
                 if self.DSServerStats is not None:
                     if self.launcher.launcherConfig.ShowServerFPSInConsole:
@@ -197,6 +283,8 @@ class AstroDedicatedServer():
                                 f"Server FPS: {round(self.DSServerStats['averageFPS'])}")
                     self.oldServerStats = self.DSServerStats
 
+            if not self.busy:
+                self.setStatus("ready")
                 playerList = self.AstroRCON.DSListPlayers()
                 if playerList is not None:
                     self.players = playerList

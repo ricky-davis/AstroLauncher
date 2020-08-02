@@ -56,11 +56,17 @@ class WebServer(tornado.web.Application):
                     (r"/api", APIRequestHandler, dict(launcher=self.launcher)),
                     (r"/api/savegame", SaveRequestHandler,
                      dict(launcher=self.launcher)),
+                    (r"/api/savegame/load", LoadSaveRequestHandler,
+                     dict(launcher=self.launcher)),
+                    (r"/api/savegame/delete", DeleteSaveRequestHandler,
+                     dict(launcher=self.launcher)),
                     (r"/api/reboot", RebootRequestHandler,
                      dict(launcher=self.launcher)),
                     (r"/api/shutdown", ShutdownRequestHandler,
                      dict(launcher=self.launcher)),
                     (r"/api/player", PlayerRequestHandler,
+                     dict(launcher=self.launcher)),
+                    (r"/api/newsave", NewSaveRequestHandler,
                      dict(launcher=self.launcher)),
                     ]
         super().__init__(handlers, **settings)
@@ -191,6 +197,7 @@ class APIRequestHandler(BaseHandler):
         # only send full logs if admin
         if isAdmin:
             res["logs"] = logs
+            res['savegames'] = dedicatedServer.DSListGames
         else:
             res["logs"] = ""
 
@@ -205,6 +212,51 @@ class SaveRequestHandler(BaseHandler):
                     target=self.launcher.DedicatedServer.saveGame, args=())
                 t.daemon = True
                 t.start()
+            self.write({"message": "Success"})
+        else:
+            self.write({"message": "Not Authenticated"})
+
+
+class NewSaveRequestHandler(BaseHandler):
+    def post(self):
+        if self.current_user == b"admin":
+            if not self.launcher.DedicatedServer.busy:
+                t = Thread(
+                    target=self.launcher.DedicatedServer.newSaveGame, args=())
+                t.daemon = True
+                t.start()
+            self.write({"message": "Success"})
+        else:
+            self.write({"message": "Not Authenticated"})
+
+
+class LoadSaveRequestHandler(BaseHandler):
+    def post(self):
+        if self.current_user == b"admin":
+            if not self.launcher.DedicatedServer.busy:
+                data = tornado.escape.json_decode(self.request.body)
+                if "name" in data and data["name"] is not None:
+                    saveName = data["name"]
+                    t = Thread(
+                        target=self.launcher.DedicatedServer.loadSaveGame, args=(saveName,))
+                    t.daemon = True
+                    t.start()
+            self.write({"message": "Success"})
+        else:
+            self.write({"message": "Not Authenticated"})
+
+
+class DeleteSaveRequestHandler(BaseHandler):
+    def post(self):
+        if self.current_user == b"admin":
+            if not self.launcher.DedicatedServer.busy:
+                data = tornado.escape.json_decode(self.request.body)
+                if "name" in data and data["name"] is not None:
+                    saveName = data["name"]
+                    t = Thread(
+                        target=self.launcher.DedicatedServer.deleteSaveGame, args=(saveName,))
+                    t.daemon = True
+                    t.start()
             self.write({"message": "Success"})
         else:
             self.write({"message": "Not Authenticated"})
