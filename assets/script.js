@@ -92,7 +92,6 @@ const tick = async () => {
             let isBottom = log.scrollTop == log.scrollHeight - log.clientHeight;
 
             let sLogs = data.logs.split(/\r?\n/);
-            //$("#consoleText").html("");
             let newLogs = sLogs.filter((i) => !logList.includes(i) && i != "");
 
             newLogs.forEach((entry) => {
@@ -137,24 +136,35 @@ const tick = async () => {
 
         s = data.settings;
         if (data.stats) {
-            $("#hWL").html(data.stats.isEnforcingWhitelist.toString());
-            $("#hPW").html(data.stats.hasServerPassword.toString());
-            $("#hCM").html(data.stats.creativeMode.toString());
+            $("#hWL").text(
+                DOMPurify.sanitize(data.stats.isEnforcingWhitelist.toString())
+            );
+            $("#hPW").text(
+                DOMPurify.sanitize(data.stats.hasServerPassword.toString())
+            );
+            $("#hCM").text(
+                DOMPurify.sanitize(data.stats.creativeMode.toString())
+            );
 
-            $("#serverVersion").html(data.stats.build);
-            $("#framerateStats").html(
-                parseInt(data.stats.averageFPS) +
-                    "/" +
-                    parseInt(s.MaxServerFramerate) +
-                    " FPS"
+            $("#serverVersion").text(DOMPurify.sanitize(data.stats.build));
+            $("#framerateStats").text(
+                DOMPurify.sanitize(
+                    parseInt(data.stats.averageFPS) +
+                        "/" +
+                        parseInt(s.MaxServerFramerate) +
+                        " FPS"
+                )
             );
         }
         if (!compareObj(oldSettings, s)) {
             oldSettings = s;
-
-            $("#serverName").html(s.ServerName);
-            $("#serverPort").html(`${s.PublicIP}:${s.Port}`);
-            $("#owner").html(s.OwnerName);
+            bannerServerName;
+            $("#bannerServerName").text(DOMPurify.sanitize(`${s.ServerName}`));
+            $("#serverName").text(DOMPurify.sanitize(`${s.ServerName}`));
+            $("#serverPort").text(
+                DOMPurify.sanitize(`${s.PublicIP}:${s.Port}`)
+            );
+            $("#owner").text(DOMPurify.sanitize(s.OwnerName));
         }
         if (
             data.status == "starting" ||
@@ -162,8 +172,8 @@ const tick = async () => {
             data.status == "shutdown"
         ) {
             $("#playersStats").text("");
-            $("#serverVersion").html("");
-            $("#framerateStats").html("");
+            $("#serverVersion").text("");
+            $("#framerateStats").text("");
         } else {
             if (data.hasOwnProperty("savegames")) {
                 if (!compareObj(oldSaves, data.savegames)) {
@@ -181,11 +191,15 @@ const tick = async () => {
                         );
                         gameList.forEach((sg) => {
                             let row = document.createElement("tr");
-                            row.innerHTML = `<td>${sg.active}</td>
-                                <td>${sg.name}</td>
-                                <td>${sg.date}</td>
-                                <td>${sg.bHasBeenFlaggedAsCreativeModeSave}</td>
-                                <td>${sg.size}</td>
+                            row.innerHTML = `<td>${DOMPurify.sanitize(
+                                sg.active
+                            )}</td>
+                                <td>${DOMPurify.sanitize(sg.name)}</td>
+                                <td>${DOMPurify.sanitize(sg.date)}</td>
+                                <td>${DOMPurify.sanitize(
+                                    sg.bHasBeenFlaggedAsCreativeModeSave
+                                )}</td>
+                                <td>${DOMPurify.sanitize(sg.size)}</td>
                                 <td>${createSaveActionButtons(
                                     sg.active,
                                     sg
@@ -204,17 +218,22 @@ const tick = async () => {
                 $("#offlinePlayersTable").html(playersTableOriginal);
                 if (data.players.hasOwnProperty("playerInfo")) {
                     $("#playersStats").text(
-                        data.players.playerInfo.filter((p) => p.inGame).length +
-                            "/" +
-                            s.MaximumPlayerCount
+                        DOMPurify.sanitize(
+                            data.players.playerInfo.filter((p) => p.inGame)
+                                .length +
+                                "/" +
+                                s.MaximumPlayerCount
+                        )
                     );
 
                     if (data.players) {
                         data.players.playerInfo.forEach((p) => {
                             let row = document.createElement("tr");
-                            row.innerHTML = `<td>${p.playerName}</td>
-                            <td>${p.playerCategory}</td>
-                            <td>${p.playerGuid}</td>`;
+                            row.innerHTML = `<td>${DOMPurify.sanitize(
+                                p.playerName
+                            )}</td>
+                            <td>${DOMPurify.sanitize(p.playerCategory)}</td>
+                            <td>${DOMPurify.sanitize(p.playerGuid)}</td>`;
 
                             if (p.inGame == true) {
                                 if (isAdmin) {
@@ -434,12 +453,16 @@ $("#deleteSaveModal").on("show.bs.modal", function (event) {
     var save = oldSaves["gameList"].find((obj) => {
         return obj.name === saveName;
     });
-    var fullSaveName = save["name"] + "$" + save["date"] + ".savegame";
+    var fullSaveName = DOMPurify.sanitize(
+        save["name"] + "$" + save["date"] + ".savegame"
+    );
     var modal = $(this);
     modal
         .find(".modal-title")
         .text("Are you sure you wish to delete this save? ");
-    modal.find(".modal-body").text(fullSaveName + " -- " + save["size"]);
+    modal
+        .find(".modal-body")
+        .text(DOMPurify.sanitize(fullSaveName + " -- " + save["size"]));
     modal
         .find(".modal-footer .btn-danger")
         .attr("data-action", "delete")
@@ -543,6 +566,7 @@ $("#newSaveBtn").click(function (e) {
 const linkify = (text) => {
     //const exp = /(\b(((https?|ftp|file):\/\/)|[-A-Z0-9+&@#\/%=~_|]*\.)[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/gi;
     const exp = /(\b(((https?|ftp|file):\/\/)|[-A-Z+&@#\/%=~_|]+\.)[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/gi;
+    text = DOMPurify.sanitize(text);
     return text.replace(
         exp,
         `<a href="$1" target="_blank" style="color: #baf;">$1</a>`

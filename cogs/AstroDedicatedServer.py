@@ -55,6 +55,7 @@ class AstroDedicatedServer():
         self.ipPortCombo = None
         self.process = None
         self.players = {}
+        self.pakList = []
         self.stripPlayers = []
         self.onlinePlayers = []
         self.registered = False
@@ -95,7 +96,7 @@ class AstroDedicatedServer():
         self.status = "off"
         self.DSListGames = ""
         self.busy = False
-
+        self.getPaks()
         self.refresh_settings(ovrIP=True)
         self.AstroRCON = self.start_RCON()
 
@@ -125,6 +126,11 @@ class AstroDedicatedServer():
         p = math.pow(1024, i)
         s = round(size_bytes / p, 2)
         return "%s %s" % (s, size_name[i])
+
+    def getPaks(self):
+        pakPath = os.path.join(self.astroPath, r"Astro\Saved\Paks")
+        for f in os.listdir(pakPath):
+            self.pakList.append(os.path.basename(f))
 
     def getSaves(self):
         try:
@@ -245,10 +251,11 @@ class AstroDedicatedServer():
     def server_loop(self):
         while True:
             if self.lastHeartbeat is None or (datetime.datetime.now() - self.lastHeartbeat).total_seconds() > 30:
-                hbServerName = {
-                    "Name": self.settings.ServerName,
-                    "Type": ("AstroLauncherEXE" if self.launcher.isExecutable else "AstroLauncherPy") + f" {self.launcher.version}"
-                }
+                hbServerName = {"customdata": {
+                    "ServerName": self.settings.ServerName,
+                    "ServerType": ("AstroLauncherEXE" if self.launcher.isExecutable else "AstroLauncherPy") + f" {self.launcher.version}",
+                    "ServerPaks": self.pakList
+                }}
                 AstroAPI.heartbeat_server(
                     self.serverData, self.launcher.headers, {"serverName": json.dumps(hbServerName)})
 

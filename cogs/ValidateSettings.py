@@ -117,8 +117,14 @@ def get_current_settings(launcher, ovrIP=False):
             "Please ensure everything is correctly formatted...", "critical")
         AstroLogging.logPrint(
             "or delete the INI and allow the launcher to recreate it!", "critical")
-
-        launcher.kill_launcher()
+        try:
+            launcher.DedicatedServer.kill_server()
+        except:
+            pass
+        try:
+            launcher.kill_launcher()
+        except:
+            pass
 
 
 def socket_server(port, secret, tcp):
