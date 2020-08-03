@@ -202,6 +202,18 @@ class AstroLauncher():
         if disable_auto_update is not None:
             self.launcherConfig.DisableAutoUpdate = disable_auto_update
         self.version = "v1.6.0"
+        vText = "Version " + self.version[1:]
+
+        # pylint: disable=anomalous-backslash-in-string
+        print(" _____________________________________________________________________________________\n" +
+              "|     _          _                 _                                _                 |\n" +
+              "|    /_\    ___ | |_   _ _   ___  | |     __ _   _  _   _ _    __  | |_    ___   _ _  |\n" +
+              "|   / _ \  (_-< |  _| | '_| / _ \ | |__  / _` | | || | | ' \  / _| | ' \  / -_) | '_| |\n" +
+              "|  /_/ \_\ /__/  \__| |_|   \___/ |____| \__,_|  \_,_| |_||_| \__| |_||_| \___| |_|   |\n" +
+              "|                                                                                     |\n" +
+              "|"+vText.center(85)+"|\n" +
+              "|_____________________________________________________________________________________|")
+
         AstroLogging.logPrint(
             f"AstroLauncher - Unofficial Dedicated Server Launcher {self.version}")
         AstroLogging.logPrint(
@@ -242,7 +254,7 @@ class AstroLauncher():
 
         AstroLogging.logPrint("Starting a new session")
 
-        self.configure_firewall()
+        # self.configure_firewall()
         if not self.launcherConfig.DisableNetworkCheck:
             AstroLogging.logPrint("Checking the network configuration..")
             self.check_network_config()
@@ -449,6 +461,8 @@ class AstroLauncher():
         self.DedicatedServer.server_loop()
 
     def configure_firewall(self):
+        ''' Disabled due to not supporting multiple copies of AstroLauncher at once '''
+
         ASRule = os.popen(
             'netsh advfirewall firewall show rule name=AstroServer | findstr "no rules"').read()
         ALRule = os.popen(
@@ -468,14 +482,14 @@ class AstroLauncher():
                     self.astroPath, 'astro\\binaries\\win64\\astroserver-win64-shipping.exe')
 
                 subprocess.call(
-                    'netsh advfirewall firewall delete rule name=astroserver-win64-shipping.exe',
+                    '(netsh advfirewall firewall show rule name=AstroServer | findstr "no rules") ' +
+                    f'&& netsh advfirewall firewall add rule name=AstroServer dir=in action=allow program="{serverExePath}"',
                     shell=True,
                     stdout=DEVNULL,
                     stderr=DEVNULL
                 )
                 subprocess.call(
-                    '(netsh advfirewall firewall show rule name=AstroServer | findstr "no rules") ' +
-                    f'&& netsh advfirewall firewall add rule name=AstroServer dir=in action=allow program="{serverExePath}"',
+                    'netsh advfirewall firewall delete rule name=astroserver-win64-shipping.exe',
                     shell=True,
                     stdout=DEVNULL,
                     stderr=DEVNULL
@@ -484,14 +498,14 @@ class AstroLauncher():
                 if ALRule:
                     launcherEXEPath = os.path.join(os.getcwd(), sys.argv[0])
                     subprocess.call(
-                        'netsh advfirewall firewall delete rule name=astrolauncher.exe',
+                        '(netsh advfirewall firewall show rule name=AstroLauncher | findstr "no rules") ' +
+                        f'&& netsh advfirewall firewall add rule name=AstroLauncher dir=in action=allow program="{launcherEXEPath}"',
                         shell=True,
                         stdout=DEVNULL,
                         stderr=DEVNULL
                     )
                     subprocess.call(
-                        '(netsh advfirewall firewall show rule name=AstroLauncher | findstr "no rules") ' +
-                        f'&& netsh advfirewall firewall add rule name=AstroLauncher dir=in action=allow program="{launcherEXEPath}"',
+                        'netsh advfirewall firewall delete rule name=astrolauncher.exe',
                         shell=True,
                         stdout=DEVNULL,
                         stderr=DEVNULL
