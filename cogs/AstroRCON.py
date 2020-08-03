@@ -120,6 +120,37 @@ class AstroRCON():
             # print(e)
             return None
 
+    def DSListGames(self):
+        try:
+            self.socket.sendall(b"DSListGames\n")
+            rawdata = AstroRCON.recvall(self.socket)
+            parsedData = AstroRCON.parseData(rawdata)
+            # pprint(parsedData)
+            return parsedData
+        except Exception as e:
+            print(f"Error retrieving savegame list: {e}")
+            return None
+
+    def DSNewGame(self):
+        try:
+            self.socket.sendall(b"DSNewGame\n")
+            # pprint(parsedData)
+            return True
+        except:  # Exception as e:
+            # print(e)
+            return None
+
+    def DSLoadGame(self, name):
+        try:
+            self.socket.sendall(f'DSLoadGame {name}\n'.encode())
+            rawdata = AstroRCON.recvall(self.socket)
+            parsedData = AstroRCON.parseData(rawdata)
+            # pprint(parsedData)
+            return parsedData
+        except:  # Exception as e:
+            # print(e)
+            return None
+
     @staticmethod
     def recvall(sock):
         try:

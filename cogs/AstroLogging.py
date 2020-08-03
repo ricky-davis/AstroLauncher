@@ -33,7 +33,7 @@ class AstroLogging():
     def setup_logging():
         LOGFORMAT = '%(asctime)s - %(levelname)-6s %(message)s'
         CLOGFORMAT = '%(asctime)s - %(log_color)s%(levelname)-6s%(reset)s %(message)s'
-        DATEFMT = "%Y-%m-%d %H:%M:%S"
+        DATEFMT = "%H:%M:%S"
         LOGCOLORS = {
             'DEBUG':    'cyan',
             'INFO':     'green',
@@ -61,7 +61,7 @@ class AstroLogging():
     @staticmethod
     def setup_loggingPath(astroPath):
         LOGFORMAT = '%(asctime)s - %(levelname)-6s %(message)s'
-        DATEFMT = "%Y-%m-%d %H:%M:%S"
+        DATEFMT = "%H:%M:%S"
         formatter = logging.Formatter(LOGFORMAT, datefmt=DATEFMT)
 
         rootLogger = logging.getLogger()

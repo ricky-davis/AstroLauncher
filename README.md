@@ -242,7 +242,7 @@ Distributed under the MIT License. See `LICENSE` for more information.
 
 Ricky Davis - Discord: @Spyci#0001
 
-If you have any questions you can DM me, or preferrably, join the Astroneer discord (discord.gg/Astroneer) and ask in the #self_host_talk channel
+If you have any questions you can DM me, or preferrably, join the [Astroneer discord](discord.gg/Astroneer) and ask in the #self_host_talk channel
 
 Project Link: [https://github.com/ricky-davis/AstroLauncher](https://github.com/ricky-davis/AstroLauncher)
 

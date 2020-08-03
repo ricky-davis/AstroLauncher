@@ -9,6 +9,7 @@ import subprocess
 import sys
 import time
 from threading import Thread
+from subprocess import DEVNULL
 
 import psutil
 import requests
@@ -201,6 +202,18 @@ class AstroLauncher():
         if disable_auto_update is not None:
             self.launcherConfig.DisableAutoUpdate = disable_auto_update
         self.version = "v1.6.0"
+        vText = "Version " + self.version[1:]
+
+        # pylint: disable=anomalous-backslash-in-string
+        print(" _____________________________________________________________________________________\n" +
+              "|     _          _                 _                                _                 |\n" +
+              "|    /_\    ___ | |_   _ _   ___  | |     __ _   _  _   _ _    __  | |_    ___   _ _  |\n" +
+              "|   / _ \  (_-< |  _| | '_| / _ \ | |__  / _` | | || | | ' \  / _| | ' \  / -_) | '_| |\n" +
+              "|  /_/ \_\ /__/  \__| |_|   \___/ |____| \__,_|  \_,_| |_||_| \__| |_||_| \___| |_|   |\n" +
+              "|                                                                                     |\n" +
+              "|"+vText.center(85)+"|\n" +
+              "|_____________________________________________________________________________________|")
+
         AstroLogging.logPrint(
             f"AstroLauncher - Unofficial Dedicated Server Launcher {self.version}")
         AstroLogging.logPrint(
@@ -220,6 +233,7 @@ class AstroLauncher():
         self.saveObserver = None
         self.backupObserver = None
         self.hasUpdate = False
+        self.is_admin = ctypes.windll.shell32.IsUserAnAdmin() != 0
         self.affinity = self.launcherConfig.CPUAffinity
         try:
             if self.affinity != "":
@@ -240,6 +254,7 @@ class AstroLauncher():
 
         AstroLogging.logPrint("Starting a new session")
 
+        # self.configure_firewall()
         if not self.launcherConfig.DisableNetworkCheck:
             AstroLogging.logPrint("Checking the network configuration..")
             self.check_network_config()
@@ -447,6 +462,65 @@ class AstroLauncher():
         self.DedicatedServer.status = "ready"
         self.DedicatedServer.server_loop()
 
+    def configure_firewall(self):
+        ''' Disabled due to not supporting multiple copies of AstroLauncher at once '''
+
+        ASRule = os.popen(
+            'netsh advfirewall firewall show rule name=AstroServer | findstr "no rules"').read()
+        ALRule = os.popen(
+            'netsh advfirewall firewall show rule name=AstroLauncher | findstr "no rules"').read()
+        ALWRule = os.popen(
+            'netsh advfirewall firewall show rule name=AstroLauncherWeb | findstr "no rules"').read()
+
+        if not self.is_admin:
+            if (ASRule)\
+                    or (ALRule and self.isExecutable)\
+                    or (ALWRule and not self.isExecutable):
+                AstroLogging.logPrint(
+                    "Could not find firewall settings! Please relaunch as Administrator.", "warning")
+        else:
+            if ASRule:
+                serverExePath = os.path.join(
+                    self.astroPath, 'astro\\binaries\\win64\\astroserver-win64-shipping.exe')
+
+                subprocess.call(
+                    '(netsh advfirewall firewall show rule name=AstroServer | findstr "no rules") ' +
+                    f'&& netsh advfirewall firewall add rule name=AstroServer dir=in action=allow program="{serverExePath}"',
+                    shell=True,
+                    stdout=DEVNULL,
+                    stderr=DEVNULL
+                )
+                subprocess.call(
+                    'netsh advfirewall firewall delete rule name=astroserver-win64-shipping.exe',
+                    shell=True,
+                    stdout=DEVNULL,
+                    stderr=DEVNULL
+                )
+            if self.isExecutable:
+                if ALRule:
+                    launcherEXEPath = os.path.join(os.getcwd(), sys.argv[0])
+                    subprocess.call(
+                        '(netsh advfirewall firewall show rule name=AstroLauncher | findstr "no rules") ' +
+                        f'&& netsh advfirewall firewall add rule name=AstroLauncher dir=in action=allow program="{launcherEXEPath}"',
+                        shell=True,
+                        stdout=DEVNULL,
+                        stderr=DEVNULL
+                    )
+                    subprocess.call(
+                        'netsh advfirewall firewall delete rule name=astrolauncher.exe',
+                        shell=True,
+                        stdout=DEVNULL,
+                        stderr=DEVNULL
+                    )
+            elif ALWRule:
+                subprocess.call(
+                    'netsh advfirewall firewall delete rule name=AstroLauncherWeb &' +
+                    f'netsh advfirewall firewall add rule name=AstroLauncherWeb dir=in action=allow protocol=TCP localport={self.launcherConfig.WebServerPort}',
+                    shell=True,
+                    stdout=DEVNULL,
+                    stderr=DEVNULL
+                )
+
     def check_network_config(self):
         networkCorrect = ValidateSettings.test_network(
             self.DedicatedServer.settings.PublicIP, int(self.DedicatedServer.settings.Port), False)
@@ -456,9 +530,11 @@ class AstroLauncher():
             AstroLogging.logPrint(
                 "I can't seem to validate your network settings..", "warning")
             AstroLogging.logPrint(
-                f"Make sure to Port Forward ({self.DedicatedServer.settings.Port} UDP) and enable NAT Loopback", "warning")
+                f"Make sure to Port Forward ({self.DedicatedServer.settings.Port} UDP), enable NAT Loopback...", "warning")
             AstroLogging.logPrint(
-                "If nobody can connect, Port Forward.", "warning")
+                f"And allow port {self.DedicatedServer.settings.Port} UDP inbound in your firewall", "warning")
+            AstroLogging.logPrint(
+                "If nobody can connect, Port Forward or fix your firewall.", "warning")
             AstroLogging.logPrint(
                 "If others are able to connect, but you aren't, enable NAT Loopback.", "warning")
 
@@ -489,6 +565,18 @@ class AstroLauncher():
         t.daemon = True
         t.start()
         return ws
+
+    def kill_launcher(self):
+        try:
+            for child in psutil.Process(os.getpid()).children():
+                child.kill()
+        except:
+            pass
+        # Kill current process
+        try:
+            os.kill(os.getpid(), 9)
+        except:
+            pass
 
 
 if __name__ == "__main__":
