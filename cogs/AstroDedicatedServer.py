@@ -124,24 +124,27 @@ class AstroDedicatedServer():
         return "%s %s" % (s, size_name[i])
 
     def getSaves(self):
-        if not self.AstroRCON.connected:
-            return False
-        self.busy = True
-        saveGamePath = r"Astro\Saved\SaveGames"
-        saveGamePath = os.path.join(
-            self.astroPath, saveGamePath)
-        self.DSListGames = self.AstroRCON.DSListGames()
-        if self.DSListGames is not None:
-            for save in self.DSListGames["gameList"]:
-                saveFileName = f"{save['name']}${save['date']}.savegame"
-                sfPath = os.path.join(saveGamePath, saveFileName)
-                size = AstroDedicatedServer.convert_size(
-                    os.path.getsize(sfPath))
-                save["size"] = size
-                if save['name'] == self.DSListGames['activeSaveName']:
-                    save['active'] = "Active"
-                else:
-                    save['active'] = ""
+        try:
+            if not self.AstroRCON.connected:
+                return False
+            self.busy = True
+            saveGamePath = r"Astro\Saved\SaveGames"
+            saveGamePath = os.path.join(
+                self.astroPath, saveGamePath)
+            self.DSListGames = self.AstroRCON.DSListGames()
+            if self.DSListGames is not None:
+                for save in self.DSListGames["gameList"]:
+                    saveFileName = f"{save['name']}${save['date']}.savegame"
+                    sfPath = os.path.join(saveGamePath, saveFileName)
+                    size = AstroDedicatedServer.convert_size(
+                        os.path.getsize(sfPath))
+                    save["size"] = size
+                    if save['name'] == self.DSListGames['activeSaveName']:
+                        save['active'] = "Active"
+                    else:
+                        save['active'] = ""
+        except:
+            pass
 
         self.busy = False
 
