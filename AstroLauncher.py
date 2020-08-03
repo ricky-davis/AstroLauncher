@@ -437,9 +437,10 @@ class AstroLauncher():
                 else:
                     now = time.time()
                     if now - startTime > 15:
+                        serverData = serverData[0]
                         self.DedicatedServer.registered = True
                         del oldLobbyIDs
-                        self.DedicatedServer.LobbyID = serverData[0]['LobbyID']
+                        self.DedicatedServer.LobbyID = serverData['LobbyID']
 
                 if self.DedicatedServer.process.poll() is not None:
                     AstroLogging.logPrint(
@@ -453,6 +454,7 @@ class AstroLauncher():
                 self.launcherConfig.PlayfabAPIFrequency += 1
                 time.sleep(self.launcherConfig.PlayfabAPIFrequency)
 
+        self.DedicatedServer.serverData = serverData
         doneTime = time.time()
         elapsed = doneTime - startTime
         AstroLogging.logPrint(

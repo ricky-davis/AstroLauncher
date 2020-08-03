@@ -5,6 +5,7 @@ import math
 import os
 import subprocess
 import time
+import json
 
 import psutil
 
@@ -57,6 +58,8 @@ class AstroDedicatedServer():
         self.stripPlayers = []
         self.onlinePlayers = []
         self.registered = False
+        self.serverData = None
+        self.lastHeartbeat = None
         self.LobbyID = None
         self.serverGUID = self.settings.ServerGuid if self.settings.ServerGuid != '' else "REGISTER"
         if self.launcher.launcherConfig.EnableAutoRestart:
@@ -241,6 +244,16 @@ class AstroDedicatedServer():
 
     def server_loop(self):
         while True:
+            if self.lastHeartbeat is None or (datetime.datetime.now() - self.lastHeartbeat).total_seconds() > 30:
+                hbServerName = {
+                    "Name": self.settings.ServerName,
+                    "Type": ("AstroLauncherEXE" if self.launcher.isExecutable else "AstroLauncherPy") + f" {self.launcher.version}"
+                }
+                AstroAPI.heartbeat_server(
+                    self.serverData, self.launcher.headers, {"serverName": json.dumps(hbServerName)})
+
+                self.lastHeartbeat = datetime.datetime.now()
+
             # Ensure RCON is connected
             try:
                 if not self.AstroRCON or not self.AstroRCON.connected:

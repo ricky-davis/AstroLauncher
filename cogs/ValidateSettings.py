@@ -36,7 +36,8 @@ def get_current_settings(launcher, ovrIP=False):
         curPath, r"Astro\Saved\Config\WindowsServer\AstroServerSettings.ini")
     ovrConfig = {
         "/Script/Astro.AstroServerSettings": {
-            "VerbosePlayerProperties": "True"
+            "VerbosePlayerProperties": "True",
+            "HeartbeatInterval": "0"
         }
     }
     try:
@@ -87,7 +88,8 @@ def get_current_settings(launcher, ovrIP=False):
                 "ServerGuid": uuid.uuid4().hex,
                 "ActiveSaveFileDescriptiveName": "SAVE_1",
                 "ServerAdvertisedName": "",
-                "ConsolePort": "1234"
+                "ConsolePort": "1234",
+                "HeartbeatInterval": "0"
             }
         }
         config = MultiConfig().baseline(confPath, baseConfig)
