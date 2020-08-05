@@ -9,7 +9,7 @@
         <div id="main" class="container-fluid my-5">
             {% if isAdmin %}
             <div class="row">
-                <div id="above" class="col px-4">
+                <div id="above" class="col  px-0 px-md-4">
                     <div id="console" class="card astroCard">
                         <div
                             class="card-header pt-4 px-4"
@@ -37,7 +37,7 @@
             </div>
             {% end %}
             <div class="row mt-4">
-                <div id="left" class="col-12 col-md-5 px-4">
+                <div id="left" class="col-12 col-md-5 px-0 pl-md-4 pr-md-3">
                     <div id="stats" class="card astroCard">
                         <div
                             class="card-header pt-4 px-4"
@@ -102,25 +102,25 @@
                         </div>
                         {% if isAdmin %}
                         <div id="serverStatusFooter" class="card-footer">
-                            <div class="row">
+                            <div class="row d-flex justify-content-around px-2">
                                 <button
                                     id="saveGameBtn"
                                     type="button"
-                                    class="btn btn-success m-1 col-12 col-xl-4"
+                                    class="btn btn-success my-1 col-12 col-xl-4"
                                 >
                                     Save Game
                                 </button>
                                 <button
                                     id="rebootServerBtn"
                                     type="button"
-                                    class="btn btn-warning m-1 col-12 col-xl-3"
+                                    class="btn btn-warning my-1 col-12 col-xl-3"
                                 >
                                     Reboot
                                 </button>
                                 <button
                                     id="stopLauncherBtn"
                                     type="button"
-                                    class="btn btn-danger m-1 col-12 col-xl-4"
+                                    class="btn btn-danger my-1 col-12 col-xl-4"
                                 >
                                     Stop Launcher & Server
                                 </button>
@@ -143,7 +143,7 @@
                                 <button
                                     id="newSaveBtn"
                                     type="button"
-                                    class="btn btn-success m-1 col-12 col-xl-2 float-right px-0"
+                                    class="btn btn-success col-12 col-lg-5 col-xl-4 float-right"
                                 >
                                     Load New Save
                                 </button>
@@ -153,28 +153,30 @@
                             id="saveGamesCardBody"
                             class="card-body pt-0 collapse show"
                         >
-                            <table
-                                id="saveGamesTable"
-                                class="table table-dark table-striped"
-                            >
-                                <thead>
-                                    <tr>
-                                        <th>Active</th>
-                                        <th>Save Name</th>
-                                        <th>Last Modified</th>
-                                        <th>Creative</th>
-                                        <th>Size</th>
-                                        <th>Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody></tbody>
-                            </table>
+                            <div class="table-responsive">
+                                <table
+                                    id="saveGamesTable"
+                                    class="table table-dark table-striped "
+                                >
+                                    <thead>
+                                        <tr>
+                                            <th>Active</th>
+                                            <th>Save Name</th>
+                                            <th>Last Modified</th>
+                                            <th>Creative</th>
+                                            <th>Size</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody></tbody>
+                                </table>
+                            </div>
                         </div>
                     </div>
                     {% end %}
                 </div>
 
-                <div id="right" class="col-12 mt-5 mt-md-0 col-md px-4">
+                <div id="right" class="col-12 mt-5 mt-md-0 col-md  px-0 pr-md-4 pl-md-3">
                     <div id="onlinePlayersRow" class="card astroCard">
                         <div
                             class="card-header pt-4 px-4"
@@ -192,22 +194,24 @@
                             id="onlinePlayersCardBody"
                             class="card-body pt-0 collapse show"
                         >
-                            <table
-                                id="onlinePlayersTable"
-                                class="table table-dark table-striped"
-                            >
-                                <thead>
-                                    <tr>
-                                        <th>Name</th>
-                                        <th>Role</th>
-                                        <th>GUID</th>
-                                        {% if isAdmin %}
-                                        <th>Actions</th>
-                                        {% end %}
-                                    </tr>
-                                </thead>
-                                <tbody></tbody>
-                            </table>
+                            <div class="table-responsive">
+                                <table
+                                    id="onlinePlayersTable"
+                                    class="table table-dark table-striped"
+                                >
+                                    <thead>
+                                        <tr>
+                                            <th>Name</th>
+                                            <th>Role</th>
+                                            <th>GUID</th>
+                                            {% if isAdmin %}
+                                            <th>Actions</th>
+                                            {% end %}
+                                        </tr>
+                                    </thead>
+                                    <tbody></tbody>
+                                </table>
+                            </div>
                         </div>
                     </div>
                     
@@ -246,19 +250,21 @@
                             id="offlinePlayersCardBody"
                             class="card-body pt-0 collapse show"
                         >
-                            <table
-                                id="offlinePlayersTable"
-                                class="table table-dark table-striped"
-                            >
-                                <thead>
-                                    <tr>
-                                        <th>Name</th>
-                                        <th>Role</th>
-                                        <th>GUID</th>
-                                    </tr>
-                                </thead>
-                                <tbody></tbody>
-                            </table>
+                            <div class="table-responsive">
+                                <table
+                                    id="offlinePlayersTable"
+                                    class="table table-dark table-striped"
+                                >
+                                    <thead>
+                                        <tr>
+                                            <th>Name</th>
+                                            <th>Role</th>
+                                            <th>GUID</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody></tbody>
+                                </table>
+                            </div>
                         </div>
                     </div>
                 </div>

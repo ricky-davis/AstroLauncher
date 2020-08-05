@@ -39,6 +39,17 @@ h5 {
 #onlinePlayersRow {
     z-index: 10;
 }
+
+#saveGamesTable {
+    font-size: 0.8em;
+}
+#onlinePlayersTable {
+    font-size: 0.8em;
+}
+#offlinePlayersTable {
+    font-size: 0.8em;
+}
+
 #banner {
     background: #17142f;
     white-space: nowrap;
@@ -159,6 +170,12 @@ h5 {
 .tippy-box[data-theme~="update"] > .tippy-arrow::before {
     border-right-color: teal;
 }
+#githubLink {
+    font-size: 3vw;
+}
+#bannerServerName {
+    font-size: 5vw;
+}
 
 @media (min-width: 576px) {
     h1 {
@@ -167,11 +184,26 @@ h5 {
     h2 {
         font-size: 1.3em;
     }
+    #saveGamesTable {
+        font-size: 1em;
+    }
+    #onlinePlayersTable {
+        font-size: 1em;
+    }
+    #offlinePlayersTable {
+        font-size: 1em;
+    }
 }
 
 @media (min-width: 768px) {
     #logo {
         width: 60px;
+    }
+    #githubLink {
+        font-size: 1em;
+    }
+    #bannerServerName {
+        font-size: 1.8em;
     }
 }
 
