@@ -8,12 +8,12 @@ import time
 import json
 
 import psutil
+from PyPAKParser import PakParser
 
 import cogs.AstroAPI as AstroAPI
 import cogs.ValidateSettings as ValidateSettings
 from cogs.AstroLogging import AstroLogging
 from cogs.AstroRCON import AstroRCON
-from cogs.AstroModPak import PakParser
 
 
 class AstroDedicatedServer():
@@ -133,7 +133,12 @@ class AstroDedicatedServer():
             pakPath = os.path.join(self.astroPath, r"Astro\Saved\Paks")
             for f in os.listdir(pakPath):
                 PP = PakParser(os.path.join(pakPath, f))
-                self.pakList.append({os.path.basename(f): PP.data})
+                metadataFile = [
+                    x.Data for x in PP.records if x.fileName == "metadata.json"]
+                ppData = ""
+                if len(metadataFile) > 0:
+                    ppData = metadataFile[0]
+                self.pakList.append({os.path.basename(f): ppData})
         except:
             pass
 

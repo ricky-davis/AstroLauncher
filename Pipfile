@@ -18,6 +18,7 @@ colorlog = "*"
 tornado = "*"
 asyncio = "*"
 ipy = "*"
+pypakparser = "*"
 
 [requires]
 python_version = "3.7"
