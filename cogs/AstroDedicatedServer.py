@@ -132,13 +132,16 @@ class AstroDedicatedServer():
         try:
             pakPath = os.path.join(self.astroPath, r"Astro\Saved\Paks")
             for f in os.listdir(pakPath):
-                PP = PakParser(os.path.join(pakPath, f))
-                metadataFile = [
-                    x.Data for x in PP.records if x.fileName == "metadata.json"]
-                ppData = ""
-                if len(metadataFile) > 0:
-                    ppData = metadataFile[0]
-                self.pakList.append({os.path.basename(f): ppData})
+                try:
+                    PP = PakParser(os.path.join(pakPath, f))
+                    metadataFile = [
+                        x.Data for x in PP.records if x.fileName == "metadata.json"]
+                    ppData = ""
+                    if len(metadataFile) > 0:
+                        ppData = metadataFile[0]
+                    self.pakList.append({os.path.basename(f): ppData})
+                except:
+                    pass
         except:
             pass
 
