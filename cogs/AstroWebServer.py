@@ -60,6 +60,8 @@ class WebServer(tornado.web.Application):
                      dict(launcher=self.launcher)),
                     (r"/api/savegame/delete", DeleteSaveRequestHandler,
                      dict(launcher=self.launcher)),
+                    (r"/api/savegame/rename", RenameSaveRequestHandler,
+                     dict(launcher=self.launcher)),
                     (r"/api/reboot", RebootRequestHandler,
                      dict(launcher=self.launcher)),
                     (r"/api/shutdown", ShutdownRequestHandler,
@@ -237,10 +239,13 @@ class LoadSaveRequestHandler(BaseHandler):
                 data = tornado.escape.json_decode(self.request.body)
                 if "name" in data and data["name"] is not None:
                     saveName = data["name"]
-                    t = Thread(
-                        target=self.launcher.DedicatedServer.loadSaveGame, args=(saveName,))
-                    t.daemon = True
-                    t.start()
+                    saveName = data["name"]
+                    GL = self.launcher.DedicatedServer.DSListGames
+                    if saveName != GL['activeSaveName']:
+                        t = Thread(
+                            target=self.launcher.DedicatedServer.loadSaveGame, args=(saveName,))
+                        t.daemon = True
+                        t.start()
             self.write({"message": "Success"})
         else:
             self.write({"message": "Not Authenticated"})
@@ -253,10 +258,31 @@ class DeleteSaveRequestHandler(BaseHandler):
                 data = tornado.escape.json_decode(self.request.body)
                 if "name" in data and data["name"] is not None:
                     saveName = data["name"]
-                    t = Thread(
-                        target=self.launcher.DedicatedServer.deleteSaveGame, args=(saveName,))
-                    t.daemon = True
-                    t.start()
+                    GL = self.launcher.DedicatedServer.DSListGames
+                    if saveName != GL['activeSaveName']:
+                        t = Thread(
+                            target=self.launcher.DedicatedServer.deleteSaveGame, args=(saveName,))
+                        t.daemon = True
+                        t.start()
+            self.write({"message": "Success"})
+        else:
+            self.write({"message": "Not Authenticated"})
+
+
+class RenameSaveRequestHandler(BaseHandler):
+    def post(self):
+        if self.current_user == b"admin":
+            if not self.launcher.DedicatedServer.busy:
+                data = tornado.escape.json_decode(self.request.body)
+                if "nName" in data and data["nName"] is not None and "oName" in data and data["oName"] is not None:
+                    oldSaveName = data["oName"]
+                    newSaveName = data["nName"]
+                    GL = self.launcher.DedicatedServer.DSListGames
+                    if newSaveName not in [x['name'] for x in GL['gameList']] and oldSaveName != GL['activeSaveName']:
+                        t = Thread(
+                            target=self.launcher.DedicatedServer.renameSaveGame, args=(oldSaveName, newSaveName))
+                        t.daemon = True
+                        t.start()
             self.write({"message": "Success"})
         else:
             self.write({"message": "Not Authenticated"})

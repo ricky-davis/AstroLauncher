@@ -13,6 +13,7 @@ import cogs.AstroAPI as AstroAPI
 import cogs.ValidateSettings as ValidateSettings
 from cogs.AstroLogging import AstroLogging
 from cogs.AstroRCON import AstroRCON
+from cogs.AstroModPak import PakParser
 
 
 class AstroDedicatedServer():
@@ -128,9 +129,13 @@ class AstroDedicatedServer():
         return "%s %s" % (s, size_name[i])
 
     def getPaks(self):
-        pakPath = os.path.join(self.astroPath, r"Astro\Saved\Paks")
-        for f in os.listdir(pakPath):
-            self.pakList.append(os.path.basename(f))
+        try:
+            pakPath = os.path.join(self.astroPath, r"Astro\Saved\Paks")
+            for f in os.listdir(pakPath):
+                PP = PakParser(os.path.join(pakPath, f))
+                self.pakList.append({os.path.basename(f): PP.data})
+        except:
+            pass
 
     def getSaves(self):
         try:
@@ -212,6 +217,29 @@ class AstroDedicatedServer():
             AstroLogging.logPrint(f"Deleting save: {saveFileName}")
             if os.path.exists(sfPath):
                 os.remove(sfPath)
+            self.getSaves()
+        self.busy = False
+
+    def renameSaveGame(self, oldName, newName):
+        if not self.AstroRCON.connected:
+            return False
+        self.setStatus("renamesave")
+        self.busy = True
+        saveGamePath = r"Astro\Saved\SaveGames"
+        saveGamePath = os.path.join(
+            self.astroPath, saveGamePath)
+        save = [x for x in self.DSListGames['gameList'] if x['name'] == oldName]
+        if len(save) > 0:
+            save = save[0]
+            saveFileName = f"{save['name']}${save['date']}.savegame"
+            sfPath = os.path.join(saveGamePath, saveFileName)
+            newSaveFileName = f"{newName}${save['date']}.savegame"
+            sfNPath = os.path.join(saveGamePath, newSaveFileName)
+            # time.sleep(1)
+            AstroLogging.logPrint(
+                f"Renaming save: {save['name']} to {newName}")
+            if os.path.exists(sfPath):
+                os.rename(sfPath, sfNPath)
             self.getSaves()
         self.busy = False
 

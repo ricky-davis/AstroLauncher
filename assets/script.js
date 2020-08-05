@@ -194,11 +194,11 @@ const tick = async () => {
                             row.innerHTML = `<td>${DOMPurify.sanitize(
                                 sg.active
                             )}</td>
-                                <td>${DOMPurify.sanitize(sg.name)}</td>
+                                <td><span data-name="${sg.name}" class="${
+                                sg.active ? "" : "saveName"
+                            }">${DOMPurify.sanitize(sg.name)}</span></td>
                                 <td>${DOMPurify.sanitize(sg.date)}</td>
-                                <td>${DOMPurify.sanitize(
-                                    sg.bHasBeenFlaggedAsCreativeModeSave
-                                )}</td>
+                                <td>${sg.bHasBeenFlaggedAsCreativeModeSave}</td>
                                 <td>${DOMPurify.sanitize(sg.size)}</td>
                                 <td>${createSaveActionButtons(
                                     sg.active,
@@ -313,9 +313,17 @@ const createSaveActionButtons = function (status, save) {
         .text("Delete");
     actionButtonBufferList.push(deleteButton);
 
+    renameButton = sButton
+        .clone()
+        .addClass("sdBtn")
+        .attr("data-action", "rename")
+        .text("Rename");
+    actionButtonBufferList.push(renameButton);
+
     if (status == "Active") {
         loadButton.addClass("disabled");
         deleteButton.addClass("disabled");
+        renameButton.addClass("disabled");
     }
 
     actionButtonBufferList.forEach((element) => {
@@ -407,6 +415,73 @@ const createPlayerActionButtons = function (status, player) {
 $(document).on("input", "#WLPlayerInp", function (e) {
     console.log($(e.target).val());
     $("#WLPlayerBtn").attr({ "data-name": $(e.target).val() });
+});
+
+$(document).on("click", "button[data-action='rename']", function (e) {
+    oName = $(e.target).attr("data-name");
+    nameSpan = $(`span[data-name='${oName}']`);
+    sName = nameSpan.text();
+    swidth = nameSpan.width();
+    parent = nameSpan.parent();
+    parent.addClass("inputBox");
+    a = $("<div/>").attr({
+        class: "input-group mb-3",
+    });
+    b = $("<div/>").attr({
+        class: "input-group-append",
+    });
+
+    sInput = $("<input/>").attr({
+        type: "text",
+        class: "saveNameInput form-control",
+        "data-saveOName": sName,
+    });
+    sInput.val(sName);
+    sButton = $("<button/>")
+        .attr({
+            type: "button",
+            class: "saveNameSubmit btn btn-outline-secondary text-white",
+            "data-saveOName": sName,
+        })
+        .text("✓");
+    parent.html("");
+    a.append(sInput);
+    b.append(sButton);
+    a.append(b);
+    parent.append(a);
+});
+
+$(document).on("click", ".saveNameSubmit", function (e) {
+    e.preventDefault();
+    parent = $(e.target).closest(".inputBox");
+    parent.removeClass("inputBox");
+    sInput = parent.find(".saveNameInput");
+    sName = sInput.val();
+    oName = $(e.target).attr("data-saveOName");
+    if (sName.length < 3) {
+        sName = oName;
+    }
+    if (
+        !oldSaves.gameList.map((x) => x.name).includes(sName) &&
+        oName != sName
+    ) {
+        $.ajax({
+            type: "POST",
+            url: apiURL + "/savegame/rename",
+            dataType: "json",
+            data: JSON.stringify({ oName: oName, nName: sName }),
+            success: function (result) {},
+            error: function (result) {
+                console.log(result);
+                alert("Error");
+            },
+        });
+    } else {
+        sName = oName;
+    }
+    nameSpan = $("<span/>").addClass("saveName").attr("data-name", sName);
+    nameSpan.text(sName);
+    parent.html(nameSpan);
 });
 
 $(document).on("click", ".pBtn", function (e) {

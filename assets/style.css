@@ -234,7 +234,8 @@ div.btn-group.show div.dropdown-menu.show button.dropdown-item.disabled {
 .sdBtn[data-action="delete"]:not(.disabled)::before {
     background-color: red !important;
 }
-.pBtn[data-action="WL"]:not(.disabled)::before {
+.pBtn[data-action="WL"]:not(.disabled)::before,
+.sdBtn[data-action="rename"]:not(.disabled)::before {
     background-color: #0f0 !important;
 }
 .pBtn[data-action="admin"]:not(.disabled)::before {
