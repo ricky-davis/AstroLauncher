@@ -53,6 +53,7 @@ class AstroLauncher():
         DisableNetworkCheck: bool = False
         OverwritePublicIP: bool = False
         ShowServerFPSInConsole: bool = True
+        AdminAutoConfigureFirewall: bool = True
 
         DisableWebServer: bool = False
         WebServerPort: int = 5000
@@ -256,7 +257,8 @@ class AstroLauncher():
 
         self.check_ports_free()
 
-        self.configure_firewall()
+        if self.launcherConfig.AdminAutoConfigureFirewall:
+            self.configure_firewall()
 
         if not self.launcherConfig.DisableNetworkCheck:
             AstroLogging.logPrint("Checking the network configuration..")
@@ -475,12 +477,13 @@ class AstroLauncher():
         webPort = False
         wp = self.launcherConfig.WebServerPort
 
-        serverPort = bool(os.popen(f'netstat -a -n -o | find ":{sp} "').read())
+        serverPort = bool(
+            os.popen(f'netstat -a -n -o | find ":{sp} " | find "LISTENING"').read())
         consolePort = bool(
-            os.popen(f'netstat -a -n -o | find ":{cp} "').read())
+            os.popen(f'netstat -a -n -o | find ":{cp} " | find "LISTENING"').read())
         if not self.launcherConfig.DisableWebServer:
             webPort = bool(
-                os.popen(f'netstat -a -n -o | find ":{wp} "').read())
+                os.popen(f'netstat -a -n -o | find ":{wp} " | find "LISTENING"').read())
 
         if serverPort:
             AstroLogging.logPrint(
@@ -495,6 +498,8 @@ class AstroLauncher():
             self.kill_launcher()
 
     def configure_firewall(self):
+        if not self.launcherConfig.AdminAutoConfigureFirewall:
+            return
         isFirewallEnabled = os.popen(
             'netsh advfirewall show currentprofile | findstr /L "State" | findstr /L "ON"').read()
         if isFirewallEnabled:

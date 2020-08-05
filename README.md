@@ -108,6 +108,9 @@ OverwritePublicIP = False
 # Enable/Disable showing server FPS in console. This will probably spam your console when playing are in your server
 ShowServerFPSInConsole = True
 
+# When launched in Administrator Mode, Astro Launcher will attempt to automatically configure the firewall settings
+AdminAutoConfigureFirewall = True
+
 # Disable the Web Management Server
 DisableWebServer = False
 

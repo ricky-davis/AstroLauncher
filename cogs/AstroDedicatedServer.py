@@ -99,7 +99,7 @@ class AstroDedicatedServer():
         self.busy = False
         self.getPaks()
         self.refresh_settings(ovrIP=True)
-        self.AstroRCON = self.start_RCON()
+        self.AstroRCON = None
 
     def start_RCON(self):
         rc = AstroRCON(self)
