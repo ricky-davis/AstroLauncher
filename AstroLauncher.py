@@ -496,7 +496,7 @@ class AstroLauncher():
 
     def configure_firewall(self):
         isFirewallEnabled = os.popen(
-            f'netsh advfirewall show currentprofile | findstr /L "State" | findstr /L "ON"').read()
+            'netsh advfirewall show currentprofile | findstr /L "State" | findstr /L "ON"').read()
         if isFirewallEnabled:
             serverExePath = os.path.join(
                 self.astroPath, 'astro\\binaries\\win64\\astroserver-win64-shipping.exe')
