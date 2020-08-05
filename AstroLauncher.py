@@ -254,7 +254,10 @@ class AstroLauncher():
 
         AstroLogging.logPrint("Starting a new session")
 
+        self.check_ports_free()
+
         self.configure_firewall()
+
         if not self.launcherConfig.DisableNetworkCheck:
             AstroLogging.logPrint("Checking the network configuration..")
             self.check_network_config()
@@ -462,53 +465,85 @@ class AstroLauncher():
         self.DedicatedServer.status = "ready"
         self.DedicatedServer.server_loop()
 
+    def check_ports_free(self):
+        serverPort = False
+        sp = self.DedicatedServer.settings.Port
+
+        consolePort = False
+        cp = self.DedicatedServer.settings.ConsolePort
+
+        webPort = False
+        wp = self.launcherConfig.WebServerPort
+
+        serverPort = bool(os.popen(f'netstat -a -n -o | find ":{sp} "').read())
+        consolePort = bool(
+            os.popen(f'netstat -a -n -o | find ":{cp} "').read())
+        if not self.launcherConfig.DisableWebServer:
+            webPort = bool(
+                os.popen(f'netstat -a -n -o | find ":{wp} "').read())
+
+        if serverPort:
+            AstroLogging.logPrint(
+                f"A process is already using your Server Port ( {sp} UDP )", "critical")
+        if consolePort:
+            AstroLogging.logPrint(
+                f"A process is already using your Console Port ( {cp} TCP )", "critical")
+        if webPort:
+            AstroLogging.logPrint(
+                f"A process is already using your Web Port ( {wp} TCP )", "critical")
+        if serverPort or consolePort or webPort:
+            self.kill_launcher()
+
     def configure_firewall(self):
-        serverExePath = os.path.join(
-            self.astroPath, 'astro\\binaries\\win64\\astroserver-win64-shipping.exe')
-        ASRule = os.popen(
-            f'netsh advfirewall firewall show rule name=astroserver-win64-shipping.exe verbose | findstr /L "{serverExePath}"').read()
+        isFirewallEnabled = os.popen(
+            f'netsh advfirewall show currentprofile | findstr /L "State" | findstr /L "ON"').read()
+        if isFirewallEnabled:
+            serverExePath = os.path.join(
+                self.astroPath, 'astro\\binaries\\win64\\astroserver-win64-shipping.exe')
+            ASRule = os.popen(
+                f'netsh advfirewall firewall show rule name=astroserver-win64-shipping.exe verbose | findstr /L "{serverExePath}"').read()
 
-        if self.isExecutable:
-            launcherEXEPath = os.path.join(os.getcwd(), sys.argv[0])
-            ALRule = os.popen(
-                f'netsh advfirewall firewall show rule name=astrolauncher.exe verbose | findstr /L "{launcherEXEPath}"').read()
-
-            if not self.launcherConfig.DisableWebServer:
-                ALWRule = os.popen(
-                    f'netsh advfirewall firewall show rule name=AstroLauncherWeb | findstr /L "{self.launcherConfig.WebServerPort}"').read()
-
-        if not self.is_admin:
-            if (not ASRule)\
-                    or (not ALRule and self.isExecutable)\
-                    or (not ALWRule and not self.launcherConfig.DisableWebServer and self.isExecutable):
-                AstroLogging.logPrint(
-                    "Could not find firewall settings! Please relaunch as Administrator.", "warning")
-        else:
-            if not ASRule:
-                subprocess.call(
-                    f'netsh advfirewall firewall delete rule name=astroserver-win64-shipping.exe dir=in program="{serverExePath}"' +
-                    f'& netsh advfirewall firewall add rule name=astroserver-win64-shipping.exe dir=in action=allow program="{serverExePath}"',
-                    shell=True,
-                    stdout=DEVNULL,
-                    stderr=DEVNULL
-                )
             if self.isExecutable:
-                if not ALRule:
+                launcherEXEPath = os.path.join(os.getcwd(), sys.argv[0])
+                ALRule = os.popen(
+                    f'netsh advfirewall firewall show rule name=astrolauncher.exe verbose | findstr /L "{launcherEXEPath}"').read()
+
+                if not self.launcherConfig.DisableWebServer:
+                    ALWRule = os.popen(
+                        f'netsh advfirewall firewall show rule name=AstroLauncherWeb | findstr /L "{self.launcherConfig.WebServerPort}"').read()
+
+            if not self.is_admin:
+                if (not ASRule)\
+                        or (not ALRule and self.isExecutable)\
+                        or (not ALWRule and not self.launcherConfig.DisableWebServer and self.isExecutable):
+                    AstroLogging.logPrint(
+                        "Could not find firewall settings! Please relaunch as Administrator.", "warning")
+            else:
+                if not ASRule:
                     subprocess.call(
-                        f'netsh advfirewall firewall delete rule name=astrolauncher.exe dir=in program="{launcherEXEPath}"' +
-                        f'& netsh advfirewall firewall add rule name=astrolauncher.exe dir=in action=allow program="{launcherEXEPath}"',
+                        f'netsh advfirewall firewall delete rule name=astroserver-win64-shipping.exe dir=in program="{serverExePath}"' +
+                        f'& netsh advfirewall firewall add rule name=astroserver-win64-shipping.exe dir=in action=allow program="{serverExePath}"',
                         shell=True,
                         stdout=DEVNULL,
                         stderr=DEVNULL
                     )
-            if not ALWRule and not self.launcherConfig.DisableWebServer:
-                subprocess.call(
-                    f'netsh advfirewall firewall delete rule name=AstroLauncherWeb dir=in protocol=TCP localport={self.launcherConfig.WebServerPort}' +
-                    f'& netsh advfirewall firewall add rule name=AstroLauncherWeb dir=in action=allow protocol=TCP localport={self.launcherConfig.WebServerPort}',
-                    shell=True,
-                    stdout=DEVNULL,
-                    stderr=DEVNULL
-                )
+                if self.isExecutable:
+                    if not ALRule:
+                        subprocess.call(
+                            f'netsh advfirewall firewall delete rule name=astrolauncher.exe dir=in program="{launcherEXEPath}"' +
+                            f'& netsh advfirewall firewall add rule name=astrolauncher.exe dir=in action=allow program="{launcherEXEPath}"',
+                            shell=True,
+                            stdout=DEVNULL,
+                            stderr=DEVNULL
+                        )
+                if not ALWRule and not self.launcherConfig.DisableWebServer:
+                    subprocess.call(
+                        f'netsh advfirewall firewall delete rule name=AstroLauncherWeb dir=in protocol=TCP localport={self.launcherConfig.WebServerPort}' +
+                        f'& netsh advfirewall firewall add rule name=AstroLauncherWeb dir=in action=allow protocol=TCP localport={self.launcherConfig.WebServerPort}',
+                        shell=True,
+                        stdout=DEVNULL,
+                        stderr=DEVNULL
+                    )
 
     def check_network_config(self):
         networkCorrect = ValidateSettings.test_network(
@@ -556,6 +591,7 @@ class AstroLauncher():
         return ws
 
     def kill_launcher(self):
+        time.sleep(5)
         try:
             for child in psutil.Process(os.getpid()).children():
                 child.kill()
