@@ -519,7 +519,9 @@ class AstroLauncher():
                     AstroLogging.logPrint(
                         "Could not find firewall settings! Please relaunch as Administrator.", "warning")
             else:
+                newRules = False
                 if not ASRule:
+                    newRules = True
                     subprocess.call(
                         f'netsh advfirewall firewall delete rule name=astroserver-win64-shipping.exe dir=in program="{serverExePath}"' +
                         f'& netsh advfirewall firewall add rule name=astroserver-win64-shipping.exe dir=in action=allow program="{serverExePath}"',
@@ -529,6 +531,7 @@ class AstroLauncher():
                     )
                 if self.isExecutable:
                     if not ALRule:
+                        newRules = True
                         subprocess.call(
                             f'netsh advfirewall firewall delete rule name=astrolauncher.exe dir=in program="{launcherEXEPath}"' +
                             f'& netsh advfirewall firewall add rule name=astrolauncher.exe dir=in action=allow program="{launcherEXEPath}"',
@@ -537,6 +540,7 @@ class AstroLauncher():
                             stderr=DEVNULL
                         )
                 if not ALWRule and not self.launcherConfig.DisableWebServer:
+                    newRules = True
                     subprocess.call(
                         f'netsh advfirewall firewall delete rule name=AstroLauncherWeb dir=in protocol=TCP localport={self.launcherConfig.WebServerPort}' +
                         f'& netsh advfirewall firewall add rule name=AstroLauncherWeb dir=in action=allow protocol=TCP localport={self.launcherConfig.WebServerPort}',
@@ -544,6 +548,9 @@ class AstroLauncher():
                         stdout=DEVNULL,
                         stderr=DEVNULL
                     )
+                if newRules:
+                    AstroLogging.logPrint(
+                        "Setting custom firewall rules...")
 
     def check_network_config(self):
         networkCorrect = ValidateSettings.test_network(
