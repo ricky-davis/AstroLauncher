@@ -129,11 +129,11 @@
         },
         "pypakparser": {
             "hashes": [
-                "sha256:07c44a242872ed8df721ff3196b87aa2fa2f11ea12964d9265ebe059cfe930ae",
-                "sha256:ccad02b8046a3400620f656d4aafa97a370fa164be7f499035202a6532137c96"
+                "sha256:dddcfd6c36f239413647582f46f4a54463cfae51f4761d7022008c792af998b5",
+                "sha256:de674c8ebf6be1c8b9be17138cbc1ec7f4b2a14020ae011ef3d5b748c8654bc9"
             ],
             "index": "pypi",
-            "version": "==1.0.1"
+            "version": "==1.1.0"
         },
         "pywin32-ctypes": {
             "hashes": [
