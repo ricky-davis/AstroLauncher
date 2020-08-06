@@ -6,19 +6,19 @@
             <h5></h5>
         </div>
 
-        <div id="main" class="container-fluid my-5">
-            {% if isAdmin %}
-            <div class="row">
-                <div id="above" class="col  px-0 px-md-4">
+        <div id="main" class="container-fluid my-4">
+            <div class="row mt-3">
+                <div id="left" class="col-12 col-md-5 px-0 pl-md-4 pr-md-2">
+                    {% if isAdmin %}
                     <div id="console" class="card astroCard">
                         <div
-                            class="card-header pt-4 px-4"
+                            class="card-header py-2 px-4"
                             data-toggle="collapse"
                             data-target="#consoleTextCardBody"
                             aria-expanded="true"
                             aria-controls="consoleTextCardBody"
                         >
-                            <h4>
+                            <h4 class="mb-0">
                                 <span class="collapseArrows pr-2"></span>Console
                                 <i
                                     class="fa fa-download"
@@ -33,20 +33,16 @@
                             <div id="consoleText"></div>
                         </div>
                     </div>
-                </div>
-            </div>
-            {% end %}
-            <div class="row mt-4">
-                <div id="left" class="col-12 col-md-5 px-0 pl-md-4 pr-md-3">
-                    <div id="stats" class="card astroCard">
+                    {% end %}
+                    <div id="stats" class="card my-3 astroCard">
                         <div
-                            class="card-header pt-4 px-4"
+                            class="card-header py-2 px-4"
                             data-toggle="collapse"
                             data-target="#serverStatusCardBody"
                             aria-expanded="true"
                             aria-controls="serverStatusCardBody"
                         >
-                            <h4>
+                            <h4 class="mb-0">
                                 <span class="collapseArrows pr-2"></span>
                                 Server Info
                                 <span
@@ -129,15 +125,15 @@
                         {% end %}
                     </div>
                     {% if isAdmin %}
-                    <div id="saveGamesRow" class="card my-4 astroCard">
+                    <div id="saveGamesRow" class="card my-3 astroCard">
                         <div
-                            class="card-header pt-4 px-4"
+                            class="card-header py-2 px-4"
                             data-toggle="collapse"
                             data-target="#saveGamesCardBody"
                             aria-expanded="true"
                             aria-controls="saveGamesCardBody"
                         >
-                            <h4>
+                            <h4 class="mb-0">
                                 <span class="collapseArrows pr-2"></span>
                                 Save Games
                                 <button
@@ -160,9 +156,10 @@
                                 >
                                     <thead>
                                         <tr>
-                                            <th>Active</th>
+                                            <th class="d-md-none p-1"></th>
+                                            <th class="d-none d-md-table-cell">Active</th>
                                             <th>Save Name</th>
-                                            <th>Last Modified</th>
+                                            <th>Last Saved</th>
                                             <th>Creative</th>
                                             <th>Size</th>
                                             <th>Actions</th>
@@ -176,16 +173,16 @@
                     {% end %}
                 </div>
 
-                <div id="right" class="col-12 mt-5 mt-md-0 col-md  px-0 pr-md-4 pl-md-3">
+                <div id="right" class="col-12 mt-5 mt-md-0 col-md  px-0 pr-md-4 pl-md-2">
                     <div id="onlinePlayersRow" class="card astroCard">
                         <div
-                            class="card-header pt-4 px-4"
+                            class="card-header py-2 px-4"
                             data-toggle="collapse"
                             data-target="#onlinePlayersCardBody"
                             aria-expanded="true"
                             aria-controls="onlinePlayersCardBody"
                         >
-                            <h4>
+                            <h4 class="mb-0">
                                 <span class="collapseArrows pr-2"></span>
                                 Online Players
                             </h4>
@@ -201,9 +198,10 @@
                                 >
                                     <thead>
                                         <tr>
-                                            <th>Name</th>
+                                            <th class="d-md-none">Name/GUID</th>
+                                            <th class="d-none d-md-table-cell">Name</th>
+                                            <th class="d-none d-md-table-cell">GUID</th>
                                             <th>Role</th>
-                                            <th>GUID</th>
                                             {% if isAdmin %}
                                             <th>Actions</th>
                                             {% end %}
@@ -216,7 +214,7 @@
                     </div>
                     
                     {% if isAdmin %}
-                    <div id="whiteListPlayers" class="card my-4 astroCard">
+                    <div id="whiteListPlayers" class="card my-3 astroCard">
                         <div
                             id="whiteListPlayersCardBody"
                             class="card-body collapse show"
@@ -233,15 +231,15 @@
                         </div>
                     </div>
                     {% end %}
-                    <div id="offinePlayersRow" class="card my-4 astroCard">
+                    <div id="offinePlayersRow" class="card my-3 astroCard">
                         <div
-                            class="card-header pt-4 px-4"
+                            class="card-header py-2 px-4"
                             data-toggle="collapse"
                             data-target="#offlinePlayersCardBody"
                             aria-expanded="true"
                             aria-controls="offlinePlayersCardBody"
                         >
-                            <h4>
+                            <h4 class="mb-0">
                                 <span class="collapseArrows pr-2"></span>
                                 Offline Players
                             </h4>
@@ -253,13 +251,14 @@
                             <div class="table-responsive">
                                 <table
                                     id="offlinePlayersTable"
-                                    class="table table-dark table-striped"
+                                    class="table table-dark table-striped "
                                 >
                                     <thead>
                                         <tr>
-                                            <th>Name</th>
+                                            <th class="d-md-none">Name/GUID</th>
+                                            <th class="d-none d-md-table-cell">Name</th>
+                                            <th class="d-none d-md-table-cell">GUID</th>
                                             <th>Role</th>
-                                            <th>GUID</th>
                                         </tr>
                                     </thead>
                                     <tbody></tbody>

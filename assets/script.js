@@ -191,7 +191,14 @@ const tick = async () => {
                         );
                         gameList.forEach((sg) => {
                             let row = document.createElement("tr");
-                            row.innerHTML = `<td>${DOMPurify.sanitize(
+                            sg.active == "Active"
+                                ? $(row).addClass("activeSave")
+                                : null;
+                            row.innerHTML = `
+                            <td class="d-md-none p-0 ${
+                                sg.active == "Active" ? "activeCell" : ""
+                            }"></td>
+                            <td class="d-none d-md-table-cell">${DOMPurify.sanitize(
                                 sg.active
                             )}</td>
                                 <td><span data-name="${sg.name}" class="${
@@ -229,16 +236,28 @@ const tick = async () => {
                     if (data.players) {
                         data.players.playerInfo.forEach((p) => {
                             let row = document.createElement("tr");
-                            row.innerHTML = `<td>${DOMPurify.sanitize(
-                                p.playerName
-                            )}</td>
-                            <td>${DOMPurify.sanitize(p.playerCategory)}</td>
-                            <td>${DOMPurify.sanitize(p.playerGuid)}</td>`;
+                            row.innerHTML = `<td class="p-2 d-md-none" >
+                            ${DOMPurify.sanitize(
+                                p.playerName == "" ? " " : p.playerName
+                            )}
+                            <hr class="m-1">
+                            ${DOMPurify.sanitize(p.playerGuid)}</td>
+
+                            <td class="p-2 d-none d-md-table-cell" >
+                                ${DOMPurify.sanitize(p.playerName)}
+                            </td>
+                            <td class="p-2 d-none d-md-table-cell">
+                                ${DOMPurify.sanitize(p.playerGuid)}
+                            </td>
+
+                            <td class="text-left">${DOMPurify.sanitize(
+                                p.playerCategory
+                            )}</td>`;
 
                             if (p.inGame == true) {
                                 if (isAdmin) {
                                     row.innerHTML +=
-                                        "<td>" +
+                                        '<td class="text-left">' +
                                         createPlayerActionButtons("online", p) +
                                         "</td>";
                                 }
@@ -247,7 +266,7 @@ const tick = async () => {
                                 $("#offlinePlayersTable>tbody").append(row);
                                 if (isAdmin) {
                                     row.innerHTML +=
-                                        "<td>" +
+                                        '<td class="text-left">' +
                                         createPlayerActionButtons(
                                             "offline",
                                             p

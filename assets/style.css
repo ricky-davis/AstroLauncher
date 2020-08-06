@@ -40,16 +40,20 @@ h5 {
     z-index: 10;
 }
 
+#onlinePlayersTable,
+#offlinePlayersTable,
 #saveGamesTable {
     font-size: 0.8em;
 }
-#onlinePlayersTable {
-    font-size: 0.8em;
+#saveGamesCardBody .table-responsive {
+    overflow: auto;
+    max-height: 425px;
 }
-#offlinePlayersTable {
-    font-size: 0.8em;
+#offlinePlayersCardBody .table-responsive,
+#onlinePlayersCardBody .table-responsive {
+    overflow: auto;
+    max-height: 425px;
 }
-
 #banner {
     background: #17142f;
     white-space: nowrap;
@@ -96,6 +100,12 @@ h5 {
 }
 #serverStatusCardBody td {
     border: 0px;
+}
+#githubLink {
+    font-size: 3vw;
+}
+#bannerServerName {
+    font-size: 5vw;
 }
 .spoiler,
 .spoiler:not(:hover)::before {
@@ -170,11 +180,11 @@ h5 {
 .tippy-box[data-theme~="update"] > .tippy-arrow::before {
     border-right-color: teal;
 }
-#githubLink {
-    font-size: 3vw;
+.activeSave .activeCell {
+    background-color: lightgreen !important;
 }
-#bannerServerName {
-    font-size: 5vw;
+.activeSave {
+    background-color: rgba(30, 30, 30, 0.9) !important;
 }
 
 @media (min-width: 576px) {
