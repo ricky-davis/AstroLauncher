@@ -519,8 +519,8 @@ class AstroLauncher():
 
             if not self.is_admin:
                 if (not ASRule)\
-                        or (not ALRule and self.isExecutable)\
-                        or (not ALWRule and not self.launcherConfig.DisableWebServer and self.isExecutable):
+                        or (self.isExecutable and not ALRule)\
+                        or (not self.launcherConfig.DisableWebServer and self.isExecutable and not ALWRule):
                     AstroLogging.logPrint(
                         "Could not find firewall settings! Please relaunch as Administrator.", "warning")
             else:
@@ -544,7 +544,7 @@ class AstroLauncher():
                             stdout=DEVNULL,
                             stderr=DEVNULL
                         )
-                if not ALWRule and not self.launcherConfig.DisableWebServer:
+                if not self.launcherConfig.DisableWebServer and not ALWRule:
                     newRules = True
                     subprocess.call(
                         f'netsh advfirewall firewall delete rule name=AstroLauncherWeb dir=in protocol=TCP localport={self.launcherConfig.WebServerPort}' +
