@@ -86,9 +86,12 @@ class AstroRCON():
             print(f"Error retrieving server statistics: {e}")
             return None
 
-    def DSSaveGame(self):
+    def DSSaveGame(self, name=None):
         try:
-            self.socket.sendall(b"DSSaveGame\n")
+            if name is not None:
+                self.socket.sendall(f"DSSaveGame {name}\n".encode())
+            else:
+                self.socket.sendall(b"DSSaveGame\n")
             rawdata = AstroRCON.recvall(self.socket)
             parsedData = AstroRCON.parseData(rawdata)
             # pprint(parsedData)

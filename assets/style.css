@@ -78,7 +78,7 @@ h5 {
     width: 100%;
     position: absolute;
     transition: all 1s ease;
-    z-index: 2;
+    z-index: 99;
 }
 #consoleText {
     overflow: auto;

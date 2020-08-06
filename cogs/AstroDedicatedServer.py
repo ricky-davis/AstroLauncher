@@ -170,14 +170,14 @@ class AstroDedicatedServer():
 
         self.busy = False
 
-    def saveGame(self):
+    def saveGame(self, name=None):
         if not self.AstroRCON.connected:
             return False
         self.setStatus("saving")
         self.busy = True
         # time.sleep(1)
         AstroLogging.logPrint("Saving the current game...")
-        self.AstroRCON.DSSaveGame()
+        self.AstroRCON.DSSaveGame(name)
         self.getSaves()
         self.busy = False
 
@@ -239,16 +239,26 @@ class AstroDedicatedServer():
         save = [x for x in self.DSListGames['gameList'] if x['name'] == oldName]
         if len(save) > 0:
             save = save[0]
-            saveFileName = f"{save['name']}${save['date']}.savegame"
-            sfPath = os.path.join(saveGamePath, saveFileName)
-            newSaveFileName = f"{newName}${save['date']}.savegame"
-            sfNPath = os.path.join(saveGamePath, newSaveFileName)
-            # time.sleep(1)
             AstroLogging.logPrint(
                 f"Renaming save: {save['name']} to {newName}")
-            if os.path.exists(sfPath):
-                os.rename(sfPath, sfNPath)
-            self.getSaves()
+            if save['name'] == self.DSListGames['activeSaveName']:
+                self.saveGame(newName)
+                saveFileName = f"{save['name']}${save['date']}.savegame"
+                sfPath = os.path.join(saveGamePath, saveFileName)
+                if os.path.exists(sfPath):
+                    os.remove(sfPath)
+            else:
+                saveFileName = f"{save['name']}${save['date']}.savegame"
+                sfPath = os.path.join(saveGamePath, saveFileName)
+                newSaveFileName = f"{newName}${save['date']}.savegame"
+                sfNPath = os.path.join(saveGamePath, newSaveFileName)
+                # time.sleep(1)
+                AstroLogging.logPrint(
+                    f"Renaming save: {save['name']} to {newName}")
+                if os.path.exists(sfPath):
+                    os.rename(sfPath, sfNPath)
+                self.getSaves()
+
         self.busy = False
 
     def shutdownServer(self):

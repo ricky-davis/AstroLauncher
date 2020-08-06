@@ -278,7 +278,7 @@ class RenameSaveRequestHandler(BaseHandler):
                     oldSaveName = data["oName"]
                     newSaveName = data["nName"]
                     GL = self.launcher.DedicatedServer.DSListGames
-                    if newSaveName not in [x['name'] for x in GL['gameList']] and oldSaveName != GL['activeSaveName']:
+                    if newSaveName not in [x['name'] for x in GL['gameList']]:
                         t = Thread(
                             target=self.launcher.DedicatedServer.renameSaveGame, args=(oldSaveName, newSaveName))
                         t.daemon = True

@@ -342,7 +342,6 @@ const createSaveActionButtons = function (status, save) {
     if (status == "Active") {
         loadButton.addClass("disabled");
         deleteButton.addClass("disabled");
-        renameButton.addClass("disabled");
     }
 
     actionButtonBufferList.forEach((element) => {
