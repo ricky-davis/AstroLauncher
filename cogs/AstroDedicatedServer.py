@@ -257,7 +257,7 @@ class AstroDedicatedServer():
                     f"Renaming save: {save['name']} to {newName}")
                 if os.path.exists(sfPath):
                     os.rename(sfPath, sfNPath)
-                self.getSaves()
+            self.getSaves()
 
         self.busy = False
 
