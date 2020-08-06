@@ -286,17 +286,6 @@ class AstroDedicatedServer():
 
     def server_loop(self):
         while True:
-            if self.lastHeartbeat is None or (datetime.datetime.now() - self.lastHeartbeat).total_seconds() > 30:
-                hbServerName = {"customdata": {
-                    "ServerName": self.settings.ServerName,
-                    "ServerType": ("AstroLauncherEXE" if self.launcher.isExecutable else "AstroLauncherPy") + f" {self.launcher.version}",
-                    "ServerPaks": self.pakList
-                }}
-                AstroAPI.heartbeat_server(
-                    self.serverData, self.launcher.headers, {"serverName": json.dumps(hbServerName)})
-
-                self.lastHeartbeat = datetime.datetime.now()
-
             # Ensure RCON is connected
             try:
                 if not self.AstroRCON or not self.AstroRCON.connected:
@@ -326,14 +315,26 @@ class AstroDedicatedServer():
                     "Server was closed. Restarting..")
                 return self.launcher.start_server()
 
+            if self.lastHeartbeat is None or (datetime.datetime.now() - self.lastHeartbeat).total_seconds() > 30:
+                hbServerName = {"customdata": {
+                    "ServerName": self.settings.ServerName,
+                    "ServerType": ("AstroLauncherEXE" if self.launcher.isExecutable else "AstroLauncherPy") + f" {self.launcher.version}",
+                    "ServerPaks": self.pakList
+                }}
+                AstroAPI.heartbeat_server(
+                    self.serverData, self.launcher.headers, {"serverName": json.dumps(hbServerName)})
+
+                self.lastHeartbeat = datetime.datetime.now()
+
             if not self.busy:
                 self.setStatus("ready")
                 self.getSaves()
 
             if not self.busy:
                 self.setStatus("ready")
-                self.DSServerStats = self.AstroRCON.DSServerStatistics()
-                if self.DSServerStats is not None:
+                serverStats = self.AstroRCON.DSServerStatistics()
+                if serverStats is not None and 'averageFPS' in serverStats:
+                    self.DSServerStats = serverStats
                     if self.launcher.launcherConfig.ShowServerFPSInConsole:
                         FPSJumpRate = (
                             float(self.settings.MaxServerFramerate) / 10)
@@ -345,7 +346,7 @@ class AstroDedicatedServer():
             if not self.busy:
                 self.setStatus("ready")
                 playerList = self.AstroRCON.DSListPlayers()
-                if playerList is not None:
+                if playerList is not None and 'playerInfo' in playerList:
                     self.players = playerList
                     curPlayers = [x['playerName']
                                   for x in self.players['playerInfo'] if x['inGame']]
