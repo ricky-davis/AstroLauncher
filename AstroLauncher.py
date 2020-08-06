@@ -478,12 +478,12 @@ class AstroLauncher():
         wp = self.launcherConfig.WebServerPort
 
         serverPort = bool(
-            os.popen(f'netstat -a -n -o | find ":{sp} " | find "LISTENING"').read())
+            os.popen(f'netstat -a -n -o | findstr ":{sp} " | findstr "LISTENING"').read())
         consolePort = bool(
-            os.popen(f'netstat -a -n -o | find ":{cp} " | find "LISTENING"').read())
+            os.popen(f'netstat -a -n -o | findstr ":{cp} " | findstr "LISTENING"').read())
         if not self.launcherConfig.DisableWebServer:
             webPort = bool(
-                os.popen(f'netstat -a -n -o | find ":{wp} " | find "LISTENING"').read())
+                os.popen(f'netstat -a -n -o | findstr ":{wp} " | findstr "LISTENING"').read())
 
         if serverPort:
             AstroLogging.logPrint(
