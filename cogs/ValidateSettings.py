@@ -120,11 +120,10 @@ def get_current_settings(launcher, ovrIP=False):
         try:
             launcher.DedicatedServer.kill_server()
         except:
-            pass
-        try:
-            launcher.kill_launcher()
-        except:
-            pass
+            try:
+                launcher.kill_launcher()
+            except:
+                pass
 
 
 def socket_server(port, secret, tcp):

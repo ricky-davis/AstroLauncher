@@ -6,7 +6,9 @@ import os
 import subprocess
 import time
 import json
+import re
 
+import pathvalidate
 import psutil
 from PyPAKParser import PakParser
 
@@ -149,7 +151,6 @@ class AstroDedicatedServer():
         try:
             if not self.AstroRCON.connected:
                 return False
-            self.busy = True
             saveGamePath = r"Astro\Saved\SaveGames"
             saveGamePath = os.path.join(
                 self.astroPath, saveGamePath)
@@ -168,13 +169,11 @@ class AstroDedicatedServer():
         except:
             pass
 
-        self.busy = False
-
     def saveGame(self, name=None):
         if not self.AstroRCON.connected:
             return False
         self.setStatus("saving")
-        self.busy = True
+        self.busy = "Saving"
         # time.sleep(1)
         AstroLogging.logPrint("Saving the current game...")
         self.AstroRCON.DSSaveGame(name)
@@ -185,7 +184,7 @@ class AstroDedicatedServer():
         if not self.AstroRCON.connected:
             return False
         self.setStatus("newsave")
-        self.busy = True
+        self.busy = "NewSave"
         curGame = self.DSListGames['activeSaveName']
         # time.sleep(1)
         AstroLogging.logPrint("Starting a new savegame...")
@@ -201,71 +200,81 @@ class AstroDedicatedServer():
         if not self.AstroRCON.connected:
             return False
         self.setStatus("loadsave")
-        self.busy = True
-        # time.sleep(1)
-        AstroLogging.logPrint(f"Loading save: {name}")
-        self.AstroRCON.DSLoadGame(name)
+        self.busy = "LoadSave"
+        if pathvalidate.is_valid_filename(name):
+            # time.sleep(1)
+            AstroLogging.logPrint(f"Loading save: {name}")
+            self.AstroRCON.DSLoadGame(name)
         self.getSaves()
         self.busy = False
 
     def deleteSaveGame(self, name):
         if not self.AstroRCON.connected:
             return False
-        self.setStatus("delsave")
-        self.busy = True
-        saveGamePath = r"Astro\Saved\SaveGames"
-        saveGamePath = os.path.join(
-            self.astroPath, saveGamePath)
-        save = [x for x in self.DSListGames['gameList'] if x['name'] == name]
-        if len(save) > 0:
-            save = save[0]
-            saveFileName = f"{save['name']}${save['date']}.savegame"
-            sfPath = os.path.join(saveGamePath, saveFileName)
-            # time.sleep(1)
-            AstroLogging.logPrint(f"Deleting save: {saveFileName}")
-            if os.path.exists(sfPath):
-                os.remove(sfPath)
-            self.getSaves()
+        if pathvalidate.is_valid_filename(name):
+            self.setStatus("delsave")
+            self.busy = "DelSave"
+            saveGamePath = r"Astro\Saved\SaveGames"
+            saveGamePath = os.path.join(
+                self.astroPath, saveGamePath)
+            save = [x for x in self.DSListGames['gameList'] if x['name'] == name]
+            if len(save) > 0:
+                save = save[0]
+                saveFileName = f"{save['name']}${save['date']}.savegame"
+                sfPath = os.path.join(saveGamePath, saveFileName)
+                # time.sleep(1)
+                AstroLogging.logPrint(f"Deleting save: {saveFileName}")
+                if os.path.exists(sfPath):
+                    os.remove(sfPath)
+        self.getSaves()
         self.busy = False
 
     def renameSaveGame(self, oldName, newName):
         if not self.AstroRCON.connected:
             return False
         self.setStatus("renamesave")
-        self.busy = True
-        saveGamePath = r"Astro\Saved\SaveGames"
-        saveGamePath = os.path.join(
-            self.astroPath, saveGamePath)
-        save = [x for x in self.DSListGames['gameList'] if x['name'] == oldName]
-        if len(save) > 0:
-            save = save[0]
-            AstroLogging.logPrint(
-                f"Renaming save: {save['name']} to {newName}")
-            if save['name'] == self.DSListGames['activeSaveName']:
-                self.saveGame(newName)
-                saveFileName = f"{save['name']}${save['date']}.savegame"
-                sfPath = os.path.join(saveGamePath, saveFileName)
-                if os.path.exists(sfPath):
-                    os.remove(sfPath)
-            else:
-                saveFileName = f"{save['name']}${save['date']}.savegame"
-                sfPath = os.path.join(saveGamePath, saveFileName)
-                newSaveFileName = f"{newName}${save['date']}.savegame"
-                sfNPath = os.path.join(saveGamePath, newSaveFileName)
-                # time.sleep(1)
+        self.busy = "RenameSave"
+        if pathvalidate.is_valid_filename(oldName) and pathvalidate.is_valid_filename(newName):
+            saveGamePath = r"Astro\Saved\SaveGames"
+            saveGamePath = os.path.join(
+                self.astroPath, saveGamePath)
+            save = [x for x in self.DSListGames['gameList']
+                    if x['name'] == oldName]
+            if len(save) > 0:
+                save = save[0]
                 AstroLogging.logPrint(
                     f"Renaming save: {save['name']} to {newName}")
-                if os.path.exists(sfPath):
-                    os.rename(sfPath, sfNPath)
-            self.getSaves()
+                if save['name'] == self.DSListGames['activeSaveName']:
+                    self.saveGame(newName)
+                    saveFileName = f"{save['name']}${save['date']}.savegame"
+                    sfPath = os.path.join(saveGamePath, saveFileName)
+                    fList = os.listdir(saveGamePath)
 
+                    reg = re.compile(newName+r"\$.+\.savegame")
+                    nSave = [x for x in fList
+                             if bool(re.match(reg, x))]
+                    if len(nSave) > 0:
+                        nSave = nSave[0]
+                        sfNPath = os.path.join(saveGamePath, nSave)
+                        if os.path.exists(sfNPath) and os.path.exists(sfPath):
+                            os.remove(sfPath)
+                else:
+                    saveFileName = f"{save['name']}${save['date']}.savegame"
+                    sfPath = os.path.join(saveGamePath, saveFileName)
+                    newSaveFileName = f"{newName}${save['date']}.savegame"
+                    sfNPath = os.path.join(saveGamePath, newSaveFileName)
+                    # time.sleep(1)
+                    if os.path.exists(sfPath):
+                        os.rename(sfPath, sfNPath)
+
+        self.getSaves()
         self.busy = False
 
     def shutdownServer(self):
         if not self.AstroRCON.connected:
             return False
         self.setStatus("shutdown")
-        self.busy = True
+        self.busy = "Shutdown"
         # time.sleep(1)
         self.AstroRCON.DSServerShutdown()
         self.DSServerStats = None
@@ -275,7 +284,7 @@ class AstroDedicatedServer():
         if not self.AstroRCON.connected:
             return False
         self.saveGame()
-        self.busy = True
+        self.busy = "S&Shutdown"
         self.shutdownServer()
 
     def setStatus(self, status):
@@ -306,6 +315,10 @@ class AstroDedicatedServer():
             while not self.AstroRCON.connected:
                 time.sleep(0.1)
             ###########################
+            try:
+                self.launcher.webServer.iterWebSocketConnections()
+            except:
+                pass
 
             if not self.launcher.launcherConfig.DisableBackupRetention:
                 self.launcher.backup_retention()
@@ -336,9 +349,11 @@ class AstroDedicatedServer():
 
                 self.lastHeartbeat = datetime.datetime.now()
 
-            if not self.busy:
+            if not self.busy and self.launcher.webServer is not None:
                 self.setStatus("ready")
+                self.busy = "getSavesInLoop"
                 self.getSaves()
+                self.busy = False
 
             if not self.busy:
                 self.setStatus("ready")
@@ -389,6 +404,10 @@ class AstroDedicatedServer():
 
                     self.players['playerInfo'] = [
                         x for x in playerList['playerInfo'] if x['playerName'] not in self.stripPlayers]
+            try:
+                self.launcher.webServer.iterWebSocketConnections()
+            except:
+                pass
             time.sleep(
                 self.launcher.launcherConfig.ServerStatusFrequency)
 
@@ -415,7 +434,7 @@ class AstroDedicatedServer():
     def kill_server(self, reason, save=False):
         AstroLogging.logPrint(f"Kill Server: {reason}")
         try:
-            self.busy = True
+            self.busy = "Kill"
             self.setStatus("shutdown")
         except:
             pass

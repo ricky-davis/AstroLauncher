@@ -34,7 +34,7 @@
                         </div>
                     </div>
                     {% end %}
-                    <div id="stats" class="card my-3 astroCard">
+                    <div id="stats" class="card {{ 'my-3' if isAdmin else '' }} astroCard">
                         <div
                             class="card-header py-2 px-4"
                             data-toggle="collapse"
@@ -201,7 +201,7 @@
                                             <th class="d-md-none">Name/GUID</th>
                                             <th class="d-none d-md-table-cell">Name</th>
                                             <th class="d-none d-md-table-cell">GUID</th>
-                                            <th>Role</th>
+                                            <th>Status</th>
                                             {% if isAdmin %}
                                             <th>Actions</th>
                                             {% end %}
@@ -258,7 +258,7 @@
                                             <th class="d-md-none">Name/GUID</th>
                                             <th class="d-none d-md-table-cell">Name</th>
                                             <th class="d-none d-md-table-cell">GUID</th>
-                                            <th>Role</th>
+                                            <th>Status</th>
                                         </tr>
                                     </thead>
                                     <tbody></tbody>

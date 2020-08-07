@@ -270,6 +270,7 @@ class AstroLauncher():
             self.backup_retention()
             AstroLogging.logPrint("Backup retention started")
         # setup queue for data exchange
+        self.webServer = None
         if not self.launcherConfig.DisableWebServer:
             # start http server
             self.webServer = self.start_WebServer()

@@ -61,6 +61,11 @@ const statusMsg = (msg) => {
             $("#serverStatus").addClass("text-success");
             $("#msg h5").text("Server is creating a new Save");
             $("#msg").collapse("hide");
+        } else if (msg == "renamesave") {
+            $("#serverStatus").text("Renaming Save");
+            $("#serverStatus").addClass("text-warning");
+            $("#msg h5").text("Server is renaming a Save");
+            $("#msg").collapse("hide");
         }
     }
 };
@@ -69,22 +74,51 @@ const compareObj = (obj1, obj2) => {
 };
 
 let logList = [];
-const tick = async () => {
-    try {
-        let res = await fetch(apiURL);
-        const data = await res.json();
-        console.log(data);
+let webSocket = null;
+const createWebSocket = async () => {
+    let WSprotocol = location.protocol == "https:" ? "wss" : "ws";
+    webSocket = new WebSocket(WSprotocol + "://" + location.host + "/ws");
+    webSocket.onmessage = function (evt) {
+        tick(evt.data);
+    };
+    webSocket.onopen = function (evt) {
+        console.log("Created Web Socket");
+    };
+};
+const checkWebSocket = async () => {
+    if (webSocket.readyState === WebSocket.CLOSED) {
+        try {
+            createWebSocket();
+        } catch {}
+    }
+};
+createWebSocket();
 
+setInterval(checkWebSocket, 5000);
+
+const tick = async (data) => {
+    if (data == {}) {
+        return;
+    }
+    data = JSON.parse(data);
+    console.log(data);
+    try {
+        statusMsg(data.status);
+        isAdmin = data.admin;
+        if ($("#console").length && !isAdmin) {
+            location.reload();
+        }
+        if (data.forceUpdate) {
+            oldMsg = "";
+            oldSettings = {};
+            oldPlayers = {};
+            oldSaves = {};
+        }
         if (data.hasUpdate != false) {
             let ghLink = document.querySelector("#githubLink");
             let tipInstance = ghLink._tippy;
             tipInstance.setContent("Update Available: " + data.hasUpdate);
             tipInstance.show();
-        }
-        statusMsg(data.status);
-        isAdmin = data.admin;
-        if ($("#console").length && !isAdmin) {
-            location.reload();
         }
         // smart scroll
         if (isAdmin) {
@@ -286,9 +320,6 @@ const tick = async () => {
         statusMsg("off");
     }
 };
-
-setInterval(tick, 1000);
-tick();
 
 const createSaveActionButtons = function (status, save) {
     dropDownDiv = $("<div/>").attr({ class: "btn-group dropup" });
