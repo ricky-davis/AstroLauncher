@@ -1,21 +1,23 @@
 
+import datetime
 import hashlib
 import logging
 import os
-import pathvalidate
 import secrets
 import sys
-from threading import Thread
 import uuid
+#from pprint import pprint
+from threading import Thread
 
+import pathvalidate
 import tornado.web
 import tornado.websocket
 
 from AstroLauncher import AstroLauncher
 from cogs import UIModules
 from cogs.AstroLogging import AstroLogging
-
 from cogs.MultiConfig import MultiConfig
+
 # pylint: disable=abstract-method,attribute-defined-outside-init,no-member
 
 
@@ -29,6 +31,10 @@ class WebServer(tornado.web.Application):
         if self.launcher.isExecutable:
             curDir = sys._MEIPASS
         self.assetDir = os.path.join(curDir, "assets")
+
+        self.connections = {}
+        self.iterTimer = None
+        self.instanceID = f"{uuid.uuid4().hex}"
 
         self.cookieSecret = secrets.token_hex(16).encode()
         self.passwordHash = self.launcher.launcherConfig.WebServerPasswordHash
@@ -102,19 +108,28 @@ class WebServer(tornado.web.Application):
                 f"SECURITY ALERT: Visit {url} to set your password!", "warning")
         tornado.ioloop.IOLoop.instance().start()
 
-    def iterWebSocketConnections(self):
-        for _, conn in APIWebSocket.connections.items():
-            conn.check_data_change()
+    def iterWebSocketConnections(self, force=False):
+        if len(self.connections) > 0:
+            if self.iterTimer is None or (datetime.datetime.now() - self.iterTimer).total_seconds() > 1:
+                for _, conn in self.connections.items():
+                    conn[1].check_data_change(force=force)
+                self.iterTimer = datetime.datetime.now()
 
     @staticmethod
     def get_client_id(handler):
         client = handler.get_secure_cookie("client")
-        if not client and not isinstance(handler, APIWebSocket):
-            cID = f"{uuid.uuid4()}"
-            handler.set_secure_cookie(
-                "client", bytes(cID, 'utf-8'))
-            client = cID
-        return client
+        cID = f"{uuid.uuid4()}"
+        if not isinstance(handler, APIWebSocket):
+            if not client:
+                handler.set_secure_cookie(
+                    "client", bytes(cID, 'utf-8'))
+                client = cID
+                return client
+        else:
+            if client:
+                return (1, client)
+            else:
+                return (0, cID)
 
     @staticmethod
     def gen_api_data(handler, force=False):
@@ -136,6 +151,8 @@ class WebServer(tornado.web.Application):
             del stats['secondsInGame']
         res = {
             "forceUpdate": force,
+            "viewers": len(handler.WS.connections),
+            "instanceID": handler.WS.instanceID,
             "admin": isAdmin,
             "status": dedicatedServer.status,
             "stats": stats,
@@ -177,14 +194,12 @@ class APIRequestHandler(BaseHandler):
 
 
 class APIWebSocket(tornado.websocket.WebSocketHandler):
-    connections = {}
-
     def __init__(self, *args, **kwargs):
         self.launcher = kwargs.pop('launcher')
         self.WS = self.launcher.webServer
         self.isOpen = False
         self.oldData = {}
-        #print('initializing websocket')
+        # print('initializing websocket')
         super().__init__(*args, **kwargs)
 
     def get_current_user(self):
@@ -192,12 +207,17 @@ class APIWebSocket(tornado.websocket.WebSocketHandler):
     # pylint: disable=arguments-differ
 
     def open(self):
-        #print("WebSocket opened")
-        cID = self.WS.get_client_id(self)
+        # print("WebSocket opened")
+
+        cType, self.cID = self.WS.get_client_id(self)
         self.isOpen = True
-        if cID:
-            APIWebSocket.connections[cID] = self
-        self.check_data_change()
+        if cType:
+            self.WS.connections[self.cID] = [1, self]
+        else:
+            self.WS.connections[self.cID] = [0, self]
+        # print("open")
+        # pprint(self.WS.connections)
+        self.check_data_change(force=True)
 
     def on_message(self, message):
         self.check_data_change()
@@ -206,12 +226,14 @@ class APIWebSocket(tornado.websocket.WebSocketHandler):
         self.isOpen = False
 
         try:
-            cID = self.WS.get_client_id(self)
-            if cID:
-                del self.connections[cID]
+            if self.cID:
+                del self.WS.connections[self.cID]
         except:
             pass
-        #print("WebSocket closed")
+        # print("close")
+        # pprint(self.WS.connections)
+        self.check_data_change(force=True)
+        # print("WebSocket closed")
 
     def check_data_change(self, force=False):
         if force:
@@ -386,7 +408,7 @@ class RenameSaveRequestHandler(BaseHandler):
 
         if fData:
             cID = self.WS.get_client_id(self)
-            APIWebSocket.connections[cID].check_data_change(
+            self.WS.connections[cID].check_data_change(
                 force=True)
 
 

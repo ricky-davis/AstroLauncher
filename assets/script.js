@@ -8,6 +8,8 @@ let oldMsg = "";
 let oldSettings = {};
 let oldPlayers = {};
 let oldSaves = {};
+let oViewCount = "";
+let oInstanceID = "";
 let isAdmin = false;
 
 const statusMsg = (msg) => {
@@ -104,8 +106,15 @@ const tick = async (data) => {
     console.log(data);
     try {
         statusMsg(data.status);
+        if (oInstanceID === "") {
+            oInstanceID = data.instanceID;
+        }
+
         isAdmin = data.admin;
-        if ($("#console").length && !isAdmin) {
+        if (
+            ($("#console").length && !isAdmin) ||
+            data.instanceID !== oInstanceID
+        ) {
             location.reload();
         }
         if (data.forceUpdate) {
@@ -113,6 +122,11 @@ const tick = async (data) => {
             oldSettings = {};
             oldPlayers = {};
             oldSaves = {};
+            oViewCount = "";
+        }
+        if (data.viewers !== oViewCount) {
+            oViewCount = data.viewers;
+            $("#viewCount").text(oViewCount);
         }
         if (data.hasUpdate != false) {
             let ghLink = document.querySelector("#githubLink");
