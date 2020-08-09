@@ -1,0 +1,94 @@
+<div id="stats" class="card mb-3 astroCard">
+    <div
+        class="card-header py-2 px-4"
+        data-toggle="collapse"
+        data-target="#serverStatusCardBody"
+        aria-expanded="true"
+        aria-controls="serverStatusCardBody"
+    >
+        <h4 class="mb-0">
+            <span class="collapseArrows pr-2"></span>
+            Server Info 
+            <small class="mx-4">
+                <span id="viewCount">0</span>
+                <i class="fas fa-eye"></i>
+            </small>
+            <span
+                id="serverStatus"
+                class="text-danger col-12 float-right px-0 text-md-left col-lg-5 text-lg-right float-lg-right"
+                >Offline</span
+            >
+        </h4>
+    </div>
+
+    <div
+        id="serverStatusCardBody"
+        class="card-body pt-4 collapse show"
+    >
+        <table>
+            <tr>
+                <th>Server Name:</th>
+                <td id="serverName">{{ launcher.DedicatedServer.settings.ServerName }}</td>
+            </tr>
+            <tr>
+                <th>IP:Port :</th>
+                <td class="spoiler ctc" data-clipboard-target="#serverPort"><span id="serverPort"></span></td>
+            </tr>
+            <tr>
+                <th>Version:</th>
+                <td id="serverVersion"</td>
+            </tr>
+            <tr>
+                <th>Owner:</th>
+                <td id="owner"</td>
+            </tr>
+            <tr>
+                <th>Whitelist:</th>
+                <td id="hWL"</td>
+            </tr>
+            <tr>
+                <th>Password:</th>
+                <td id="hPW"</td>
+            </tr>
+            <tr>
+                <th>Creative:</th>
+                <td id="hCM"</td>
+            </tr>
+            <tr>
+                <th>Framerate:</th>
+                <td id="framerateStats"</td>
+            </tr>
+            <tr>
+                <th>Players:</th>
+                <td id="playersStats"</td>
+            </tr>
+        </table>
+    </div>
+    {% if isAdmin %}
+    <div id="serverStatusFooter" class="card-footer">
+        <div class="row d-flex justify-content-around px-2">
+            <button
+                id="saveGameBtn"
+                type="button"
+                class="btn btn-success my-1 col-12 col-xl-4"
+            >
+                Save Game
+            </button>
+            <button
+                id="rebootServerBtn"
+                type="button"
+                class="btn btn-warning my-1 col-12 col-xl-3"
+            >
+                Reboot
+            </button>
+            <button
+                id="stopLauncherBtn"
+                type="button"
+                class="btn btn-danger my-1 col-12 col-xl-4"
+            >
+                Stop Launcher & Server
+            </button>
+        </div>
+    </div>
+    {% end %}
+</div>

@@ -1,0 +1,28 @@
+{% if isAdmin %}
+<div id="whiteListPlayers" class="card mb-3 astroCard">
+    <div id="whiteListPlayersCardBody" class="card-body collapse show">
+        <div class="input-group">
+            <div class="input-group-prepend">
+                <span class="input-group-text">Whitelist Player:</span>
+            </div>
+            <input
+                type="text"
+                class="form-control"
+                id="WLPlayerInp"
+                placeholder="Player Name"
+                aria-label="Player Name"
+            />
+            <div class="input-group-append">
+                <button
+                    class="btn btn-secondary pBtn"
+                    id="WLPlayerBtn"
+                    data-action="WL"
+                    type="button"
+                >
+                    Submit
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% end %}

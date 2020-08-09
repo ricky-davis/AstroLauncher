@@ -1,0 +1,39 @@
+<div id="{{ ptype }}PlayersRow" class="card mb-3 astroCard">
+    <div
+        class="card-header py-2 px-4"
+        data-toggle="collapse"
+        data-target="#{{ ptype }}PlayersCardBody"
+        aria-expanded="true"
+        aria-controls="{{ ptype }}PlayersCardBody"
+    >
+        <h4 class="mb-0">
+            <span class="collapseArrows pr-2"></span>
+            {{ ptype.capitalize() }} Players
+        </h4>
+    </div>
+    <div id="{{ ptype }}PlayersCardBody" class="card-body pt-0 collapse show">
+        <div class="table-responsive">
+            <table
+                id="{{ ptype }}PlayersTable"
+                class="table table-dark table-striped"
+            >
+                <thead>
+                    <tr>
+                        <th class="d-md-none">Name/GUID</th>
+                        <th class="d-none d-md-table-cell">
+                            Name
+                        </th>
+                        <th class="d-none d-md-table-cell">
+                            GUID
+                        </th>
+                        <th>Status</th>
+                        {% if isAdmin %}
+                        <th>Actions</th>
+                        {% end %}
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </div>
+</div>

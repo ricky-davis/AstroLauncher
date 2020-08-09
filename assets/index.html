@@ -1,296 +1,78 @@
 <html lang="en">
     {% module HeadModule(launcher,isAdmin) %}
-    <body class='p-0'>
+    <body class="p-0">
         {% module BannerModule(launcher,isAdmin) %}
         <div id="msg" class="bg-danger text-center collapse">
-            <h5></h5>
+            <span></span>
         </div>
 
         <div id="main" class="container-fluid my-4">
-            <div class="row mt-3">
+            <div class="row">
                 <div id="left" class="col-12 col-md-5 px-0 pl-md-4 pr-md-2">
-                    {% if isAdmin %}
-                    <div id="console" class="card astroCard">
-                        <div
-                            class="card-header py-2 px-4"
-                            data-toggle="collapse"
-                            data-target="#consoleTextCardBody"
-                            aria-expanded="true"
-                            aria-controls="consoleTextCardBody"
-                        >
-                            <h4 class="mb-0">
-                                <span class="collapseArrows pr-2"></span>Console
-                                <i
-                                    class="fa fa-download"
-                                    aria-hidden="true"
-                                ></i>
-                            </h4>
-                        </div>
-                        <div
-                            id="consoleTextCardBody"
-                            class="card-body pt-0 collapse show"
-                        >
-                            <div id="consoleText"></div>
-                        </div>
-                    </div>
-                    {% end %}
-                    <div id="stats" class="card my-3 astroCard">
-                        <div
-                            class="card-header py-2 px-4"
-                            data-toggle="collapse"
-                            data-target="#serverStatusCardBody"
-                            aria-expanded="true"
-                            aria-controls="serverStatusCardBody"
-                        >
-                            <h4 class="mb-0">
-                                <span class="collapseArrows pr-2"></span>
-                                Server Info
-                                <span
-                                    id="serverStatus"
-                                    class="text-danger col-12 float-right px-0 text-md-left col-lg-5 text-lg-right float-lg-right"
-                                    >Offline</span
-                                >
-                            </h4>
-                        </div>
-
-                        <div
-                            id="serverStatusCardBody"
-                            class="card-body pt-4 collapse show"
-                        >
-                            <table>
-                                <tr>
-                                    <th>Server Name:</th>
-                                    <td id="serverName">{{ launcher.DedicatedServer.settings.ServerName }}</td>
-                                </tr>
-                                <tr>
-                                    <th>IP:Port :</th>
-                                    <td class="spoiler ctc" data-clipboard-target="#serverPort"><span id="serverPort"></span></td>
-                                </tr>
-                                <tr>
-                                    <th>Version:</th>
-                                    <td id="serverVersion"</td>
-                                </tr>
-                                <tr>
-                                    <th>Owner:</th>
-                                    <td id="owner"</td>
-                                </tr>
-                                <tr>
-                                    <th>Whitelist:</th>
-                                    <td id="hWL"</td>
-                                </tr>
-                                <tr>
-                                    <th>Password:</th>
-                                    <td id="hPW"</td>
-                                </tr>
-                                <tr>
-                                    <th>Creative:</th>
-                                    <td id="hCM"</td>
-                                </tr>
-                                <tr>
-                                    <th>Framerate:</th>
-                                    <td id="framerateStats"</td>
-                                </tr>
-                                <tr>
-                                    <th>Players:</th>
-                                    <td id="playersStats"</td>
-                                </tr>
-                            </table>
-                        </div>
-                        {% if isAdmin %}
-                        <div id="serverStatusFooter" class="card-footer">
-                            <div class="row d-flex justify-content-around px-2">
-                                <button
-                                    id="saveGameBtn"
-                                    type="button"
-                                    class="btn btn-success my-1 col-12 col-xl-4"
-                                >
-                                    Save Game
-                                </button>
-                                <button
-                                    id="rebootServerBtn"
-                                    type="button"
-                                    class="btn btn-warning my-1 col-12 col-xl-3"
-                                >
-                                    Reboot
-                                </button>
-                                <button
-                                    id="stopLauncherBtn"
-                                    type="button"
-                                    class="btn btn-danger my-1 col-12 col-xl-4"
-                                >
-                                    Stop Launcher & Server
-                                </button>
-                            </div>
-                        </div>
-                        {% end %}
-                    </div>
-                    {% if isAdmin %}
-                    <div id="saveGamesRow" class="card my-3 astroCard">
-                        <div
-                            class="card-header py-2 px-4"
-                            data-toggle="collapse"
-                            data-target="#saveGamesCardBody"
-                            aria-expanded="true"
-                            aria-controls="saveGamesCardBody"
-                        >
-                            <h4 class="mb-0">
-                                <span class="collapseArrows pr-2"></span>
-                                Save Games
-                                <button
-                                    id="newSaveBtn"
-                                    type="button"
-                                    class="btn btn-success col-12 col-lg-5 col-xl-4 float-right"
-                                >
-                                    Load New Save
-                                </button>
-                            </h4>
-                        </div>
-                        <div
-                            id="saveGamesCardBody"
-                            class="card-body pt-0 collapse show"
-                        >
-                            <div class="table-responsive">
-                                <table
-                                    id="saveGamesTable"
-                                    class="table table-dark table-striped "
-                                >
-                                    <thead>
-                                        <tr>
-                                            <th class="d-md-none p-1"></th>
-                                            <th class="d-none d-md-table-cell">Active</th>
-                                            <th>Save Name</th>
-                                            <th>Last Saved</th>
-                                            <th>Creative</th>
-                                            <th>Size</th>
-                                            <th>Actions</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody></tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-                    {% end %}
+                    {% module ConsoleModule(launcher,isAdmin) %}
+                    <!---->
+                    {% module StatsModule(launcher,isAdmin) %}
+                    <!---->
+                    {% module SaveGamesModule(launcher,isAdmin) %}
                 </div>
 
-                <div id="right" class="col-12 mt-5 mt-md-0 col-md  px-0 pr-md-4 pl-md-2">
-                    <div id="onlinePlayersRow" class="card astroCard">
-                        <div
-                            class="card-header py-2 px-4"
-                            data-toggle="collapse"
-                            data-target="#onlinePlayersCardBody"
-                            aria-expanded="true"
-                            aria-controls="onlinePlayersCardBody"
-                        >
-                            <h4 class="mb-0">
-                                <span class="collapseArrows pr-2"></span>
-                                Online Players
-                            </h4>
-                        </div>
-                        <div
-                            id="onlinePlayersCardBody"
-                            class="card-body pt-0 collapse show"
-                        >
-                            <div class="table-responsive">
-                                <table
-                                    id="onlinePlayersTable"
-                                    class="table table-dark table-striped"
-                                >
-                                    <thead>
-                                        <tr>
-                                            <th class="d-md-none">Name/GUID</th>
-                                            <th class="d-none d-md-table-cell">Name</th>
-                                            <th class="d-none d-md-table-cell">GUID</th>
-                                            <th>Role</th>
-                                            {% if isAdmin %}
-                                            <th>Actions</th>
-                                            {% end %}
-                                        </tr>
-                                    </thead>
-                                    <tbody></tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    {% if isAdmin %}
-                    <div id="whiteListPlayers" class="card my-3 astroCard">
-                        <div
-                            id="whiteListPlayersCardBody"
-                            class="card-body collapse show"
-                        >
-                            <div class="input-group">
-                                <div class="input-group-prepend">
-                                    <span class="input-group-text">Whitelist Player:</span>
-                                </div>
-                                <input type="text" class="form-control" id="WLPlayerInp" placeholder="Player Name" aria-label="Player Name">
-                                <div class="input-group-append">
-                                    <button class="btn btn-secondary pBtn" id="WLPlayerBtn" data-action="WL" type="button">Submit</button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    {% end %}
-                    <div id="offinePlayersRow" class="card my-3 astroCard">
-                        <div
-                            class="card-header py-2 px-4"
-                            data-toggle="collapse"
-                            data-target="#offlinePlayersCardBody"
-                            aria-expanded="true"
-                            aria-controls="offlinePlayersCardBody"
-                        >
-                            <h4 class="mb-0">
-                                <span class="collapseArrows pr-2"></span>
-                                Offline Players
-                            </h4>
-                        </div>
-                        <div
-                            id="offlinePlayersCardBody"
-                            class="card-body pt-0 collapse show"
-                        >
-                            <div class="table-responsive">
-                                <table
-                                    id="offlinePlayersTable"
-                                    class="table table-dark table-striped "
-                                >
-                                    <thead>
-                                        <tr>
-                                            <th class="d-md-none">Name/GUID</th>
-                                            <th class="d-none d-md-table-cell">Name</th>
-                                            <th class="d-none d-md-table-cell">GUID</th>
-                                            <th>Role</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody></tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
+                <div
+                    id="right"
+                    class="col-12 mt-5 mt-md-0 col-md px-0 pr-md-4 pl-md-2"
+                >
+                    {% module PlayersModule(launcher,isAdmin,"online") %}
+                    <!---->
+                    {% module WhitelistPlayersModule(launcher,isAdmin) %}
+                    <!---->
+                    {% module PlayersModule(launcher,isAdmin,"offline") %}
                 </div>
             </div>
         </div>
     </body>
     {% if isAdmin %}
-    <div class="modal fade p-0" id="deleteSaveModal" tabindex="-1" role="dialog" aria-labelledby="deleteSaveModalLabel" aria-hidden="true">
+    <div
+        class="modal fade p-0"
+        id="deleteSaveModal"
+        tabindex="-1"
+        role="dialog"
+        aria-labelledby="deleteSaveModalLabel"
+        aria-hidden="true"
+    >
         <div class="modal-dialog modal-dialog-centered" role="document">
             <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="deleteSaveModalLabel">Are you sure you wish to delete this save? </h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <div class="modal-body">
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                <button type="button" class="btn sBtn btn-danger" data-dismiss="modal">Delete</button>
-            </div>
+                <div class="modal-header">
+                    <h5 class="modal-title" id="deleteSaveModalLabel">
+                        Are you sure you wish to delete this save?
+                    </h5>
+                    <button
+                        type="button"
+                        class="close"
+                        data-dismiss="modal"
+                        aria-label="Close"
+                    >
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body"></div>
+                <div class="modal-footer">
+                    <button
+                        type="button"
+                        class="btn btn-secondary"
+                        data-dismiss="modal"
+                    >
+                        Close
+                    </button>
+                    <button
+                        type="button"
+                        class="btn sBtn btn-danger"
+                        data-dismiss="modal"
+                    >
+                        Delete
+                    </button>
+                </div>
             </div>
         </div>
     </div>
-    {% end %}
-
-    {% module ScriptsModule(launcher,isAdmin) %}
+    {% end %} {% module ScriptsModule(launcher,isAdmin) %}
     <script src="{{ static_url('script.js') }}"></script>
 </html>

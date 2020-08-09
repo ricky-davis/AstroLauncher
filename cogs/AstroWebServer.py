@@ -1,18 +1,24 @@
 
+import datetime
 import hashlib
 import logging
 import os
 import secrets
 import sys
+import time
+import uuid
+#from pprint import pprint
 from threading import Thread
 
+import pathvalidate
 import tornado.web
+import tornado.websocket
 
 from AstroLauncher import AstroLauncher
 from cogs import UIModules
 from cogs.AstroLogging import AstroLogging
-
 from cogs.MultiConfig import MultiConfig
+
 # pylint: disable=abstract-method,attribute-defined-outside-init,no-member
 
 
@@ -27,13 +33,15 @@ class WebServer(tornado.web.Application):
             curDir = sys._MEIPASS
         self.assetDir = os.path.join(curDir, "assets")
 
+        self.connections = {}
+        self.iterTimer = None
+        self.instanceID = f"{uuid.uuid4().hex}"
+
         self.cookieSecret = secrets.token_hex(16).encode()
         self.passwordHash = self.launcher.launcherConfig.WebServerPasswordHash
         cfgOvr = {}
 
         if len(self.passwordHash) != 64:
-            AstroLogging.logPrint(
-                "SECURITY ALERT: You must set your Web Server Password!", "warning")
             cfgOvr["WebServerPasswordHash"] = ""
             self.passwordHash = ""
 
@@ -46,13 +54,15 @@ class WebServer(tornado.web.Application):
             "static_path": self.assetDir,
             "cookie_secret": self.cookieSecret,
             "login_url": "/login",
-            "ui_modules": UIModules
+            "ui_modules": UIModules,
+            "websocket_ping_interval": 0
         }
 
         handlers = [(r'/', MainHandler, dict(path=settings['static_path'], launcher=self.launcher)),
                     (r"/login", LoginHandler,
                      dict(path=settings['static_path'], launcher=self.launcher)),
                     (r'/logout', LogoutHandler, dict(launcher=self.launcher)),
+                    (r"/ws", APIWebSocket, dict(launcher=self.launcher)),
                     (r"/api", APIRequestHandler, dict(launcher=self.launcher)),
                     (r"/api/savegame", SaveRequestHandler,
                      dict(launcher=self.launcher)),
@@ -94,7 +104,90 @@ class WebServer(tornado.web.Application):
             self.listen(self.port)
             url = f"http://localhost{':'+str(self.port) if self.port != 80 else ''}"
         AstroLogging.logPrint(f"Running a web server at {url}")
+        if self.passwordHash == "":
+            AstroLogging.logPrint(
+                f"SECURITY ALERT: Visit {url} to set your password!", "warning")
         tornado.ioloop.IOLoop.instance().start()
+
+    def autoUpdateLoop(self):
+        while True:
+            time.sleep(1)
+            self.iterWebSocketConnections()
+
+    def iterWebSocketConnections(self, force=False):
+        try:
+            if len(self.connections) > 0:
+                if self.iterTimer is None or (datetime.datetime.now() - self.iterTimer).total_seconds() > 1:
+                    for _, conn in self.connections.items():
+                        try:
+                            conn[1].check_data_change(force=force)
+                        except:
+                            pass
+                    self.iterTimer = datetime.datetime.now()
+        except:
+            pass
+
+    @staticmethod
+    def get_client_id(handler):
+        client = handler.get_secure_cookie("client")
+        cID = f"{uuid.uuid4()}"
+        if not isinstance(handler, APIWebSocket):
+            if not client:
+                handler.set_secure_cookie(
+                    "client", bytes(cID, 'utf-8'))
+                client = cID
+                return client
+        else:
+            if client:
+                return (1, client)
+            else:
+                return (0, cID)
+
+    @staticmethod
+    def gen_api_data(handler, force=False):
+        isAdmin = handler.current_user == b"admin"
+
+        dedicatedServer = handler.launcher.DedicatedServer
+
+        logs = AstroLogging.log_stream.getvalue()
+
+        n = 200
+        groups = logs.split('\n')
+        logs = '\n'.join(groups[-n:])
+
+        s = dedicatedServer.settings
+        stats = None
+        if dedicatedServer.DSServerStats:
+            stats = dedicatedServer.DSServerStats.copy()
+            stats['averageFPS'] = round(stats['averageFPS'])
+            del stats['secondsInGame']
+        res = {
+            "forceUpdate": force,
+            "viewers": len(handler.WS.connections),
+            "instanceID": handler.WS.instanceID,
+            "admin": isAdmin,
+            "status": dedicatedServer.status,
+            "stats": stats,
+            "hasUpdate": handler.launcher.hasUpdate,
+            "settings": {
+                "MaxServerFramerate": s.MaxServerFramerate,
+                "PublicIP": s.PublicIP,
+                "ServerName": s.ServerName,
+                "MaximumPlayerCount": s.MaximumPlayerCount,
+                "OwnerName": s.OwnerName,
+                "Port": s.Port
+            },
+            "players": dedicatedServer.players,
+        }
+
+        # only send full logs if admin
+        if isAdmin:
+            res["logs"] = logs
+            res['savegames'] = dedicatedServer.DSListGames
+        else:
+            res["logs"] = ""
+
+        return res
 
 
 class BaseHandler(tornado.web.RequestHandler):
@@ -106,14 +199,73 @@ class BaseHandler(tornado.web.RequestHandler):
         return self.get_secure_cookie("login")
 
 
+class APIRequestHandler(BaseHandler):
+    def get(self):
+        self.WS.get_client_id(self)
+        self.write(WebServer.gen_api_data(self))
+
+
+class APIWebSocket(tornado.websocket.WebSocketHandler):
+    def __init__(self, *args, **kwargs):
+        self.launcher = kwargs.pop('launcher')
+        self.WS = self.launcher.webServer
+        self.isOpen = False
+        self.oldData = {}
+        # print('initializing websocket')
+        super().__init__(*args, **kwargs)
+
+    def get_current_user(self):
+        return self.get_secure_cookie("login")
+    # pylint: disable=arguments-differ
+
+    def open(self):
+        # print("WebSocket opened")
+
+        cType, self.cID = self.WS.get_client_id(self)
+        self.isOpen = True
+        if cType:
+            self.WS.connections[self.cID] = [1, self]
+        else:
+            self.WS.connections[self.cID] = [0, self]
+        # print("open")
+        # pprint(self.WS.connections)
+        self.check_data_change(force=True)
+
+    def on_message(self, message):
+        self.check_data_change()
+
+    def on_close(self):
+        self.isOpen = False
+
+        try:
+            if self.cID:
+                del self.WS.connections[self.cID]
+        except:
+            pass
+        # print("close")
+        # pprint(self.WS.connections)
+        self.check_data_change(force=True)
+        # print("WebSocket closed")
+
+    def check_data_change(self, force=False):
+        if force:
+            self.oldData = {}
+        newData = WebServer.gen_api_data(self, force=force)
+        if newData != self.oldData and self.isOpen:
+            self.oldData = newData
+            self.write_message(newData)
+
+
 class MainHandler(BaseHandler):
     # pylint: disable=arguments-differ
     def initialize(self, path, launcher):
         self.path = path
         self.launcher = launcher
+        self.WS = self.launcher.webServer
 
     # @tornado.web.authenticated
     def get(self):
+        self.WS.get_client_id(self)
         if not self.application.passwordHash == "":
             self.render(os.path.join(self.path, 'index.html'),
                         isAdmin=self.current_user == b"admin",
@@ -127,8 +279,10 @@ class LoginHandler(BaseHandler):
     def initialize(self, path, launcher):
         self.path = path
         self.launcher = launcher
+        self.WS = self.launcher.webServer
 
     def get(self):
+        self.WS.get_client_id(self)
         if not self.current_user == b"admin":
             self.render(os.path.join(self.path, 'login.html'),
                         isAdmin=self.current_user == b"admin",
@@ -138,6 +292,7 @@ class LoginHandler(BaseHandler):
             self.redirect("/")
 
     def post(self):
+        self.WS.get_client_id(self)
         if self.application.passwordHash == "":
             # write hash
             self.application.passwordHash = hashlib.sha256(
@@ -162,58 +317,19 @@ class LoginHandler(BaseHandler):
 
 class LogoutHandler(BaseHandler):
     def get(self):
+        self.WS.get_client_id(self)
         self.clear_cookie('login')
         self.redirect('/')
 
 
-class APIRequestHandler(BaseHandler):
-    def get(self):
-
-        isAdmin = self.current_user == b"admin"
-
-        dedicatedServer = self.launcher.DedicatedServer
-
-        logs = AstroLogging.log_stream.getvalue()
-
-        n = 200
-        groups = logs.split('\n')
-        logs = '\n'.join(groups[-n:])
-
-        s = dedicatedServer.settings
-        res = {
-            "admin": isAdmin,
-            "status": dedicatedServer.status,
-            "stats": dedicatedServer.DSServerStats,
-            "hasUpdate": self.launcher.hasUpdate,
-            "settings": {
-                "MaxServerFramerate": s.MaxServerFramerate,
-                "PublicIP": s.PublicIP,
-                "ServerName": s.ServerName,
-                "MaximumPlayerCount": s.MaximumPlayerCount,
-                "OwnerName": s.OwnerName,
-                "Port": s.Port
-            },
-            "players": dedicatedServer.players,
-        }
-
-        # only send full logs if admin
-        if isAdmin:
-            res["logs"] = logs
-            res['savegames'] = dedicatedServer.DSListGames
-        else:
-            res["logs"] = ""
-
-        self.write(res)
-
-
 class SaveRequestHandler(BaseHandler):
     def post(self):
+        self.WS.get_client_id(self)
         if self.current_user == b"admin":
-            if not self.launcher.DedicatedServer.busy:
-                t = Thread(
-                    target=self.launcher.DedicatedServer.saveGame, args=())
-                t.daemon = True
-                t.start()
+            t = Thread(
+                target=self.launcher.DedicatedServer.saveGame, args=())
+            t.daemon = True
+            t.start()
             self.write({"message": "Success"})
         else:
             self.write({"message": "Not Authenticated"})
@@ -221,12 +337,12 @@ class SaveRequestHandler(BaseHandler):
 
 class NewSaveRequestHandler(BaseHandler):
     def post(self):
+        self.WS.get_client_id(self)
         if self.current_user == b"admin":
-            if not self.launcher.DedicatedServer.busy:
-                t = Thread(
-                    target=self.launcher.DedicatedServer.newSaveGame, args=())
-                t.daemon = True
-                t.start()
+            t = Thread(
+                target=self.launcher.DedicatedServer.newSaveGame, args=())
+            t.daemon = True
+            t.start()
             self.write({"message": "Success"})
         else:
             self.write({"message": "Not Authenticated"})
@@ -234,18 +350,18 @@ class NewSaveRequestHandler(BaseHandler):
 
 class LoadSaveRequestHandler(BaseHandler):
     def post(self):
+        self.WS.get_client_id(self)
         if self.current_user == b"admin":
-            if not self.launcher.DedicatedServer.busy:
-                data = tornado.escape.json_decode(self.request.body)
-                if "name" in data and data["name"] is not None:
-                    saveName = data["name"]
-                    saveName = data["name"]
-                    GL = self.launcher.DedicatedServer.DSListGames
-                    if saveName != GL['activeSaveName']:
-                        t = Thread(
-                            target=self.launcher.DedicatedServer.loadSaveGame, args=(saveName,))
-                        t.daemon = True
-                        t.start()
+            data = tornado.escape.json_decode(self.request.body)
+            if "name" in data and data["name"] is not None:
+                saveName = data["name"]
+                saveName = data["name"]
+                GL = self.launcher.DedicatedServer.DSListGames
+                if saveName != GL['activeSaveName']:
+                    t = Thread(
+                        target=self.launcher.DedicatedServer.loadSaveGame, args=(saveName,))
+                    t.daemon = True
+                    t.start()
             self.write({"message": "Success"})
         else:
             self.write({"message": "Not Authenticated"})
@@ -253,17 +369,17 @@ class LoadSaveRequestHandler(BaseHandler):
 
 class DeleteSaveRequestHandler(BaseHandler):
     def post(self):
+        self.WS.get_client_id(self)
         if self.current_user == b"admin":
-            if not self.launcher.DedicatedServer.busy:
-                data = tornado.escape.json_decode(self.request.body)
-                if "name" in data and data["name"] is not None:
-                    saveName = data["name"]
-                    GL = self.launcher.DedicatedServer.DSListGames
-                    if saveName != GL['activeSaveName']:
-                        t = Thread(
-                            target=self.launcher.DedicatedServer.deleteSaveGame, args=(saveName,))
-                        t.daemon = True
-                        t.start()
+            data = tornado.escape.json_decode(self.request.body)
+            if "name" in data and data["name"] is not None:
+                saveName = data["name"]
+                GL = self.launcher.DedicatedServer.DSListGames
+                if saveName != GL['activeSaveName']:
+                    t = Thread(
+                        target=self.launcher.DedicatedServer.deleteSaveGame, args=(saveName,))
+                    t.daemon = True
+                    t.start()
             self.write({"message": "Success"})
         else:
             self.write({"message": "Not Authenticated"})
@@ -271,31 +387,46 @@ class DeleteSaveRequestHandler(BaseHandler):
 
 class RenameSaveRequestHandler(BaseHandler):
     def post(self):
+        self.WS.get_client_id(self)
+        fData = False
         if self.current_user == b"admin":
-            if not self.launcher.DedicatedServer.busy:
-                data = tornado.escape.json_decode(self.request.body)
-                if "nName" in data and data["nName"] is not None and "oName" in data and data["oName"] is not None:
-                    oldSaveName = data["oName"]
-                    newSaveName = data["nName"]
+            data = tornado.escape.json_decode(self.request.body)
+            if "nName" in data and data["nName"] is not None and "oName" in data and data["oName"] is not None:
+                oldSaveName = data["oName"]
+                newSaveName = data["nName"]
+
+                if pathvalidate.is_valid_filename(oldSaveName) and pathvalidate.is_valid_filename(newSaveName):
                     GL = self.launcher.DedicatedServer.DSListGames
                     if newSaveName not in [x['name'] for x in GL['gameList']]:
                         t = Thread(
                             target=self.launcher.DedicatedServer.renameSaveGame, args=(oldSaveName, newSaveName))
                         t.daemon = True
                         t.start()
+                    else:
+                        fData = True
+                else:
+                    fData = True
+            else:
+                fData = True
             self.write({"message": "Success"})
         else:
+            fData = True
             self.write({"message": "Not Authenticated"})
+
+        if fData:
+            cID = self.WS.get_client_id(self)
+            self.WS.connections[cID].check_data_change(
+                force=True)
 
 
 class RebootRequestHandler(BaseHandler):
     def post(self):
+        self.WS.get_client_id(self)
         if self.current_user == b"admin":
-            if not self.launcher.DedicatedServer.busy:
-                t = Thread(
-                    target=self.launcher.DedicatedServer.save_and_shutdown, args=())
-                t.daemon = True
-                t.start()
+            t = Thread(
+                target=self.launcher.DedicatedServer.save_and_shutdown, args=())
+            t.daemon = True
+            t.start()
             self.write({"message": "Success"})
         else:
             self.write({"message": "Not Authenticated"})
@@ -303,12 +434,12 @@ class RebootRequestHandler(BaseHandler):
 
 class ShutdownRequestHandler(BaseHandler):
     def post(self):
+        self.WS.get_client_id(self)
         if self.current_user == b"admin":
-            if not self.launcher.DedicatedServer.busy:
-                t = Thread(
-                    target=self.launcher.DedicatedServer.kill_server, args=("Website Request", True))
-                t.daemon = True
-                t.start()
+            t = Thread(
+                target=self.launcher.DedicatedServer.kill_server, args=("Website Request", True))
+            t.daemon = True
+            t.start()
             self.write({"message": "Success"})
         else:
             self.write({"message": "Not Authenticated"})
@@ -316,6 +447,7 @@ class ShutdownRequestHandler(BaseHandler):
 
 class PlayerRequestHandler(BaseHandler):
     def post(self):
+        self.WS.get_client_id(self)
         data = tornado.escape.json_decode(self.request.body)
         try:
             players = self.launcher.DedicatedServer.players['playerInfo']

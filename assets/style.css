@@ -31,11 +31,7 @@ h1 {
 h2 {
     word-wrap: break-word;
 }
-h5 {
-    font-size: 1em;
-    margin: 0;
-    line-height: 200%;
-}
+
 #onlinePlayersRow {
     z-index: 10;
 }
@@ -79,6 +75,11 @@ h5 {
     position: absolute;
     transition: all 1s ease;
     z-index: 99;
+}
+#msg span {
+    font-size: 1em;
+    margin: 0;
+    line-height: 125%;
 }
 #consoleText {
     overflow: auto;

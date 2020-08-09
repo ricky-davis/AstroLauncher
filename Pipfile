@@ -19,6 +19,7 @@ tornado = "*"
 asyncio = "*"
 ipy = "*"
 pypakparser = "*"
+pathvalidate = "*"
 
 [requires]
 python_version = "3.7"
