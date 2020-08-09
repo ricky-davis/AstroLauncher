@@ -5,7 +5,6 @@ import logging
 import os
 import secrets
 import sys
-import time
 import uuid
 #from pprint import pprint
 from threading import Thread
@@ -108,11 +107,6 @@ class WebServer(tornado.web.Application):
             AstroLogging.logPrint(
                 f"SECURITY ALERT: Visit {url} to set your password!", "warning")
         tornado.ioloop.IOLoop.instance().start()
-
-    def autoUpdateLoop(self):
-        while True:
-            time.sleep(1)
-            self.iterWebSocketConnections()
 
     def iterWebSocketConnections(self, force=False):
         try:

@@ -4,6 +4,7 @@ import atexit
 import ctypes
 import dataclasses
 import os
+import signal
 import shutil
 import subprocess
 import sys
@@ -276,7 +277,7 @@ class AstroLauncher():
         if not self.launcherConfig.DisableWebServer:
             # start http server
             self.webServer = self.start_WebServer()
-            self.start_WebSocketLoop()
+            self.start_InfoLoop()
             # AstroLogging.logPrint(
             #    f"HTTP Server started at 127.0.0.1:{self.launcherConfig.WebServerPort}")
 
@@ -406,6 +407,11 @@ class AstroLauncher():
         time.sleep(2)
         self.DedicatedServer.kill_server("Auto-Update")
 
+    # pylint: disable=unused-argument
+    def signal_handler(self, sig, frame):
+        self.DedicatedServer.kill_server(
+            reason="Launcher shutting down", save=True)
+
     def start_server(self, firstLaunch=False):
         """
             Starts the Dedicated Server process and waits for it to be registered
@@ -414,6 +420,7 @@ class AstroLauncher():
             atexit.register(self.DedicatedServer.kill_server,
                             reason="Launcher shutting down",
                             save=True)
+            signal.signal(signal.SIGINT, self.signal_handler)
         else:
             self.check_for_update(serverStart=True)
             self.DedicatedServer = AstroDedicatedServer(
@@ -606,15 +613,20 @@ class AstroLauncher():
         t.start()
         return ws
 
-    def start_WebSocketLoop(self):
-        def start_WSLoopThread(self):
+    def autoUpdateLoop(self):
+        while True:
+            time.sleep(1)
+            self.webServer.iterWebSocketConnections()
+
+    def start_InfoLoop(self):
+        def start_InfoLoopThread(self):
             if sys.version_info.minor > 7:
                 asyncio.set_event_loop_policy(
                     asyncio.WindowsSelectorEventLoopPolicy())
             asyncio.set_event_loop(asyncio.new_event_loop())
-            self.webServer.autoUpdateLoop()
+            self.autoUpdateLoop()
 
-        t = Thread(target=start_WSLoopThread, args=(self,))
+        t = Thread(target=start_InfoLoopThread, args=(self,))
         t.daemon = True
         t.start()
 
