@@ -2,6 +2,8 @@
 import json
 import socket
 
+from contextlib import contextmanager
+
 from cogs.AstroLogging import AstroLogging
 
 
@@ -11,6 +13,19 @@ class AstroRCON():
         self.DS = DedicatedServer
         self.connected = False
         self.socket = None
+        self.lock = False
+
+    @contextmanager
+    def lockRcon(self):
+        try:
+            while self.lock:
+                pass
+            self.lock = True
+            yield self
+        except:
+            self.lock = False
+        finally:
+            self.lock = False
 
     def run(self):
         # pylint: disable=protected-access
@@ -42,22 +57,25 @@ class AstroRCON():
 
     def DSListPlayers(self):
         try:
-            self.socket.sendall(b"DSListPlayers\n")
-            rawdata = AstroRCON.recvall(self.socket)
-            parsedData = AstroRCON.parseData(rawdata)
-            # pprint(parsedData)
-            return parsedData
+            with self.lockRcon() as s:
+                s.socket.sendall(b"DSListPlayers\n")
+                rawdata = AstroRCON.recvall(s.socket)
+                parsedData = AstroRCON.parseData(rawdata)
+                # pprint(parsedData)
+                return parsedData
         except Exception as e:
             print(f"Error retrieving player list: {e}")
             return None
 
     def DSKickPlayerGuid(self, playerGuid):
         try:
-            self.socket.sendall(f'DSKickPlayerGuid {playerGuid}\n'.encode())
-            rawdata = AstroRCON.recvall(self.socket)
-            parsedData = AstroRCON.parseData(rawdata)
-            # pprint(parsedData)
-            return parsedData
+            with self.lockRcon() as s:
+                s.socket.sendall(
+                    f'DSKickPlayerGuid {playerGuid}\n'.encode())
+                rawdata = AstroRCON.recvall(s.socket)
+                parsedData = AstroRCON.parseData(rawdata)
+                # pprint(parsedData)
+                return parsedData
         except Exception as e:
             print(f"Error kicking player: {e}")
             return None
@@ -65,49 +83,53 @@ class AstroRCON():
     def DSSetPlayerCategoryForPlayerName(self, playerName, category):
         try:
             escapedName = playerName.replace('"', '\\"')
-            self.socket.sendall(
-                f'DSSetPlayerCategoryForPlayerName "{escapedName}" {category}\n'.encode())
-            rawdata = AstroRCON.recvall(self.socket)
-            parsedData = AstroRCON.parseData(rawdata)
-            # pprint(parsedData)
-            return parsedData
+            with self.lockRcon() as s:
+                s.socket.sendall(
+                    f'DSSetPlayerCategoryForPlayerName "{escapedName}" {category}\n'.encode())
+                rawdata = AstroRCON.recvall(s.socket)
+                parsedData = AstroRCON.parseData(rawdata)
+                # pprint(parsedData)
+                return parsedData
         except:  # Exception as e:
             # print(e)
             return None
 
     def DSServerStatistics(self):
         try:
-            self.socket.sendall(b"DSServerStatistics\n")
-            rawdata = AstroRCON.recvall(self.socket)
-            parsedData = AstroRCON.parseData(rawdata)
-            # pprint(parsedData)
-            return parsedData
+            with self.lockRcon() as s:
+                s.socket.sendall(b"DSServerStatistics\n")
+                rawdata = AstroRCON.recvall(s.socket)
+                parsedData = AstroRCON.parseData(rawdata)
+                # pprint(parsedData)
+                return parsedData
         except Exception as e:
             print(f"Error retrieving server statistics: {e}")
             return None
 
     def DSSaveGame(self, name=None):
         try:
-            if name is not None:
-                self.socket.sendall(f"DSSaveGame {name}\n".encode())
-            else:
-                self.socket.sendall(b"DSSaveGame\n")
-            rawdata = AstroRCON.recvall(self.socket)
-            parsedData = AstroRCON.parseData(rawdata)
-            # pprint(parsedData)
-            return parsedData
+            with self.lockRcon() as s:
+                if name is not None:
+                    s.socket.sendall(f"DSSaveGame {name}\n".encode())
+                else:
+                    s.socket.sendall(b"DSSaveGame\n")
+                rawdata = AstroRCON.recvall(s.socket)
+                parsedData = AstroRCON.parseData(rawdata)
+                # pprint(parsedData)
+                return parsedData
         except:  # Exception as e:
             # print(e)
             return None
 
     def DSSetDenyUnlisted(self, state):
         try:
-            self.socket.sendall(
-                f'DSSetDenyUnlisted {state}\n'.encode())
-            rawdata = AstroRCON.recvall(self.socket)
-            parsedData = AstroRCON.parseData(rawdata)
-            # pprint(parsedData)
-            return parsedData
+            with self.lockRcon() as s:
+                s.socket.sendall(
+                    f'DSSetDenyUnlisted {state}\n'.encode())
+                rawdata = AstroRCON.recvall(s.socket)
+                parsedData = AstroRCON.parseData(rawdata)
+                # pprint(parsedData)
+                return parsedData
         except:  # Exception as e:
             # print(e)
             return None
@@ -125,18 +147,20 @@ class AstroRCON():
 
     def DSListGames(self):
         try:
-            self.socket.sendall(b"DSListGames\n")
-            rawdata = AstroRCON.recvall(self.socket)
-            parsedData = AstroRCON.parseData(rawdata)
-            # pprint(parsedData)
-            return parsedData
+            with self.lockRcon() as s:
+                s.socket.sendall(b"DSListGames\n")
+                rawdata = AstroRCON.recvall(s.socket)
+                parsedData = AstroRCON.parseData(rawdata)
+                # pprint(parsedData)
+                return parsedData
         except Exception as e:
             print(f"Error retrieving savegame list: {e}")
             return None
 
     def DSNewGame(self):
         try:
-            self.socket.sendall(b"DSNewGame\n")
+            with self.lockRcon() as s:
+                s.socket.sendall(b"DSNewGame\n")
             # pprint(parsedData)
             return True
         except:  # Exception as e:
@@ -145,11 +169,12 @@ class AstroRCON():
 
     def DSLoadGame(self, name):
         try:
-            self.socket.sendall(f'DSLoadGame {name}\n'.encode())
-            rawdata = AstroRCON.recvall(self.socket)
-            parsedData = AstroRCON.parseData(rawdata)
-            # pprint(parsedData)
-            return parsedData
+            with self.lockRcon() as s:
+                s.socket.sendall(f'DSLoadGame {name}\n'.encode())
+                rawdata = AstroRCON.recvall(s.socket)
+                parsedData = AstroRCON.parseData(rawdata)
+                # pprint(parsedData)
+                return parsedData
         except:  # Exception as e:
             # print(e)
             return None

@@ -1,0 +1,41 @@
+{% if isAdmin %}
+<div id="saveGamesRow" class="card mb-3 astroCard">
+    <div
+        class="card-header py-2 px-4"
+        data-toggle="collapse"
+        data-target="#saveGamesCardBody"
+        aria-expanded="true"
+        aria-controls="saveGamesCardBody"
+    >
+        <h4 class="mb-0">
+            <span class="collapseArrows pr-2"></span>
+            Save Games
+            <button
+                id="newSaveBtn"
+                type="button"
+                class="btn btn-success col-12 col-lg-5 col-xl-4 float-right"
+            >
+                Load New Save
+            </button>
+        </h4>
+    </div>
+    <div id="saveGamesCardBody" class="card-body pt-0 collapse show">
+        <div class="table-responsive">
+            <table id="saveGamesTable" class="table table-dark table-striped">
+                <thead>
+                    <tr>
+                        <th class="d-md-none p-1"></th>
+                        <th class="d-none d-md-table-cell">Active</th>
+                        <th>Save Name</th>
+                        <th>Last Saved</th>
+                        <th>Creative</th>
+                        <th>Size</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% end %}

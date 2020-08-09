@@ -1,0 +1,19 @@
+{% if isAdmin %}
+<div id="console" class="card mb-3 astroCard">
+    <div
+        class="card-header py-2 px-4"
+        data-toggle="collapse"
+        data-target="#consoleTextCardBody"
+        aria-expanded="true"
+        aria-controls="consoleTextCardBody"
+    >
+        <h4 class="mb-0">
+            <span class="collapseArrows pr-2"></span>Console
+            <i class="fa fa-download" aria-hidden="true"></i>
+        </h4>
+    </div>
+    <div id="consoleTextCardBody" class="card-body pt-0 collapse show">
+        <div id="consoleText"></div>
+    </div>
+</div>
+{% end %}

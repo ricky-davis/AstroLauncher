@@ -4,78 +4,6 @@ let apiURL = "/api";
 let playersTableOriginal = $("#onlinePlayersTable").html();
 let saveGamesTableOriginal = $("#saveGamesTable").html();
 
-let oldMsg = "";
-let oldSettings = {};
-let oldPlayers = {};
-let oldSaves = {};
-let oViewCount = "";
-let oInstanceID = "";
-let isAdmin = false;
-
-const statusMsg = (msg) => {
-    if (oldMsg != msg) {
-        oldMsg = msg;
-        $("#serverStatus").removeClass(
-            "text-success text-warning text-danger text-info"
-        );
-        if (msg == "off") {
-            $("#serverStatus").text("Offline");
-            $("#serverStatus").addClass("text-danger");
-            $("#msg h5").text("Server is offline");
-            $("#msg").collapse("show");
-        } else if (msg == "shutdown") {
-            $("#serverStatus").text("Shutting Down");
-            $("#serverStatus").addClass("text-danger");
-            $("#msg h5").text("Server is shutting down");
-            $("#msg").collapse("hide");
-        } else if (msg == "starting") {
-            $("#serverStatus").text("Starting");
-            $("#serverStatus").addClass("text-warning");
-            $("#msg h5").text("Server is getting ready");
-            $("#msg").collapse("show");
-        } else if (msg == "saving") {
-            $("#serverStatus").text("Saving");
-            $("#serverStatus").addClass("text-info");
-            $("#msg h5").text("Server is saving");
-            $("#msg").collapse("hide");
-        } else if (msg == "reboot") {
-            $("#serverStatus").text("Rebooting");
-            $("#serverStatus").addClass("text-info");
-            $("#msg h5").text("Server is rebooting");
-            $("#msg").collapse("hide");
-        } else if (msg == "ready") {
-            $("#serverStatus").text("Ready");
-            $("#serverStatus").addClass("text-success");
-            $("#msg h5").text("Server is ready");
-            $("#msg").collapse("hide");
-        } else if (msg == "delsave") {
-            $("#serverStatus").text("Deleting Save");
-            $("#serverStatus").addClass("text-danger");
-            $("#msg h5").text("Server is deleting a Save");
-            $("#msg").collapse("hide");
-        } else if (msg == "loadsave") {
-            $("#serverStatus").text("Loading Save");
-            $("#serverStatus").addClass("text-warning");
-            $("#msg h5").text("Server is loading a Save");
-            $("#msg").collapse("hide");
-        } else if (msg == "newsave") {
-            $("#serverStatus").text("Creating New Save");
-            $("#serverStatus").addClass("text-success");
-            $("#msg h5").text("Server is creating a new Save");
-            $("#msg").collapse("hide");
-        } else if (msg == "renamesave") {
-            $("#serverStatus").text("Renaming Save");
-            $("#serverStatus").addClass("text-warning");
-            $("#msg h5").text("Server is renaming a Save");
-            $("#msg").collapse("hide");
-        }
-    }
-};
-const compareObj = (obj1, obj2) => {
-    return JSON.stringify(obj1) === JSON.stringify(obj2);
-};
-
-let logList = [];
 let webSocket = null;
 const createWebSocket = async () => {
     let WSprotocol = location.protocol == "https:" ? "wss" : "ws";
@@ -98,6 +26,79 @@ createWebSocket();
 
 setInterval(checkWebSocket, 5000);
 
+let oldMsg = "";
+let oldSettings = {};
+let oldPlayers = {};
+let oldSaves = {};
+let oViewCount = "";
+let oInstanceID = "";
+let isAdmin = false;
+
+const statusMsg = (msg) => {
+    if (oldMsg != msg) {
+        oldMsg = msg;
+        $("#serverStatus").removeClass(
+            "text-success text-warning text-danger text-info"
+        );
+        if (msg == "off") {
+            $("#serverStatus").text("Offline");
+            $("#serverStatus").addClass("text-danger");
+            $("#msg span").text("Server is offline");
+            $("#msg").collapse("show");
+        } else if (msg == "shutdown") {
+            $("#serverStatus").text("Shutting Down");
+            $("#serverStatus").addClass("text-danger");
+            $("#msg span").text("Server is shutting down");
+            $("#msg").collapse("hide");
+        } else if (msg == "reboot") {
+            $("#serverStatus").text("Rebooting");
+            $("#serverStatus").addClass("text-info");
+            $("#msg span").text("Server is rebooting");
+            $("#msg").collapse("hide");
+        } else if (msg == "starting") {
+            $("#serverStatus").text("Starting");
+            $("#serverStatus").addClass("text-warning");
+            $("#msg span").text("Server is getting ready");
+            $("#msg").collapse("show");
+        } else if (msg == "saving") {
+            $("#serverStatus").text("Saving");
+            $("#serverStatus").addClass("text-info");
+            $("#msg span").text("Server is saving");
+            $("#msg").collapse("hide");
+        } else if (msg == "ready") {
+            $("#serverStatus").text("Ready");
+            $("#serverStatus").addClass("text-success");
+            $("#msg span").text("Server is ready");
+            $("#msg").collapse("hide");
+        } else if (msg == "delsave") {
+            $("#serverStatus").text("Deleting Save");
+            $("#serverStatus").addClass("text-danger");
+            $("#msg span").text("Server is deleting a Save");
+            $("#msg").collapse("hide");
+        } else if (msg == "loadsave") {
+            $("#serverStatus").text("Loading Save");
+            $("#serverStatus").addClass("text-warning");
+            $("#msg span").text("Server is loading a Save");
+            $("#msg").collapse("hide");
+        } else if (msg == "newsave") {
+            $("#serverStatus").text("Creating New Save");
+            $("#serverStatus").addClass("text-success");
+            $("#msg span").text("Server is creating a new Save");
+            $("#msg").collapse("hide");
+        } else if (msg == "renamesave") {
+            $("#serverStatus").text("Renaming Save");
+            $("#serverStatus").addClass("text-warning");
+            $("#msg span").text("Server is renaming a Save");
+            $("#msg").collapse("hide");
+        }
+    }
+};
+const compareObj = (obj1, obj2) => {
+    return JSON.stringify(obj1) === JSON.stringify(obj2);
+};
+
+let logList = [];
+
 const tick = async (data) => {
     if (data == {}) {
         return;
@@ -105,7 +106,13 @@ const tick = async (data) => {
     data = JSON.parse(data);
     console.log(data);
     try {
-        statusMsg(data.status);
+        if (
+            (oldMsg == "shutdown" || oldMsg == "reboot") &&
+            data.status == "ready"
+        ) {
+        } else {
+            statusMsg(data.status);
+        }
         if (oInstanceID === "") {
             oInstanceID = data.instanceID;
         }
@@ -329,7 +336,7 @@ const tick = async (data) => {
         }
     } catch (e) {
         console.log(e);
-        $("#msg h5").text("ERROR! Try again in 10s");
+        $("#msg span").text("ERROR! Try again in 10s");
         $("#msg").collapse("show");
         statusMsg("off");
     }

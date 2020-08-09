@@ -5,6 +5,7 @@ import logging
 import os
 import secrets
 import sys
+import time
 import uuid
 #from pprint import pprint
 from threading import Thread
@@ -108,12 +109,23 @@ class WebServer(tornado.web.Application):
                 f"SECURITY ALERT: Visit {url} to set your password!", "warning")
         tornado.ioloop.IOLoop.instance().start()
 
+    def autoUpdateLoop(self):
+        while True:
+            time.sleep(1)
+            self.iterWebSocketConnections()
+
     def iterWebSocketConnections(self, force=False):
-        if len(self.connections) > 0:
-            if self.iterTimer is None or (datetime.datetime.now() - self.iterTimer).total_seconds() > 1:
-                for _, conn in self.connections.items():
-                    conn[1].check_data_change(force=force)
-                self.iterTimer = datetime.datetime.now()
+        try:
+            if len(self.connections) > 0:
+                if self.iterTimer is None or (datetime.datetime.now() - self.iterTimer).total_seconds() > 1:
+                    for _, conn in self.connections.items():
+                        try:
+                            conn[1].check_data_change(force=force)
+                        except:
+                            pass
+                    self.iterTimer = datetime.datetime.now()
+        except:
+            pass
 
     @staticmethod
     def get_client_id(handler):
@@ -314,11 +326,10 @@ class SaveRequestHandler(BaseHandler):
     def post(self):
         self.WS.get_client_id(self)
         if self.current_user == b"admin":
-            if not self.launcher.DedicatedServer.busy:
-                t = Thread(
-                    target=self.launcher.DedicatedServer.saveGame, args=())
-                t.daemon = True
-                t.start()
+            t = Thread(
+                target=self.launcher.DedicatedServer.saveGame, args=())
+            t.daemon = True
+            t.start()
             self.write({"message": "Success"})
         else:
             self.write({"message": "Not Authenticated"})
@@ -328,11 +339,10 @@ class NewSaveRequestHandler(BaseHandler):
     def post(self):
         self.WS.get_client_id(self)
         if self.current_user == b"admin":
-            if not self.launcher.DedicatedServer.busy:
-                t = Thread(
-                    target=self.launcher.DedicatedServer.newSaveGame, args=())
-                t.daemon = True
-                t.start()
+            t = Thread(
+                target=self.launcher.DedicatedServer.newSaveGame, args=())
+            t.daemon = True
+            t.start()
             self.write({"message": "Success"})
         else:
             self.write({"message": "Not Authenticated"})
@@ -342,17 +352,16 @@ class LoadSaveRequestHandler(BaseHandler):
     def post(self):
         self.WS.get_client_id(self)
         if self.current_user == b"admin":
-            if not self.launcher.DedicatedServer.busy:
-                data = tornado.escape.json_decode(self.request.body)
-                if "name" in data and data["name"] is not None:
-                    saveName = data["name"]
-                    saveName = data["name"]
-                    GL = self.launcher.DedicatedServer.DSListGames
-                    if saveName != GL['activeSaveName']:
-                        t = Thread(
-                            target=self.launcher.DedicatedServer.loadSaveGame, args=(saveName,))
-                        t.daemon = True
-                        t.start()
+            data = tornado.escape.json_decode(self.request.body)
+            if "name" in data and data["name"] is not None:
+                saveName = data["name"]
+                saveName = data["name"]
+                GL = self.launcher.DedicatedServer.DSListGames
+                if saveName != GL['activeSaveName']:
+                    t = Thread(
+                        target=self.launcher.DedicatedServer.loadSaveGame, args=(saveName,))
+                    t.daemon = True
+                    t.start()
             self.write({"message": "Success"})
         else:
             self.write({"message": "Not Authenticated"})
@@ -362,16 +371,15 @@ class DeleteSaveRequestHandler(BaseHandler):
     def post(self):
         self.WS.get_client_id(self)
         if self.current_user == b"admin":
-            if not self.launcher.DedicatedServer.busy:
-                data = tornado.escape.json_decode(self.request.body)
-                if "name" in data and data["name"] is not None:
-                    saveName = data["name"]
-                    GL = self.launcher.DedicatedServer.DSListGames
-                    if saveName != GL['activeSaveName']:
-                        t = Thread(
-                            target=self.launcher.DedicatedServer.deleteSaveGame, args=(saveName,))
-                        t.daemon = True
-                        t.start()
+            data = tornado.escape.json_decode(self.request.body)
+            if "name" in data and data["name"] is not None:
+                saveName = data["name"]
+                GL = self.launcher.DedicatedServer.DSListGames
+                if saveName != GL['activeSaveName']:
+                    t = Thread(
+                        target=self.launcher.DedicatedServer.deleteSaveGame, args=(saveName,))
+                    t.daemon = True
+                    t.start()
             self.write({"message": "Success"})
         else:
             self.write({"message": "Not Authenticated"})
@@ -382,19 +390,18 @@ class RenameSaveRequestHandler(BaseHandler):
         self.WS.get_client_id(self)
         fData = False
         if self.current_user == b"admin":
-            if not self.launcher.DedicatedServer.busy:
-                data = tornado.escape.json_decode(self.request.body)
-                if "nName" in data and data["nName"] is not None and "oName" in data and data["oName"] is not None:
-                    oldSaveName = data["oName"]
-                    newSaveName = data["nName"]
+            data = tornado.escape.json_decode(self.request.body)
+            if "nName" in data and data["nName"] is not None and "oName" in data and data["oName"] is not None:
+                oldSaveName = data["oName"]
+                newSaveName = data["nName"]
 
-                    if pathvalidate.is_valid_filename(oldSaveName) and pathvalidate.is_valid_filename(newSaveName):
-                        GL = self.launcher.DedicatedServer.DSListGames
-                        if newSaveName not in [x['name'] for x in GL['gameList']]:
-                            t = Thread(
-                                target=self.launcher.DedicatedServer.renameSaveGame, args=(oldSaveName, newSaveName))
-                            t.daemon = True
-                            t.start()
+                if pathvalidate.is_valid_filename(oldSaveName) and pathvalidate.is_valid_filename(newSaveName):
+                    GL = self.launcher.DedicatedServer.DSListGames
+                    if newSaveName not in [x['name'] for x in GL['gameList']]:
+                        t = Thread(
+                            target=self.launcher.DedicatedServer.renameSaveGame, args=(oldSaveName, newSaveName))
+                        t.daemon = True
+                        t.start()
                     else:
                         fData = True
                 else:
@@ -416,11 +423,10 @@ class RebootRequestHandler(BaseHandler):
     def post(self):
         self.WS.get_client_id(self)
         if self.current_user == b"admin":
-            if not self.launcher.DedicatedServer.busy:
-                t = Thread(
-                    target=self.launcher.DedicatedServer.save_and_shutdown, args=())
-                t.daemon = True
-                t.start()
+            t = Thread(
+                target=self.launcher.DedicatedServer.save_and_shutdown, args=())
+            t.daemon = True
+            t.start()
             self.write({"message": "Success"})
         else:
             self.write({"message": "Not Authenticated"})
@@ -430,11 +436,10 @@ class ShutdownRequestHandler(BaseHandler):
     def post(self):
         self.WS.get_client_id(self)
         if self.current_user == b"admin":
-            if not self.launcher.DedicatedServer.busy:
-                t = Thread(
-                    target=self.launcher.DedicatedServer.kill_server, args=("Website Request", True))
-                t.daemon = True
-                t.start()
+            t = Thread(
+                target=self.launcher.DedicatedServer.kill_server, args=("Website Request", True))
+            t.daemon = True
+            t.start()
             self.write({"message": "Success"})
         else:
             self.write({"message": "Not Authenticated"})

@@ -203,17 +203,18 @@ class AstroLauncher():
         if disable_auto_update is not None:
             self.launcherConfig.DisableAutoUpdate = disable_auto_update
         self.version = "v1.6.0"
-        vText = "Version " + self.version[1:]
-
-        # pylint: disable=anomalous-backslash-in-string
-        print(" _____________________________________________________________________________________\n" +
-              "|     _          _                 _                                _                 |\n" +
-              "|    /_\    ___ | |_   _ _   ___  | |     __ _   _  _   _ _    __  | |_    ___   _ _  |\n" +
-              "|   / _ \  (_-< |  _| | '_| / _ \ | |__  / _` | | || | | ' \  / _| | ' \  / -_) | '_| |\n" +
-              "|  /_/ \_\ /__/  \__| |_|   \___/ |____| \__,_|  \_,_| |_||_| \__| |_||_| \___| |_|   |\n" +
-              "|                                                                                     |\n" +
-              "|"+vText.center(85)+"|\n" +
-              "|_____________________________________________________________________________________|")
+        colsize = os.get_terminal_size().columns
+        if colsize >= 77:
+            vText = "Version " + self.version[1:]
+            # pylint: disable=anomalous-backslash-in-string
+            print(" __________________________________________________________________________\n" +
+                  "|     _        _               _                           _               |\n" +
+                  "|    /_\   ___| |_  _ _  ___  | |    __ _  _  _  _ _   __ | |_   ___  _ _  |\n" +
+                  "|   / _ \ (_-<|  _|| '_|/ _ \ | |__ / _` || || || ' \ / _|| ' \ / -_)| '_| |\n" +
+                  "|  /_/ \_\/__/ \__||_|  \___/ |____|\__,_| \_,_||_||_|\__||_||_|\___||_|   |\n" +
+                  "|                                                                          |\n" +
+                  "|"+vText.center(74)+"|\n" +
+                  "|__________________________________________________________________________|")
 
         AstroLogging.logPrint(
             f"AstroLauncher - Unofficial Dedicated Server Launcher {self.version}")
@@ -223,6 +224,7 @@ class AstroLauncher():
             "https://github.com/ricky-davis/AstroLauncher/issues")
         AstroLogging.logPrint(
             "To safely stop the launcher and server press CTRL+C")
+
         self.latestURL = "https://github.com/ricky-davis/AstroLauncher/releases/latest"
         bName = os.path.basename(sys.executable)
         if sys.argv[0] == os.path.splitext(bName)[0]:
@@ -274,6 +276,7 @@ class AstroLauncher():
         if not self.launcherConfig.DisableWebServer:
             # start http server
             self.webServer = self.start_WebServer()
+            self.start_WebSocketLoop()
             # AstroLogging.logPrint(
             #    f"HTTP Server started at 127.0.0.1:{self.launcherConfig.WebServerPort}")
 
@@ -602,6 +605,18 @@ class AstroLauncher():
         t.daemon = True
         t.start()
         return ws
+
+    def start_WebSocketLoop(self):
+        def start_WSLoopThread(self):
+            if sys.version_info.minor > 7:
+                asyncio.set_event_loop_policy(
+                    asyncio.WindowsSelectorEventLoopPolicy())
+            asyncio.set_event_loop(asyncio.new_event_loop())
+            self.webServer.autoUpdateLoop()
+
+        t = Thread(target=start_WSLoopThread, args=(self,))
+        t.daemon = True
+        t.start()
 
     def kill_launcher(self):
         time.sleep(5)
