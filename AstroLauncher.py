@@ -4,13 +4,13 @@ import atexit
 import ctypes
 import dataclasses
 import os
-import signal
 import shutil
+import signal
 import subprocess
 import sys
 import time
-from threading import Thread
 from subprocess import DEVNULL
+from threading import Thread
 
 import psutil
 import requests

@@ -1,9 +1,9 @@
 
-import requests
 import os
-import winreg
 import re
+import winreg
 
+import requests
 
 base_headers = {'Content-Type': 'application/json; charset=utf-8',
                 'X-PlayFabSDK': 'UE4MKPL-1.19.190610',

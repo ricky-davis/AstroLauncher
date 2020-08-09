@@ -1,7 +1,6 @@
 
 import json
 import socket
-
 from contextlib import contextmanager
 
 from cogs.AstroLogging import AstroLogging

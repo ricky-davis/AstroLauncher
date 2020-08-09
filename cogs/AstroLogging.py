@@ -6,6 +6,7 @@ import sys
 from io import StringIO
 from logging.handlers import TimedRotatingFileHandler
 from pprint import pformat
+
 from colorlog import ColoredFormatter
 
 
