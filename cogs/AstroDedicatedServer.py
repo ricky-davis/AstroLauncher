@@ -160,7 +160,11 @@ class AstroDedicatedServer():
                 time.sleep(0.1)
             self.DSListGames = tempSaveGames
             for save in self.DSListGames["gameList"]:
-                saveFileName = f"{save['name']}${save['date']}.savegame"
+                if save['bHasBeenFlaggedAsCreativeModeSave']:
+                    c = "c"
+                else:
+                    c = ""
+                saveFileName = f"{save['name']}${c}{save['date']}.savegame"
                 sfPath = os.path.join(saveGamePath, saveFileName)
                 size = AstroDedicatedServer.convert_size(
                     os.path.getsize(sfPath))
