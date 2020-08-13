@@ -232,6 +232,7 @@ const tick = async (data) => {
         } else {
             if (data.hasOwnProperty("savegames")) {
                 if (!compareObj(oldSaves, data.savegames)) {
+                    oldSaves = data.savegames;
                     $("#saveGamesTable").html(saveGamesTableOriginal);
                     if (data.savegames.hasOwnProperty("gameList")) {
                         let gameList = Object.create(data.savegames.gameList);
@@ -244,7 +245,9 @@ const tick = async (data) => {
                                     : -1
                                 : -1
                         );
-                        gameList.forEach((sg) => {
+                        oldSaves.gameList = gameList;
+                        gameList.forEach((sg, i) => {
+                            console.log(i);
                             let row = document.createElement("tr");
                             sg.active == "Active"
                                 ? $(row).addClass("activeSave")
@@ -256,7 +259,9 @@ const tick = async (data) => {
                             <td class="d-none d-md-table-cell">${DOMPurify.sanitize(
                                 sg.active
                             )}</td>
-                                <td><span data-name="${sg.name}" class="${
+                                <td><span data-name="${
+                                    sg.name
+                                }" data-index="${i}" class="${
                                 sg.active ? "" : "saveName"
                             }">${DOMPurify.sanitize(sg.name)}</span></td>
                                 <td>${DOMPurify.sanitize(sg.date)}</td>
@@ -264,12 +269,12 @@ const tick = async (data) => {
                                 <td>${DOMPurify.sanitize(sg.size)}</td>
                                 <td>${createSaveActionButtons(
                                     sg.active,
-                                    sg
+                                    sg,
+                                    i
                                 )}</td>`;
 
                             $("#saveGamesTable>tbody").append(row);
                         });
-                        oldSaves = data.savegames;
                     }
                 }
             }
@@ -342,7 +347,7 @@ const tick = async (data) => {
     }
 };
 
-const createSaveActionButtons = function (status, save) {
+const createSaveActionButtons = function (status, save, index) {
     dropDownDiv = $("<div/>").attr({ class: "btn-group dropup" });
     DDButton = $("<button/>")
         .attr({
@@ -364,6 +369,7 @@ const createSaveActionButtons = function (status, save) {
         type: "button",
         class: "dropdown-item p-1",
         "data-name": save.name,
+        "data-index": index,
     });
 
     actionButtonBufferList = [];
@@ -394,6 +400,9 @@ const createSaveActionButtons = function (status, save) {
     if (status == "Active") {
         loadButton.addClass("disabled");
         deleteButton.addClass("disabled");
+    }
+    if (!save.loadable) {
+        loadButton.addClass("disabled");
     }
 
     actionButtonBufferList.forEach((element) => {
@@ -489,7 +498,8 @@ $(document).on("input", "#WLPlayerInp", function (e) {
 
 $(document).on("click", "button[data-action='rename']", function (e) {
     oName = $(e.target).attr("data-name");
-    nameSpan = $(`span[data-name='${oName}']`);
+    oIndex = $(e.target).attr("data-index");
+    nameSpan = $(`span[data-index='${oIndex}']`);
     sName = nameSpan.text();
     swidth = nameSpan.width();
     parent = nameSpan.parent();
@@ -505,6 +515,7 @@ $(document).on("click", "button[data-action='rename']", function (e) {
         type: "text",
         class: "saveNameInput form-control",
         "data-saveOName": sName,
+        "data-saveOIndex": oIndex,
     });
     sInput.val(sName);
     sButton = $("<button/>")
@@ -512,6 +523,7 @@ $(document).on("click", "button[data-action='rename']", function (e) {
             type: "button",
             class: "saveNameSubmit btn btn-outline-secondary text-white",
             "data-saveOName": sName,
+            "data-saveOIndex": oIndex,
         })
         .text("✓");
     parent.html("");
@@ -528,6 +540,8 @@ $(document).on("click", ".saveNameSubmit", function (e) {
     sInput = parent.find(".saveNameInput");
     sName = sInput.val();
     oName = $(e.target).attr("data-saveOName");
+    sIndex = $(e.target).attr("data-saveOIndex");
+    sSave = oldSaves["gameList"][sIndex];
     if (sName.length < 3) {
         sName = oName;
     }
@@ -539,7 +553,7 @@ $(document).on("click", ".saveNameSubmit", function (e) {
             type: "POST",
             url: apiURL + "/savegame/rename",
             dataType: "json",
-            data: JSON.stringify({ oName: oName, nName: sName }),
+            data: JSON.stringify({ save: sSave, nName: sName }),
             success: function (result) {},
             error: function (result) {
                 console.log(result);
@@ -576,12 +590,14 @@ $(document).on("click", ".pBtn", function (e) {
 $(document).on("click", ".sBtn", function (e) {
     e.preventDefault();
     sName = $(e.target).attr("data-name");
+    sIndex = $(e.target).attr("data-index");
     sAction = $(e.target).attr("data-action");
+    sSave = oldSaves["gameList"][sIndex];
     $.ajax({
         type: "POST",
         url: apiURL + "/savegame/" + sAction,
         dataType: "json",
-        data: JSON.stringify({ name: sName }),
+        data: JSON.stringify({ save: sSave }),
         success: function (result) {},
         error: function (result) {
             console.log(result);
@@ -592,26 +608,20 @@ $(document).on("click", ".sBtn", function (e) {
 
 $("#deleteSaveModal").on("show.bs.modal", function (event) {
     var button = $(event.relatedTarget); // Button that triggered the modal
-    var saveName = button.data("name"); // Extract info from data-* attributes
+    var saveIndex = button.data("index"); // Extract info from data-* attributes
     // If necessary, you could initiate an AJAX request here (and then do the updating in a callback).
     // Update the modal's content. We'll use jQuery here, but you could use a data binding library or other methods instead.
-    var save = oldSaves["gameList"].find((obj) => {
-        return obj.name === saveName;
-    });
-    var fullSaveName = DOMPurify.sanitize(
-        save["name"] + "$" + save["date"] + ".savegame"
-    );
+    var save = oldSaves["gameList"][saveIndex];
     var modal = $(this);
     modal
         .find(".modal-title")
         .text("Are you sure you wish to delete this save? ");
-    modal
-        .find(".modal-body")
-        .text(DOMPurify.sanitize(fullSaveName + " -- " + save["size"]));
+    modal.find(".modal-body").text(DOMPurify.sanitize(save["fileName"]));
     modal
         .find(".modal-footer .btn-danger")
         .attr("data-action", "delete")
-        .attr("data-name", saveName);
+        .attr("data-name", save["name"])
+        .attr("data-index", saveIndex);
 });
 
 const saveLog = function (filename, data) {

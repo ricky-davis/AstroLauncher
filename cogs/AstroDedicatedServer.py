@@ -1,10 +1,10 @@
 
 import dataclasses
 import datetime
+import glob
 import json
 import math
 import os
-import re
 import subprocess
 import time
 
@@ -147,13 +147,35 @@ class AstroDedicatedServer():
         except:
             pass
 
+    def get_save_file_name(self, save):
+        saveGamePath = r"Astro\Saved\SaveGames"
+        saveGamePath = os.path.join(
+            self.astroPath, saveGamePath)
+
+        if save['bHasBeenFlaggedAsCreativeModeSave']:
+            c = "c"
+        else:
+            c = ""
+        if save['date']:
+            date = save['date']
+        else:
+            date = ""
+        saveFileName = (
+            glob.glob(saveGamePath + f"/{save['name']}${c}{date}.savegame"))
+        if len(saveFileName) > 0:
+            fullName = saveFileName[0]
+        else:
+            saveFileName = (
+                glob.glob(saveGamePath + f"/{save['name']}.savegame"))
+            if len(saveFileName) > 0:
+                fullName = saveFileName[0]
+        saveFileName = os.path.basename(fullName)
+        return fullName, saveFileName
+
     def getSaves(self):
         try:
             if not self.AstroRCON.connected:
                 return False
-            saveGamePath = r"Astro\Saved\SaveGames"
-            saveGamePath = os.path.join(
-                self.astroPath, saveGamePath)
             tempSaveGames = {}
             while tempSaveGames == {} and 'activeSaveName' not in tempSaveGames:
                 tempSaveGames = self.AstroRCON.DSListGames()
@@ -162,18 +184,24 @@ class AstroDedicatedServer():
             for save in self.DSListGames["gameList"]:
                 try:
                     try:
-                        if save['bHasBeenFlaggedAsCreativeModeSave']:
-                            c = "c"
-                        else:
-                            c = ""
-                        saveFileName = f"{save['name']}${c}{save['date']}.savegame"
-                        sfPath = os.path.join(saveGamePath, saveFileName)
+                        sfPath, saveFileName = self.get_save_file_name(save)
+                        if saveFileName:
+                            save['fileName'] = saveFileName
                         size = AstroDedicatedServer.convert_size(
                             os.path.getsize(sfPath))
                         save["size"] = size
                     except:
                         pass
-                    if save['name'] == self.DSListGames['activeSaveName']:
+                    multipleOfName = False
+                    hasDate = False
+                    if len([x for x in self.DSListGames["gameList"] if x['name'] == save['name']]) > 1:
+                        multipleOfName = True
+                        hasDate = save['date'] != ""
+
+                    save['loadable'] = (
+                        (multipleOfName and hasDate) or not multipleOfName)
+
+                    if save['name'] == self.DSListGames['activeSaveName'] and ((multipleOfName and hasDate) or not multipleOfName):
                         save['active'] = "Active"
                     else:
                         save['active'] = ""
@@ -205,11 +233,12 @@ class AstroDedicatedServer():
         self.getSaves()
         self.busy = False
 
-    def loadSaveGame(self, name):
+    def loadSaveGame(self, saveData):
         if not self.AstroRCON.connected:
             return False
         self.setStatus("loadsave")
         self.busy = "LoadSave"
+        name = saveData['name']
         if pathvalidate.is_valid_filename(name):
             # time.sleep(1)
             AstroLogging.logPrint(f"Loading save: {name}")
@@ -217,68 +246,52 @@ class AstroDedicatedServer():
         self.getSaves()
         self.busy = False
 
-    def deleteSaveGame(self, name):
+    def deleteSaveGame(self, saveData):
         if not self.AstroRCON.connected:
             return False
+        name = saveData['name']
         if pathvalidate.is_valid_filename(name):
             self.setStatus("delsave")
             self.busy = "DelSave"
             saveGamePath = r"Astro\Saved\SaveGames"
-            saveGamePath = os.path.join(
-                self.astroPath, saveGamePath)
-            save = [x for x in self.DSListGames['gameList'] if x['name'] == name]
-            if len(save) > 0:
-                save = save[0]
-                if save['bHasBeenFlaggedAsCreativeModeSave']:
-                    c = "c"
-                else:
-                    c = ""
-                saveFileName = f"{save['name']}${c}{save['date']}.savegame"
-                sfPath = os.path.join(saveGamePath, saveFileName)
-                # time.sleep(1)
-                AstroLogging.logPrint(f"Deleting save: {saveFileName}")
-                if os.path.exists(sfPath):
-                    os.remove(sfPath)
+            AstroLogging.logPrint(f"Deleting save: {saveData['fileName']}")
+            sfPath = os.path.join(
+                self.astroPath, saveGamePath, saveData['fileName'])
+            if os.path.exists(sfPath):
+                os.remove(sfPath)
         self.getSaves()
         self.busy = False
 
-    def renameSaveGame(self, oldName, newName):
+    def renameSaveGame(self, oldSave, newName):
         if not self.AstroRCON.connected:
             return False
         self.setStatus("renamesave")
         self.busy = "RenameSave"
-        if pathvalidate.is_valid_filename(oldName) and pathvalidate.is_valid_filename(newName):
+        if pathvalidate.is_valid_filename(oldSave['name']) and pathvalidate.is_valid_filename(newName):
             saveGamePath = r"Astro\Saved\SaveGames"
-            saveGamePath = os.path.join(
-                self.astroPath, saveGamePath)
-            save = [x for x in self.DSListGames['gameList']
-                    if x['name'] == oldName]
-            if len(save) > 0:
-                save = save[0]
-                AstroLogging.logPrint(
-                    f"Renaming save: {save['name']} to {newName}")
-                if save['name'] == self.DSListGames['activeSaveName']:
-                    self.saveGame(newName)
-                    saveFileName = f"{save['name']}${save['date']}.savegame"
-                    sfPath = os.path.join(saveGamePath, saveFileName)
-                    fList = os.listdir(saveGamePath)
-
-                    reg = re.compile(newName+r"\$.+\.savegame")
-                    nSave = [x for x in fList
-                             if bool(re.match(reg, x))]
-                    if len(nSave) > 0:
-                        nSave = nSave[0]
-                        sfNPath = os.path.join(saveGamePath, nSave)
-                        if os.path.exists(sfNPath) and os.path.exists(sfPath):
-                            os.remove(sfPath)
-                else:
-                    saveFileName = f"{save['name']}${save['date']}.savegame"
-                    sfPath = os.path.join(saveGamePath, saveFileName)
-                    newSaveFileName = f"{newName}${save['date']}.savegame"
-                    sfNPath = os.path.join(saveGamePath, newSaveFileName)
-                    # time.sleep(1)
-                    if os.path.exists(sfPath):
-                        os.rename(sfPath, sfNPath)
+            saveGamePath = os.path.join(self.astroPath, saveGamePath)
+            AstroLogging.logPrint(
+                f"Renaming save: {oldSave['name']} to {newName}")
+            if oldSave['name'] == self.DSListGames['activeSaveName']:
+                self.saveGame(newName)
+                sfPath = os.path.join(saveGamePath, oldSave['fileName'])
+                self.getSaves()
+                newSave = [x for x in self.DSListGames['gameList']
+                           if x['name'] == newName]
+                if newSave:
+                    newSave = newSave[0]
+                    sfNPath = os.path.join(saveGamePath, newSave['fileName'])
+                    if os.path.exists(sfNPath) and os.path.exists(sfPath):
+                        os.remove(sfPath)
+            else:
+                saveFileName = oldSave['fileName']
+                sfPath = os.path.join(saveGamePath, saveFileName)
+                newSaveFileName = saveFileName.replace(
+                    oldSave['name'], newName)
+                sfNPath = os.path.join(saveGamePath, newSaveFileName)
+                # time.sleep(1)
+                if os.path.exists(sfPath) and not os.path.exists(sfNPath):
+                    os.rename(sfPath, sfNPath)
 
         self.getSaves()
         self.busy = False
