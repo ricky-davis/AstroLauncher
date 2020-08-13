@@ -378,18 +378,18 @@ class AstroDedicatedServer():
 
                 hbTryCount = 0
                 while hbStatus['status'] == "Unauthorized":
-                    hbTryCount += 1
-                    self.launcher.headers['X-Authorization'] = AstroAPI.generate_XAUTH(
-                        self.settings.ServerGuid)
-                    self.lastXAuth = datetime.datetime.now()
-                    hbStatus = AstroAPI.heartbeat_server(
-                        self.serverData, self.launcher.headers, {"serverName": json.dumps(hbServerName)})
                     if hbTryCount > 3:
                         self.kill_server(
                             reason="Server was unable to heartbeat, restarting...",
                             save=True, killLauncher=False)
                         time.sleep(5)
                         return self.launcher.start_server()
+                    self.launcher.headers['X-Authorization'] = AstroAPI.generate_XAUTH(
+                        self.settings.ServerGuid)
+                    self.lastXAuth = datetime.datetime.now()
+                    hbStatus = AstroAPI.heartbeat_server(
+                        self.serverData, self.launcher.headers, {"serverName": json.dumps(hbServerName)})
+                    hbTryCount += 1
                     time.sleep(5)
 
                 self.lastHeartbeat = datetime.datetime.now()
