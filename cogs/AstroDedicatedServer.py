@@ -65,6 +65,7 @@ class AstroDedicatedServer():
         self.serverData = None
         self.lastHeartbeat = None
         self.LobbyID = None
+        self.lastXAuth = datetime.datetime.now()
         self.serverGUID = self.settings.ServerGuid if self.settings.ServerGuid != '' else "REGISTER"
         if self.launcher.launcherConfig.EnableAutoRestart:
             self.syncRestartTime = self.launcher.launcherConfig.AutoRestartSyncTimestamp
@@ -361,14 +362,35 @@ class AstroDedicatedServer():
                     "Server was closed. Restarting..")
                 return self.launcher.start_server()
 
+            if self.lastXAuth is None or (datetime.datetime.now() - self.lastXAuth).total_seconds() > 3600:
+                self.launcher.headers['X-Authorization'] = AstroAPI.generate_XAUTH(
+                    self.settings.ServerGuid)
+                self.lastXAuth = datetime.datetime.now()
+
             if self.lastHeartbeat is None or (datetime.datetime.now() - self.lastHeartbeat).total_seconds() > 30:
                 hbServerName = {"customdata": {
                     "ServerName": self.settings.ServerName,
                     "ServerType": ("AstroLauncherEXE" if self.launcher.isExecutable else "AstroLauncherPy") + f" {self.launcher.version}",
                     "ServerPaks": self.pakList
                 }}
-                AstroAPI.heartbeat_server(
+                hbStatus = AstroAPI.heartbeat_server(
                     self.serverData, self.launcher.headers, {"serverName": json.dumps(hbServerName)})
+
+                hbTryCount = 0
+                while hbStatus['status'] == "Unauthorized":
+                    hbTryCount += 1
+                    self.launcher.headers['X-Authorization'] = AstroAPI.generate_XAUTH(
+                        self.settings.ServerGuid)
+                    self.lastXAuth = datetime.datetime.now()
+                    hbStatus = AstroAPI.heartbeat_server(
+                        self.serverData, self.launcher.headers, {"serverName": json.dumps(hbServerName)})
+                    if hbTryCount > 3:
+                        self.kill_server(
+                            reason="Server was unable to heartbeat, restarting...",
+                            save=True, killLauncher=False)
+                        time.sleep(5)
+                        return self.launcher.start_server()
+                    time.sleep(5)
 
                 self.lastHeartbeat = datetime.datetime.now()
 
@@ -448,7 +470,7 @@ class AstroDedicatedServer():
             return [x['LobbyID'] for x in servers_registered]
         return []
 
-    def kill_server(self, reason, save=False):
+    def kill_server(self, reason, save=False, killLauncher=True):
         AstroLogging.logPrint(f"Kill Server: {reason}")
         try:
             self.busy = "Kill"
@@ -480,6 +502,7 @@ class AstroDedicatedServer():
             pass
         # Kill current process
         try:
-            os.kill(os.getpid(), 9)
+            if killLauncher:
+                os.kill(os.getpid(), 9)
         except:
             pass
