@@ -272,7 +272,7 @@ class AstroDedicatedServer():
             saveGamePath = os.path.join(self.astroPath, saveGamePath)
             AstroLogging.logPrint(
                 f"Renaming save: {oldSave['name']} to {newName}")
-            if oldSave['name'] == self.DSListGames['activeSaveName']:
+            if oldSave['active']:
                 self.saveGame(newName)
                 sfPath = os.path.join(saveGamePath, oldSave['fileName'])
                 self.getSaves()
