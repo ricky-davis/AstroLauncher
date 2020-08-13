@@ -151,6 +151,7 @@ class AstroDedicatedServer():
         saveGamePath = r"Astro\Saved\SaveGames"
         saveGamePath = os.path.join(
             self.astroPath, saveGamePath)
+        fullName = None
 
         if save['bHasBeenFlaggedAsCreativeModeSave']:
             c = "c"

@@ -442,6 +442,7 @@ class AstroLauncher():
             executable=self.isExecutable, consolePID=self.DedicatedServer.process.pid)
 
         # Wait for server to finish registering...
+        serverData = None
         while not self.DedicatedServer.registered:
             try:
                 serverData = (AstroAPI.get_server(
@@ -455,7 +456,7 @@ class AstroLauncher():
                     if now - startTime > 15:
                         serverData = serverData[0]
                         self.DedicatedServer.registered = True
-                        del oldLobbyIDs
+                        oldLobbyIDs = None
                         self.DedicatedServer.LobbyID = serverData['LobbyID']
 
                 if self.DedicatedServer.process.poll() is not None:
@@ -511,6 +512,10 @@ class AstroLauncher():
     def configure_firewall(self):
         if not self.launcherConfig.AdminAutoConfigureFirewall:
             return
+        ALRule = None
+        ALWRule = None
+        ASRule = None
+        launcherEXEPath = None
         isFirewallEnabled = os.popen(
             'netsh advfirewall show currentprofile | findstr /L "State" | findstr /L "ON"').read()
         if isFirewallEnabled:

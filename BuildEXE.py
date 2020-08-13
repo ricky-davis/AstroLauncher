@@ -1,7 +1,7 @@
-import PyInstaller.__main__
 import os
 import shutil
 
+import PyInstaller.__main__
 
 # pyinstaller AstroLauncher.py -F --add-data "assets/*;." --icon=assets/astrolauncherlogo.ico
 

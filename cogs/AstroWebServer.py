@@ -83,6 +83,8 @@ class WebServer(tornado.web.Application):
         super().__init__(handlers, **settings)
 
     def run(self):
+        certFile = None
+        keyFile = None
         if self.launcher.launcherConfig.EnableWebServerSSL:
             certFile = self.launcher.launcherConfig.SSLCertFile
             keyFile = self.launcher.launcherConfig.SSLKeyFile

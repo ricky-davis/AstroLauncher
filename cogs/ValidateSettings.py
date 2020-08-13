@@ -141,6 +141,7 @@ def socket_server(port, secret, tcp):
             serversocket.listen(1)
         while 1:
             # accept connections from outside
+            connection = None
             if tcp:
                 connection, _client_address = serversocket.accept()
             while True:
@@ -176,6 +177,7 @@ def socket_client(ip, port, secret, tcp):
 
 @contextmanager
 def session_scope(ip, consolePort: int):
+    s = None
     try:
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         s.settimeout(5)
