@@ -160,19 +160,25 @@ class AstroDedicatedServer():
                 time.sleep(0.1)
             self.DSListGames = tempSaveGames
             for save in self.DSListGames["gameList"]:
-                if save['bHasBeenFlaggedAsCreativeModeSave']:
-                    c = "c"
-                else:
-                    c = ""
-                saveFileName = f"{save['name']}${c}{save['date']}.savegame"
-                sfPath = os.path.join(saveGamePath, saveFileName)
-                size = AstroDedicatedServer.convert_size(
-                    os.path.getsize(sfPath))
-                save["size"] = size
-                if save['name'] == self.DSListGames['activeSaveName']:
-                    save['active'] = "Active"
-                else:
-                    save['active'] = ""
+                try:
+                    try:
+                        if save['bHasBeenFlaggedAsCreativeModeSave']:
+                            c = "c"
+                        else:
+                            c = ""
+                        saveFileName = f"{save['name']}${c}{save['date']}.savegame"
+                        sfPath = os.path.join(saveGamePath, saveFileName)
+                        size = AstroDedicatedServer.convert_size(
+                            os.path.getsize(sfPath))
+                        save["size"] = size
+                    except:
+                        pass
+                    if save['name'] == self.DSListGames['activeSaveName']:
+                        save['active'] = "Active"
+                    else:
+                        save['active'] = ""
+                except:
+                    pass
         except:
             pass
 
@@ -223,7 +229,11 @@ class AstroDedicatedServer():
             save = [x for x in self.DSListGames['gameList'] if x['name'] == name]
             if len(save) > 0:
                 save = save[0]
-                saveFileName = f"{save['name']}${save['date']}.savegame"
+                if save['bHasBeenFlaggedAsCreativeModeSave']:
+                    c = "c"
+                else:
+                    c = ""
+                saveFileName = f"{save['name']}${c}{save['date']}.savegame"
                 sfPath = os.path.join(saveGamePath, saveFileName)
                 # time.sleep(1)
                 AstroLogging.logPrint(f"Deleting save: {saveFileName}")
