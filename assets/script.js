@@ -144,7 +144,10 @@ const tick = async (data) => {
         // smart scroll
         if (isAdmin) {
             let log = $("#consoleText")[0];
-            let isBottom = log.scrollTop == log.scrollHeight - log.clientHeight;
+            let isBottom =
+                Math.abs(
+                    log.scrollTop - (log.scrollHeight - log.clientHeight)
+                ) < 2;
 
             let sLogs = data.logs.split(/\r?\n/);
             let newLogs = sLogs.filter((i) => !logList.includes(i) && i != "");
@@ -247,7 +250,6 @@ const tick = async (data) => {
                         );
                         oldSaves.gameList = gameList;
                         gameList.forEach((sg, i) => {
-                            console.log(i);
                             let row = document.createElement("tr");
                             sg.active == "Active"
                                 ? $(row).addClass("activeSave")
