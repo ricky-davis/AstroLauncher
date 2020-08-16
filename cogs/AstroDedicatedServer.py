@@ -368,6 +368,10 @@ class AstroDedicatedServer():
                 self.lastXAuth = datetime.datetime.now()
 
             if self.lastHeartbeat is None or (datetime.datetime.now() - self.lastHeartbeat).total_seconds() > 30:
+                serverData = (AstroAPI.get_server(
+                    self.ipPortCombo, self.launcher.headers))['data']['Games']
+                if len(serverData) > 0:
+                    self.serverData = serverData[0]
                 hbServerName = {"customdata": {
                     "ServerName": self.settings.ServerName,
                     "ServerType": ("AstroLauncherEXE" if self.launcher.isExecutable else "AstroLauncherPy") + f" {self.launcher.version}",
@@ -377,7 +381,7 @@ class AstroDedicatedServer():
                     self.serverData, self.launcher.headers, {"serverName": json.dumps(hbServerName)})
 
                 hbTryCount = 0
-                while hbStatus['status'] == "Unauthorized":
+                while hbStatus['status'] != "OK":
                     if hbTryCount > 3:
                         self.kill_server(
                             reason="Server was unable to heartbeat, restarting...",
