@@ -89,6 +89,7 @@ def get_current_settings(launcher, ovrIP=False):
                 "ActiveSaveFileDescriptiveName": "SAVE_1",
                 "ServerAdvertisedName": "",
                 "ConsolePort": "1234",
+                "ConsolePassword": uuid.uuid4().hex,
                 "HeartbeatInterval": "0"
             }
         }

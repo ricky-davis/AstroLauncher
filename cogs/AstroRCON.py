@@ -47,6 +47,11 @@ class AstroRCON():
             # print("Connecting...")
             self.socket.connect(
                 ("127.0.0.1", int(self.DS.settings.ConsolePort)))
+            with self.lockRcon() as s:
+                # Send console password
+                s.socket.sendall(
+                    f"{self.DS.settings.ConsolePassword}\n".encode())
+                # print(f"{self.DS.settings.ConsolePassword}\n".encode())
             self.connected = True
             AstroLogging.logPrint("Connected to RCON Console!")
 
@@ -112,10 +117,10 @@ class AstroRCON():
                     s.socket.sendall(f"DSSaveGame {name}\n".encode())
                 else:
                     s.socket.sendall(b"DSSaveGame\n")
-                rawdata = AstroRCON.recvall(s.socket)
-                parsedData = AstroRCON.parseData(rawdata)
+                #rawdata = AstroRCON.recvall(s.socket)
+                #parsedData = AstroRCON.parseData(rawdata)
                 # pprint(parsedData)
-                return parsedData
+                return  # parsedData
         except:  # Exception as e:
             # print(e)
             return None
@@ -136,10 +141,10 @@ class AstroRCON():
     def DSServerShutdown(self):
         try:
             self.socket.sendall(b"DSServerShutdown\n")
-            rawdata = AstroRCON.recvall(self.socket)
-            parsedData = AstroRCON.parseData(rawdata)
+            #rawdata = AstroRCON.recvall(self.socket)
+            #parsedData = AstroRCON.parseData(rawdata)
             # pprint(parsedData)
-            return parsedData
+            return  # parsedData
         except:  # Exception as e:
             # print(e)
             return None

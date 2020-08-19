@@ -45,6 +45,7 @@ class AstroDedicatedServer():
         MaxServerIdleFramerate: str = None
         bWaitForPlayersBeforeShutdown: str = None
         ConsolePort: str = None
+        ConsolePassword: str = None
         ExitSemaphore: str = None
         HeartbeatInterval: str = None
         PlayerProperties: list = dataclasses.field(default_factory=list)
@@ -363,15 +364,23 @@ class AstroDedicatedServer():
                 return self.launcher.start_server()
 
             if self.lastXAuth is None or (datetime.datetime.now() - self.lastXAuth).total_seconds() > 3600:
-                self.launcher.headers['X-Authorization'] = AstroAPI.generate_XAUTH(
-                    self.settings.ServerGuid)
-                self.lastXAuth = datetime.datetime.now()
+                try:
+                    gxAuth = AstroAPI.generate_XAUTH(
+                        self.settings.ServerGuid)
+                    self.launcher.headers['X-Authorization'] = gxAuth
+                    self.lastXAuth = datetime.datetime.now()
+                except:
+                    self.lastXAuth += datetime.timedelta(seconds=20)
 
             if self.lastHeartbeat is None or (datetime.datetime.now() - self.lastHeartbeat).total_seconds() > 30:
-                serverData = (AstroAPI.get_server(
-                    self.ipPortCombo, self.launcher.headers))['data']['Games']
-                if len(serverData) > 0:
-                    self.serverData = serverData[0]
+                serverData = []
+                try:
+                    serverData = (AstroAPI.get_server(
+                        self.ipPortCombo, self.launcher.headers))['data']['Games']
+                    if len(serverData) > 0:
+                        self.serverData = serverData[0]
+                except:
+                    pass
                 hbServerName = {"customdata": {
                     "ServerName": self.settings.ServerName,
                     "ServerType": ("AstroLauncherEXE" if self.launcher.isExecutable else "AstroLauncherPy") + f" {self.launcher.version}",
@@ -388,13 +397,21 @@ class AstroDedicatedServer():
                             save=True, killLauncher=False)
                         time.sleep(5)
                         return self.launcher.start_server()
-                    self.launcher.headers['X-Authorization'] = AstroAPI.generate_XAUTH(
-                        self.settings.ServerGuid)
+                    try:
+                        gxAuth = AstroAPI.generate_XAUTH(
+                            self.settings.ServerGuid)
+                        self.launcher.headers['X-Authorization'] = gxAuth
+                    except:
+                        pass
                     self.lastXAuth = datetime.datetime.now()
-                    hbStatus = AstroAPI.heartbeat_server(
-                        self.serverData, self.launcher.headers, {"serverName": json.dumps(hbServerName)})
                     hbTryCount += 1
-                    time.sleep(5)
+                    try:
+                        hbStatus = AstroAPI.heartbeat_server(
+                            self.serverData, self.launcher.headers, {"serverName": json.dumps(hbServerName)})
+                    except:
+                        AstroLogging.logPrint(
+                            f"Failed to heartbeat server on attempt: {hbTryCount}")
+                        time.sleep(5*hbTryCount)
 
                 self.lastHeartbeat = datetime.datetime.now()
 

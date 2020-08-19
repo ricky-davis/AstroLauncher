@@ -23,16 +23,19 @@ def generate_XAUTH(serverGUID):
 
 
 def get_server(ipPortCombo, headers):
-    url = 'https://5EA1.playfabapi.com/Client/GetCurrentGames?sdk=UE4MKPL-1.19.190610'
-    requestObj = {
-        "TagFilter": {
-            "Includes": [
-                {"Data": {"gameId": ipPortCombo}}
-            ]
+    try:
+        url = 'https://5EA1.playfabapi.com/Client/GetCurrentGames?sdk=UE4MKPL-1.19.190610'
+        requestObj = {
+            "TagFilter": {
+                "Includes": [
+                    {"Data": {"gameId": ipPortCombo}}
+                ]
+            }
         }
-    }
-    x = (requests.post(url, headers=headers, json=requestObj)).json()
-    return x
+        x = (requests.post(url, headers=headers, json=requestObj)).json()
+        return x
+    except:
+        return {"status": "Error"}
 
 
 def deregister_server(lobbyID, headers):
