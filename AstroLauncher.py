@@ -6,6 +6,7 @@ import dataclasses
 import os
 import shutil
 import signal
+import socket
 import subprocess
 import sys
 import time
@@ -481,21 +482,23 @@ class AstroLauncher():
 
     def check_ports_free(self):
         serverPort = False
-        sp = self.DedicatedServer.settings.Port
+        sp = int(self.DedicatedServer.settings.Port)
 
         consolePort = False
-        cp = self.DedicatedServer.settings.ConsolePort
+        cp = int(self.DedicatedServer.settings.ConsolePort)
 
         webPort = False
-        wp = self.launcherConfig.WebServerPort
+        wp = int(self.launcherConfig.WebServerPort)
 
-        serverPort = bool(
-            os.popen(f'netstat -a -n -o | findstr ":{sp} " | findstr "LISTENING"').read())
-        consolePort = bool(
-            os.popen(f'netstat -a -n -o | findstr ":{cp} " | findstr "LISTENING"').read())
+        def is_port_in_use(port, tcp=True):
+            with socket.socket(socket.AF_INET, socket.SOCK_STREAM if tcp else socket.SOCK_DGRAM) as s:
+                return s.connect_ex(('localhost', port)) == 0
+
+        serverPort = bool(is_port_in_use(sp, False))
+        consolePort = bool(is_port_in_use(cp))
+
         if not self.launcherConfig.DisableWebServer:
-            webPort = bool(
-                os.popen(f'netstat -a -n -o | findstr ":{wp} " | findstr "LISTENING"').read())
+            webPort = bool(is_port_in_use(wp))
 
         if serverPort:
             AstroLogging.logPrint(
