@@ -427,7 +427,7 @@ class AstroDedicatedServer():
                 self.DSServerStats = serverStats
                 if self.launcher.launcherConfig.ShowServerFPSInConsole:
                     FPSJumpRate = (
-                        float(self.settings.MaxServerFramerate) / 10)
+                        float(self.settings.MaxServerFramerate) / 5)
                     if self.oldServerStats is None or (abs(float(self.DSServerStats['averageFPS']) - float(self.oldServerStats['averageFPS'])) > FPSJumpRate):
                         AstroLogging.logPrint(
                             f"Server FPS: {round(self.DSServerStats['averageFPS'])}")
