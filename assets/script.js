@@ -282,13 +282,14 @@ const tick = async (data) => {
             }
 
             if (!compareObj(oldPlayers, data.players)) {
+                /*
                 if (oldSettings.OwnerName != "") {
                     data.players.playerInfo.forEach(function (player, index) {
                         if (player.playerCategory == "Owner") {
                             this[index].playerName = oldSettings.OwnerName;
                         }
                     }, data.players.playerInfo);
-                }
+                }*/
                 oldPlayers = data.players;
                 $("#onlinePlayersTable").html(playersTableOriginal);
                 $("#offlinePlayersTable").html(playersTableOriginal);
