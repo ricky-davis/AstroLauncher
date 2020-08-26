@@ -282,6 +282,13 @@ const tick = async (data) => {
             }
 
             if (!compareObj(oldPlayers, data.players)) {
+                if (oldSettings.OwnerName != "") {
+                    data.players.playerInfo.forEach(function (player, index) {
+                        if (player.playerCategory == "Owner") {
+                            this[index].playerName = oldSettings.OwnerName;
+                        }
+                    }, data.players.playerInfo);
+                }
                 oldPlayers = data.players;
                 $("#onlinePlayersTable").html(playersTableOriginal);
                 $("#offlinePlayersTable").html(playersTableOriginal);
@@ -415,31 +422,32 @@ const createSaveActionButtons = function (status, save, index) {
 
 const createPlayerActionButtons = function (status, player) {
     dropDownDiv = $("<div/>").attr({ class: "btn-group dropup" });
-    DDButton = $("<button/>")
-        .attr({
-            type: "button",
-            class: "btn btn-secondary dropdown-toggle",
-            "data-toggle": "dropdown",
-            "aria-haspopup": "true",
-            "aria-expanded": "false",
-            id: "dropdownMenu2",
-        })
-        .text("Actions");
-    DDMenu = $("<div/>").attr({
-        class: "dropdown-menu",
-        "aria-labelledby": "dropdownMenu2",
-    });
-    dropDownDiv.append(DDButton);
-    dropDownDiv.append(DDMenu);
-    sButton = $("<button/>").attr({
-        type: "button",
-        class: "dropdown-item pBtn p-1",
-        "data-guid": player.playerGuid,
-        "data-name": player.playerName,
-    });
-
-    actionButtonBufferList = [];
     if (player.playerCategory != "Owner") {
+        DDButton = $("<button/>")
+            .attr({
+                type: "button",
+                class: "btn btn-secondary dropdown-toggle",
+                "data-toggle": "dropdown",
+                "aria-haspopup": "true",
+                "aria-expanded": "false",
+                id: "dropdownMenu2",
+            })
+            .text("Actions");
+        DDMenu = $("<div/>").attr({
+            class: "dropdown-menu",
+            "aria-labelledby": "dropdownMenu2",
+        });
+        dropDownDiv.append(DDButton);
+        dropDownDiv.append(DDMenu);
+        sButton = $("<button/>").attr({
+            type: "button",
+            class: "dropdown-item pBtn p-1",
+            "data-guid": player.playerGuid,
+            "data-name": player.playerName,
+        });
+
+        actionButtonBufferList = [];
+
         kickButton = sButton.clone().attr("data-action", "kick").text("Kick");
         actionButtonBufferList.push(kickButton);
 
@@ -487,10 +495,10 @@ const createPlayerActionButtons = function (status, player) {
             AdminButton.addClass("disabled");
             ResetButton.addClass("disabled");
         }
+        actionButtonBufferList.forEach((element) => {
+            DDMenu.append(element);
+        });
     }
-    actionButtonBufferList.forEach((element) => {
-        DDMenu.append(element);
-    });
     return dropDownDiv.prop("outerHTML");
 };
 $(document).on("input", "#WLPlayerInp", function (e) {
