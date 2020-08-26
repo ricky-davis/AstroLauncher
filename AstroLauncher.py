@@ -491,8 +491,10 @@ class AstroLauncher():
         wp = int(self.launcherConfig.WebServerPort)
 
         def is_port_in_use(port, tcp=True):
-            with socket.socket(socket.AF_INET, socket.SOCK_STREAM if tcp else socket.SOCK_DGRAM) as s:
-                return s.connect_ex(('localhost', port)) == 0
+            lc = psutil.net_connections('inet')
+            lc = [x for x in lc if x.type == (
+                socket.SOCK_STREAM if tcp else socket.SOCK_DGRAM) and x.laddr[1] == port]
+            return len(lc) > 0
 
         serverPort = bool(is_port_in_use(sp, False))
         consolePort = bool(is_port_in_use(cp))
