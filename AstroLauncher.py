@@ -429,8 +429,15 @@ class AstroLauncher():
 
         self.DedicatedServer.status = "starting"
         self.DedicatedServer.busy = False
-        self.headers['X-Authorization'] = AstroAPI.generate_XAUTH(
-            self.DedicatedServer.settings.ServerGuid)
+
+        gxAuth = None
+        while gxAuth is None:
+            try:
+                gxAuth = AstroAPI.generate_XAUTH(
+                    self.DedicatedServer.settings.ServerGuid)
+            except:
+                time.sleep(10)
+        self.headers['X-Authorization'] = gxAuth
         oldLobbyIDs = self.DedicatedServer.deregister_all_server()
         AstroLogging.logPrint("Starting Server process...")
         if self.launcherConfig.EnableAutoRestart:
