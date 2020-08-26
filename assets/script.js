@@ -285,8 +285,10 @@ const tick = async (data) => {
                 /*
                 if (oldSettings.OwnerName != "") {
                     data.players.playerInfo.forEach(function (player, index) {
-                        if (player.playerCategory == "Owner") {
-                            this[index].playerName = oldSettings.OwnerName;
+                        if (player.playerName.replace(/\?/g, "") == "") {
+                            if (player.playerCategory == "Owner") {
+                                this[index].playerName = oldSettings.OwnerName;
+                            }
                         }
                     }, data.players.playerInfo);
                 }*/
