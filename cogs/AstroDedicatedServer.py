@@ -332,6 +332,21 @@ class AstroDedicatedServer():
         self.AstroRCON.DSSetDenyUnlisted(wLOn)
         self.refresh_settings()
 
+    def getXauth(self):
+        if self.lastXAuth is None or (datetime.datetime.now() - self.lastXAuth).total_seconds() > 3600:
+            try:
+                gxAuth = None
+                while gxAuth is None:
+                    try:
+                        gxAuth = AstroAPI.generate_XAUTH(
+                            self.settings.ServerGuid)
+                    except:
+                        time.sleep(10)
+                self.launcher.headers['X-Authorization'] = gxAuth
+                self.lastXAuth = datetime.datetime.now()
+            except:
+                self.lastXAuth += datetime.timedelta(seconds=20)
+
     def server_loop(self):
         while True:
             # Ensure RCON is connected
@@ -363,14 +378,7 @@ class AstroDedicatedServer():
                     "Server was closed. Restarting..")
                 return self.launcher.start_server()
 
-            if self.lastXAuth is None or (datetime.datetime.now() - self.lastXAuth).total_seconds() > 3600:
-                try:
-                    gxAuth = AstroAPI.generate_XAUTH(
-                        self.settings.ServerGuid)
-                    self.launcher.headers['X-Authorization'] = gxAuth
-                    self.lastXAuth = datetime.datetime.now()
-                except:
-                    self.lastXAuth += datetime.timedelta(seconds=20)
+            self.getXauth()
 
             if self.lastHeartbeat is None or (datetime.datetime.now() - self.lastHeartbeat).total_seconds() > 30:
                 serverData = []
@@ -397,13 +405,7 @@ class AstroDedicatedServer():
                             save=True, killLauncher=False)
                         time.sleep(5)
                         return self.launcher.start_server()
-                    try:
-                        gxAuth = AstroAPI.generate_XAUTH(
-                            self.settings.ServerGuid)
-                        self.launcher.headers['X-Authorization'] = gxAuth
-                    except:
-                        pass
-                    self.lastXAuth = datetime.datetime.now()
+                    self.getXauth()
                     hbTryCount += 1
                     try:
                         hbStatus = AstroAPI.heartbeat_server(
