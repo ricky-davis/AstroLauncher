@@ -245,13 +245,14 @@ Distributed under the MIT License. See `LICENSE` for more information.
 
 Ricky Davis - Discord: @Spyci#0001
 
-If you have any questions you can DM me, or preferrably, join the [Astroneer discord](discord.gg/Astroneer) and ask in the #self_host_talk channel
+If you have any questions you can DM me, or preferrably, join the [Astroneer discord] (discord.gg/Astroneer) and ask in the #self_host_talk channel
 
 Project Link: [https://github.com/ricky-davis/AstroLauncher](https://github.com/ricky-davis/AstroLauncher)
 
 <!-- MARKDOWN LINKS & IMAGES -->
 <!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
 
+[Astroneer discord]: https://discord.com/invite/astroneer
 [contributors-shield]: https://img.shields.io/github/contributors/ricky-davis/AstroLauncher.svg?style=flat-square
 [contributors-url]: https://github.com/ricky-davis/AstroLauncher/graphs/contributors
 [forks-shield]: https://img.shields.io/github/forks/ricky-davis/AstroLauncher.svg?style=flat-square
