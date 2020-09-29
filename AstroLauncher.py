@@ -204,7 +204,7 @@ class AstroLauncher():
         self.refresh_launcher_config()
         if disable_auto_update is not None:
             self.launcherConfig.DisableAutoUpdate = disable_auto_update
-        self.version = "v1.7.4"
+        self.version = "v1.7.5"
         colsize = os.get_terminal_size().columns
         if colsize >= 77:
             vText = "Version " + self.version[1:]
