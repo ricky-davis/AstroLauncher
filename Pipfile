@@ -9,7 +9,6 @@ pylint = "*"
 
 [packages]
 requests = "*"
-pprint = "*"
 psutil = "*"
 pyinstaller = "*"
 chardet = "*"
@@ -18,8 +17,8 @@ colorlog = "*"
 tornado = "*"
 asyncio = "*"
 ipy = "*"
-pypakparser = "*"
 pathvalidate = "*"
+pypakparser = "==1.2.0"
 
 [requires]
 python_version = "3.7"

@@ -142,7 +142,7 @@ class AstroDedicatedServer():
                         mdFile = "metadata.json"
                         md = PP.List(mdFile)
                         if mdFile in md:
-                            ppData = PP.Unpack(mdFile).Data
+                            ppData = PP.Unpack(mdFile).Data.decode()
                             self.pakList.append({os.path.basename(f): ppData})
                 except:
                     pass

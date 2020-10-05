@@ -120,6 +120,7 @@ class AstroLauncher():
             #print(f"first: {self.pendingFiles}")
             time.sleep(2)
             #print(f"second: {self.pendingFiles}")
+            #AstroLogging.logPrint("DEBUG: INSIDE THREAD")
 
             path = os.path.join(self.astroPath, self.moveToPath)
             try:
@@ -156,9 +157,12 @@ class AstroLauncher():
             self.launcher.backupObserver.stop()
             self.launcher.backup_retention()
 
-        def on_modified(self, event):
-            # print(event)
+        def on_deleted(self, event):
+            # AstroLogging.logPrint(event)
             # AstroLogging.logPrint("File in save directory changed")
+
+            #AstroLogging.logPrint("DEBUG: File modified.. Starting thread")
+
             try:
                 self.pendingFiles.append(event.src_path)
                 if len(self.pendingFiles) == 1:
@@ -445,10 +449,20 @@ class AstroLauncher():
                 f"Next restart is at {self.DedicatedServer.nextRestartTime}")
         # time.sleep(5)
         startTime = time.time()
-        self.DedicatedServer.start()
-        self.DaemonProcess = AstroDaemon.launch(
-            executable=self.isExecutable, consolePID=self.DedicatedServer.process.pid)
+        try:
+            self.DedicatedServer.start()
+        except:
+            AstroLogging.logPrint(
+                "Unable to launch AstroServer.exe", "critical")
+            return False
 
+        try:
+            self.DaemonProcess = AstroDaemon.launch(
+                executable=self.isExecutable, consolePID=self.DedicatedServer.process.pid)
+        except:
+            AstroLogging.logPrint(
+                "Unable to start watcher daemon", "warning")
+            return False
         # Wait for server to finish registering...
         serverData = None
         while not self.DedicatedServer.registered:
