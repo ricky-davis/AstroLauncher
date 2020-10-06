@@ -466,6 +466,7 @@ class AstroLauncher():
 
         # Wait for server to finish registering...
         serverData = None
+        oPFF = self.launcherConfig.PlayfabAPIFrequency
         while not self.DedicatedServer.registered:
             AstroLogging.logPrint("Waiting for server to register...", "debug")
             try:
@@ -495,6 +496,7 @@ class AstroLauncher():
                 self.launcherConfig.PlayfabAPIFrequency += 1
                 time.sleep(self.launcherConfig.PlayfabAPIFrequency)
 
+        self.launcherConfig.PlayfabAPIFrequency = oPFF
         self.DedicatedServer.serverData = serverData
         doneTime = time.time()
         elapsed = doneTime - startTime
