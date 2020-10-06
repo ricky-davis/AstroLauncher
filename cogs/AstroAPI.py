@@ -4,6 +4,7 @@ import re
 import winreg
 
 import requests
+from cogs.AstroLogging import AstroLogging
 
 base_headers = {'Content-Type': 'application/json; charset=utf-8',
                 'X-PlayFabSDK': 'UE4MKPL-1.19.190610',
@@ -19,6 +20,7 @@ def generate_XAUTH(serverGUID):
         "TitleId": "5EA1"
     }
     x = (requests.post(url, headers=base_headers, json=requestObj)).json()
+    AstroLogging.logPrint(x, "debug")
     return x['data']['SessionTicket']
 
 
@@ -32,7 +34,9 @@ def get_server(ipPortCombo, headers):
                 ]
             }
         }
+        AstroLogging.logPrint(requestObj, "debug")
         x = (requests.post(url, headers=headers, json=requestObj)).json()
+        AstroLogging.logPrint(x, "debug")
         return x
     except:
         return {"status": "Error"}
@@ -40,7 +44,7 @@ def get_server(ipPortCombo, headers):
 
 def deregister_server(lobbyID, headers):
     url = 'https://5EA1.playfabapi.com/Client/ExecuteCloudScript?sdk=UE4MKPL-1.19.190610'
-    jsonRequest = {
+    requestObj = {
         "FunctionName": "deregisterDedicatedServer",
         "FunctionParameter":
         {
@@ -49,7 +53,9 @@ def deregister_server(lobbyID, headers):
         "GeneratePlayStreamEvent": True
     }
 
-    x = (requests.post(url, headers=headers, json=jsonRequest)).json()
+    AstroLogging.logPrint(requestObj, "debug")
+    x = (requests.post(url, headers=headers, json=requestObj)).json()
+    AstroLogging.logPrint(x, "debug")
     return x
 
 
@@ -78,7 +84,9 @@ def heartbeat_server(serverData, headers, dataToChange=None):
         if dataToChange is not None:
             requestObj['FunctionParameter'].update(dataToChange)
 
+        AstroLogging.logPrint(requestObj, "debug")
         x = (requests.post(url, headers=headers, json=requestObj)).json()
+        AstroLogging.logPrint(x, "debug")
         return x
     except:
         return {"status": "Error"}
