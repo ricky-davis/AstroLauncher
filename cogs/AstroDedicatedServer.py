@@ -338,6 +338,8 @@ class AstroDedicatedServer():
                 gxAuth = None
                 while gxAuth is None:
                     try:
+                        AstroLogging.logPrint(
+                            "Generating new xAuth...", "debug")
                         gxAuth = AstroAPI.generate_XAUTH(
                             self.settings.ServerGuid)
                     except:
@@ -383,6 +385,9 @@ class AstroDedicatedServer():
             if self.lastHeartbeat is None or (datetime.datetime.now() - self.lastHeartbeat).total_seconds() > 30:
                 serverData = []
                 try:
+
+                    AstroLogging.logPrint(
+                        "Getting Server data for Heartbeat", "debug")
                     serverData = (AstroAPI.get_server(
                         self.ipPortCombo, self.launcher.headers))['data']['Games']
                     if len(serverData) > 0:
@@ -394,12 +399,16 @@ class AstroDedicatedServer():
                     "ServerType": ("AstroLauncherEXE" if self.launcher.isExecutable else "AstroLauncherPy") + f" {self.launcher.version}",
                     "ServerPaks": self.pakList
                 }}
+
+                AstroLogging.logPrint("Attempting Heartbeat...", "debug")
                 hbStatus = AstroAPI.heartbeat_server(
                     self.serverData, self.launcher.headers, {"serverName": json.dumps(hbServerName)})
 
                 hbTryCount = 0
                 while hbStatus['status'] != "OK":
                     if hbTryCount > 3:
+                        AstroLogging.logPrint(
+                            "Heartbeat failed, trying again...", "debug")
                         self.kill_server(
                             reason="Server was unable to heartbeat, restarting...",
                             save=True, killLauncher=False)

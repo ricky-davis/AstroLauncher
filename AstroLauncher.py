@@ -172,8 +172,8 @@ class AstroLauncher():
             except:
                 pass
 
-    def __init__(self, astroPath, launcherINI="Launcher.ini", disable_auto_update=None):
-        AstroLogging.setup_logging()
+    def __init__(self, astroPath, launcherINI="Launcher.ini", disable_auto_update=None, debugLogging=False):
+        AstroLogging.setup_logging(debugLogging)
 
         # check if path specified
         if astroPath is not None:
@@ -215,9 +215,9 @@ class AstroLauncher():
             # pylint: disable=anomalous-backslash-in-string
             print(" __________________________________________________________________________\n" +
                   "|     _        _               _                           _               |\n" +
-                  "|    /_\   ___| |_  _ _  ___  | |    __ _  _  _  _ _   __ | |_   ___  _ _  |\n" +
-                  "|   / _ \ (_-<|  _|| '_|/ _ \ | |__ / _` || || || ' \ / _|| ' \ / -_)| '_| |\n" +
-                  "|  /_/ \_\/__/ \__||_|  \___/ |____|\__,_| \_,_||_||_|\__||_||_|\___||_|   |\n" +
+                  "|    /_\\   ___| |_  _ _  ___  | |    __ _  _  _  _ _   __ | |_   ___  _ _  |\n" +
+                  "|   / _ \\ (_-<|  _|| '_|/ _ \\ | |__ / _` || || || ' \\ / _|| ' \\ / -_)| '_| |\n" +
+                  "|  /_/ \\_\\/__/ \\__||_|  \\___/ |____|\\__,_| \\_,_||_||_|\\__||_||_|\\___||_|   |\n" +
                   "|                                                                          |\n" +
                   "|"+vText.center(74)+"|\n" +
                   "|__________________________________________________________________________|")
@@ -463,9 +463,11 @@ class AstroLauncher():
             AstroLogging.logPrint(
                 "Unable to start watcher daemon", "warning")
             return False
+
         # Wait for server to finish registering...
         serverData = None
         while not self.DedicatedServer.registered:
+            AstroLogging.logPrint("Waiting for server to register...", "debug")
             try:
                 serverData = (AstroAPI.get_server(
                     self.DedicatedServer.ipPortCombo, self.headers))
@@ -542,8 +544,11 @@ class AstroLauncher():
         ALWRule = None
         ASRule = None
         launcherEXEPath = None
-        isFirewallEnabled = os.popen(
-            'netsh advfirewall show currentprofile | findstr /L "State" | findstr /L "ON"').read()
+        isFirewallEnabled = None
+        with os.popen(
+                'netsh advfirewall show currentprofile | findstr /L "State" | findstr /L "ON"') as fwCheck:
+            isFirewallEnabled = fwCheck.read()
+
         if isFirewallEnabled:
             serverExePath = os.path.join(
                 self.astroPath, 'astro\\binaries\\win64\\astroserver-win64-shipping.exe')
@@ -693,6 +698,8 @@ if __name__ == "__main__":
             "-p", "--path", help="Set the server folder path", type=str.lower)
         parser.add_argument("-U", "--noupdate", dest="noautoupdate", default=None,
                             help="Disable autoupdate if running as exe", action='store_true')
+        parser.add_argument("-D", "--debug", dest="debugLogging", default=None,
+                            help="Enable Debug Logging", action='store_true')
         parser.add_argument("-i", "--ini", dest="launcherINI", default="Launcher.ini",
                             help="Set the location of the Launcher INI")
 
@@ -711,7 +718,7 @@ if __name__ == "__main__":
                 print("Insufficient launch options!")
         else:
             AstroLauncher(
-                args.path, disable_auto_update=args.noautoupdate, launcherINI=args.launcherINI)
+                args.path, disable_auto_update=args.noautoupdate, launcherINI=args.launcherINI, debugLogging=args.debugLogging)
     except KeyboardInterrupt:
         pass
     except Exception as err:

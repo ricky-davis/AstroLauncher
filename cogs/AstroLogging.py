@@ -31,7 +31,7 @@ class AstroLogging():
             logging.critical(pformat(message), exc_info=printTraceback)
 
     @staticmethod
-    def setup_logging():
+    def setup_logging(debugLogging=False):
         LOGFORMAT = '%(asctime)s - %(levelname)-6s %(message)s'
         CLOGFORMAT = '%(asctime)s - %(log_color)s%(levelname)-6s%(reset)s %(message)s'
         DATEFMT = "%H:%M:%S"
@@ -46,10 +46,12 @@ class AstroLogging():
         colorformatter = ColoredFormatter(
             CLOGFORMAT, datefmt=DATEFMT, log_colors=LOGCOLORS)
         rootLogger = logging.getLogger()
-        rootLogger.setLevel(logging.INFO)
+        logLevel = logging.DEBUG if debugLogging else logging.INFO
+        rootLogger.setLevel(logging.DEBUG)
 
         console = logging.StreamHandler()
         console.setFormatter(colorformatter)
+        console.setLevel(logLevel)
 
         AstroLogging.log_stream = StringIO()
         stringIOLog = logging.StreamHandler(AstroLogging.log_stream)

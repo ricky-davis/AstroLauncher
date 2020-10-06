@@ -114,7 +114,8 @@ class MultiConfig():
             os.makedirs(pathname)
         with open(filePath, 'a+'):
             pass
-        rawdata = open(filePath, 'rb').read()
+        with open(filePath, 'rb') as fP:
+            rawdata = fP.read()
         result = chardet.detect(rawdata)
         charenc = result['encoding']
         return charenc
