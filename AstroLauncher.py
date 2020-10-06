@@ -493,7 +493,8 @@ class AstroLauncher():
             except:
                 AstroLogging.logPrint(
                     "Failed to check server. Probably hit rate limit. Backing off and trying again...")
-                self.launcherConfig.PlayfabAPIFrequency += 1
+                if self.launcherConfig.PlayfabAPIFrequency < 30:
+                    self.launcherConfig.PlayfabAPIFrequency += 1
                 time.sleep(self.launcherConfig.PlayfabAPIFrequency)
 
         self.launcherConfig.PlayfabAPIFrequency = oPFF
