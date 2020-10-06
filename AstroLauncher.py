@@ -56,6 +56,7 @@ class AstroLauncher():
         OverwritePublicIP: bool = False
         ShowServerFPSInConsole: bool = True
         AdminAutoConfigureFirewall: bool = True
+        LogRetentionDays: int = 30
 
         DisableWebServer: bool = False
         WebServerPort: int = 5000
@@ -173,7 +174,7 @@ class AstroLauncher():
                 pass
 
     def __init__(self, astroPath, launcherINI="Launcher.ini", disable_auto_update=None, debugLogging=False):
-        AstroLogging.setup_logging(debugLogging)
+        AstroLogging.setup_logging(debugLogging=debugLogging)
 
         # check if path specified
         if astroPath is not None:
@@ -201,11 +202,12 @@ class AstroLauncher():
                 time.sleep(5)
                 return
 
-        AstroLogging.setup_loggingPath(self.astroPath)
         self.launcherINI = launcherINI
         self.launcherConfig = self.LauncherConfig()
         self.launcherPath = os.getcwd()
         self.refresh_launcher_config()
+        AstroLogging.setup_loggingPath(
+            astroPath=self.astroPath, logRetention=int(self.launcherConfig.LogRetentionDays))
         if disable_auto_update is not None:
             self.launcherConfig.DisableAutoUpdate = disable_auto_update
         self.version = "v1.7.5"
@@ -440,7 +442,7 @@ class AstroLauncher():
                 gxAuth = AstroAPI.generate_XAUTH(
                     self.DedicatedServer.settings.ServerGuid)
             except:
-                time.sleep(10)
+                time.sleep(5)
         self.headers['X-Authorization'] = gxAuth
         oldLobbyIDs = self.DedicatedServer.deregister_all_server()
         AstroLogging.logPrint("Starting Server process...")
@@ -455,6 +457,24 @@ class AstroLauncher():
             AstroLogging.logPrint(
                 "Unable to launch AstroServer.exe", "critical")
             return False
+
+        reachableProcess = None
+        pcounter = 40
+        while not reachableProcess:
+            try:
+                reachableProcess = not bool(
+                    self.DedicatedServer.process.poll())
+                pcounter -= 1
+                time.sleep(0.25)
+            except:
+                pcounter -= 2
+                time.sleep(0.5)
+            if pcounter <= 0:
+                AstroLogging.logPrint(
+                    "Unable to start Server Process after 10 seconds!", "critical")
+                return False
+
+        AstroLogging.logPrint("Server started! Getting ready....")
 
         try:
             self.DaemonProcess = AstroDaemon.launch(

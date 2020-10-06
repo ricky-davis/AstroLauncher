@@ -62,7 +62,7 @@ class AstroLogging():
         rootLogger.addHandler(stringIOLog)
 
     @staticmethod
-    def setup_loggingPath(astroPath):
+    def setup_loggingPath(astroPath, logRetention=0):
         LOGFORMAT = '%(asctime)s - %(levelname)-6s %(message)s'
         DATEFMT = "%H:%M:%S"
         formatter = logging.Formatter(LOGFORMAT, datefmt=DATEFMT)
@@ -73,7 +73,7 @@ class AstroLogging():
         if not os.path.exists(logsPath):
             os.makedirs(logsPath)
         fileLogHandler = TimedRotatingFileHandler(os.path.join(
-            astroPath, 'logs', "server.log"), 'midnight', 1)
+            astroPath, 'logs', "server.log"), 'midnight', 1, int(logRetention))
         fileLogHandler.setFormatter(formatter)
         fileLogHandler.setLevel(logging.DEBUG)
 

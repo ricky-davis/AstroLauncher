@@ -19,6 +19,7 @@ def generate_XAUTH(serverGUID):
         "CustomId": serverGUID,
         "TitleId": "5EA1"
     }
+    AstroLogging.logPrint(requestObj, "debug")
     x = (requests.post(url, headers=base_headers, json=requestObj)).json()
     AstroLogging.logPrint(x, "debug")
     return x['data']['SessionTicket']

@@ -18,6 +18,7 @@ from cogs.MultiConfig import MultiConfig
 def get_public_ip():
     url = "https://api.ipify.org?format=json"
     x = (requests.get(url)).json()
+    AstroLogging.logPrint(x, "debug")
     return x['ip']
 
 
@@ -34,12 +35,8 @@ def get_current_settings(launcher, ovrIP=False):
 
     confPath = os.path.join(
         curPath, r"Astro\Saved\Config\WindowsServer\AstroServerSettings.ini")
-    ovrConfig = {
-        "/Script/Astro.AstroServerSettings": {
-            "VerbosePlayerProperties": "True",
-            "HeartbeatInterval": "0"
-        }
-    }
+
+    AstroLogging.logPrint("Verifying PublicIP setting...", "debug")
     try:
         tConfig = MultiConfig().baseline(confPath, {})
         bIP = tConfig.getdict()[
@@ -54,6 +51,13 @@ def get_current_settings(launcher, ovrIP=False):
     except:
         validIP = False
 
+    ovrConfig = {
+        "/Script/Astro.AstroServerSettings": {
+            "VerbosePlayerProperties": "True",
+            "HeartbeatInterval": "0"
+        }
+    }
+
     try:
         if ovrIP:
             if launcher.launcherConfig.OverwritePublicIP or not validIP:
@@ -65,6 +69,8 @@ def get_current_settings(launcher, ovrIP=False):
         AstroLogging.logPrint("Could not update PublicIP!", t)
 
     try:
+        AstroLogging.logPrint(
+            "Forcing standardized settings in AstroServerSettings.ini...", "debug")
         MultiConfig().overwrite_with(confPath, ovrConfig)
 
         baseConfig = {
@@ -93,6 +99,8 @@ def get_current_settings(launcher, ovrIP=False):
                 "HeartbeatInterval": "0"
             }
         }
+        AstroLogging.logPrint(
+            "Baselining AstroServerSettings.ini...", "debug")
         config = MultiConfig().baseline(confPath, baseConfig)
 
         settings = config.getdict()['/Script/Astro.AstroServerSettings']
@@ -106,6 +114,7 @@ def get_current_settings(launcher, ovrIP=False):
                 "MaxInternetClientRate": "1000000"
             }
         }
+        AstroLogging.logPrint("Baselining Engine.ini...", "debug")
         config = MultiConfig().baseline(os.path.join(
             curPath, r"Astro\Saved\Config\WindowsServer\Engine.ini"), baseConfig)
         # print(settings)
