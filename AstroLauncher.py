@@ -56,7 +56,7 @@ class AstroLauncher():
         OverwritePublicIP: bool = False
         ShowServerFPSInConsole: bool = True
         AdminAutoConfigureFirewall: bool = True
-        LogRetentionDays: int = 30
+        LogRetentionDays: int = 7
 
         DisableWebServer: bool = False
         WebServerPort: int = 5000
@@ -173,8 +173,8 @@ class AstroLauncher():
             except:
                 pass
 
-    def __init__(self, astroPath, launcherINI="Launcher.ini", disable_auto_update=None, debugLogging=False):
-        AstroLogging.setup_logging(debugLogging=debugLogging)
+    def __init__(self, astroPath, launcherINI="Launcher.ini", disable_auto_update=None):
+        AstroLogging.setup_logging()
 
         # check if path specified
         if astroPath is not None:
@@ -721,8 +721,6 @@ if __name__ == "__main__":
             "-p", "--path", help="Set the server folder path", type=str.lower)
         parser.add_argument("-U", "--noupdate", dest="noautoupdate", default=None,
                             help="Disable autoupdate if running as exe", action='store_true')
-        parser.add_argument("-D", "--debug", dest="debugLogging", default=None,
-                            help="Enable Debug Logging", action='store_true')
         parser.add_argument("-i", "--ini", dest="launcherINI", default="Launcher.ini",
                             help="Set the location of the Launcher INI")
 
@@ -741,7 +739,7 @@ if __name__ == "__main__":
                 print("Insufficient launch options!")
         else:
             AstroLauncher(
-                args.path, disable_auto_update=args.noautoupdate, launcherINI=args.launcherINI, debugLogging=args.debugLogging)
+                args.path, disable_auto_update=args.noautoupdate, launcherINI=args.launcherINI)
     except KeyboardInterrupt:
         pass
     except Exception as err:

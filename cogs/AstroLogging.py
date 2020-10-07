@@ -3,11 +3,36 @@
 import logging
 import os
 import sys
+import gzip
+import shutil
+
 from io import StringIO
-from logging.handlers import TimedRotatingFileHandler
+from logging.handlers import TimedRotatingFileHandler as _TRFH
 from pprint import pformat
 
 from colorlog import ColoredFormatter
+
+
+class TimedRotatingFileHandler(_TRFH):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+    def doRollover(self):
+        super(TimedRotatingFileHandler, self).doRollover()
+        log_dir = os.path.dirname(self.baseFilename)
+        to_compress = [
+            os.path.join(log_dir, f) for f in os.listdir(log_dir) if f.startswith(
+                os.path.basename(os.path.splitext(self.baseFilename)[0])
+            ) and not f.endswith((".gz", ".log"))
+        ]
+        for f in to_compress:
+            try:
+                if os.path.exists(f):
+                    with open(f, "rb") as _old, gzip.open(f + ".gz", "wb") as _new:
+                        shutil.copyfileobj(_old, _new)
+                    os.remove(f)
+            except:
+                pass
 
 
 class AstroLogging():
@@ -31,7 +56,7 @@ class AstroLogging():
             logging.critical(pformat(message), exc_info=printTraceback)
 
     @staticmethod
-    def setup_logging(debugLogging=False):
+    def setup_logging():
         LOGFORMAT = '%(asctime)s - %(levelname)-6s %(message)s'
         CLOGFORMAT = '%(asctime)s - %(log_color)s%(levelname)-6s%(reset)s %(message)s'
         DATEFMT = "%H:%M:%S"
@@ -46,12 +71,11 @@ class AstroLogging():
         colorformatter = ColoredFormatter(
             CLOGFORMAT, datefmt=DATEFMT, log_colors=LOGCOLORS)
         rootLogger = logging.getLogger()
-        logLevel = logging.DEBUG if debugLogging else logging.INFO
         rootLogger.setLevel(logging.DEBUG)
 
         console = logging.StreamHandler()
         console.setFormatter(colorformatter)
-        console.setLevel(logLevel)
+        console.setLevel(logging.INFO)
 
         AstroLogging.log_stream = StringIO()
         stringIOLog = logging.StreamHandler(AstroLogging.log_stream)
@@ -75,6 +99,12 @@ class AstroLogging():
         fileLogHandler = TimedRotatingFileHandler(os.path.join(
             astroPath, 'logs', "server.log"), 'midnight', 1, int(logRetention))
         fileLogHandler.setFormatter(formatter)
-        fileLogHandler.setLevel(logging.DEBUG)
+        fileLogHandler.setLevel(logging.INFO)
+
+        debugLogHandler = TimedRotatingFileHandler(os.path.join(
+            astroPath, 'logs', "debug.log"), 'midnight', 1, 3)
+        debugLogHandler.setFormatter(formatter)
+        debugLogHandler.setLevel(logging.DEBUG)
 
         rootLogger.addHandler(fileLogHandler)
+        rootLogger.addHandler(debugLogHandler)

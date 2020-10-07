@@ -5,7 +5,6 @@
 [![Issues][issues-shield]][issues-url]
 [![MIT License][license-shield]][license-url]
 
-
 <br />
 <p align="center">
   <img src="https://raw.githubusercontent.com/ricky-davis/AstroLauncher/master/assets/astrolauncherlogo.ico" width="128px">
@@ -61,6 +60,7 @@ This tool is perfect for you if you are hosting your own dedicated server for As
 ## INI File options
 
 Below are the descriptions and defaults for the INI file options. Do not copy/paste this into the INI file, allow the INI file to be automatically generated. Every option must be present and set, and there must be no comments or extra options.
+
 ```python
 # Disables Auto Update -- Notifies but does not download
 DisableAutoUpdate = False
@@ -111,6 +111,9 @@ ShowServerFPSInConsole = True
 # When launched in Administrator Mode, Astro Launcher will attempt to automatically configure the firewall settings
 AdminAutoConfigureFirewall = True
 
+# How long to keep server logs before removing them. This does not control debug logs.
+LogRetentionDays: int = 7
+
 # Disable the Web Management Server
 DisableWebServer = False
 
@@ -136,7 +139,6 @@ SSLKeyFile =
 CPUAffinity =
 
 ```
-
 
 <!-- GETTING STARTED -->
 
@@ -209,7 +211,9 @@ pipenv install -d
 ```sh
 pyinstaller AstroLauncher.py -F --add-data "assets;./assets" --icon=assets/astrolauncherlogo.ico
 ```
+
 or just run the BuildEXE.py which automatically cleans up afterwards
+
 ```sh
 python BuildEXE.py
 ```
@@ -252,15 +256,13 @@ Project Link: [https://github.com/ricky-davis/AstroLauncher](https://github.com/
 <!-- MARKDOWN LINKS & IMAGES -->
 <!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
 
-[Astroneer discord]: https://discord.com/invite/astroneer
+[astroneer discord]: https://discord.com/invite/astroneer
 [contributors-shield]: https://img.shields.io/github/contributors/ricky-davis/AstroLauncher.svg?style=flat-square
 [contributors-url]: https://github.com/ricky-davis/AstroLauncher/graphs/contributors
 [forks-shield]: https://img.shields.io/github/forks/ricky-davis/AstroLauncher.svg?style=flat-square
 [forks-url]: https://github.com/ricky-davis/AstroLauncher/network/members
-
-[downloads-shield]:https://img.shields.io/github/downloads/ricky-davis/AstroLauncher/total
-[downloads-url]:https://github.com/ricky-davis/AstroLauncher/releases/latest
-
+[downloads-shield]: https://img.shields.io/github/downloads/ricky-davis/AstroLauncher/total
+[downloads-url]: https://github.com/ricky-davis/AstroLauncher/releases/latest
 [stars-shield]: https://img.shields.io/github/stars/ricky-davis/AstroLauncher.svg?style=flat-square
 [stars-url]: https://github.com/ricky-davis/AstroLauncher/stargazers
 [issues-shield]: https://img.shields.io/github/issues/ricky-davis/AstroLauncher.svg?style=flat-square
