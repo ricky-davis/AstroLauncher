@@ -56,6 +56,7 @@ class WebServer(tornado.web.Application):
         settings = {
             'autoreload': True,
             "static_path": self.assetDir,
+            "static_url_prefix": self.baseURL+"/static/",
             "cookie_secret": self.cookieSecret,
             "login_url": "/login",
             "ui_modules": UIModules,
