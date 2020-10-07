@@ -1,7 +1,7 @@
 <div id="banner" class="container-fluid">
     <div class="row align-items-center pb-0 pt-2">
         <div class="col-12 col-md-1 text-center text-md-left">
-            <a href="/">
+            <a href="{{ launcher.webServer.baseURL }}/">
                 <img
                     id="logo"
                     src="{{static_url('AstroLauncherTransparent.png') }}"
@@ -24,9 +24,17 @@
         <div class="col-12 col-md-1 align-self-end text-right px-3 mb-2">
             <span id="authLink">
                 {% if isAdmin %}
-                <a class="text-danger" href="/logout">Logout</a>
+                <a
+                    class="text-danger"
+                    href="{{ launcher.webServer.baseURL }}/logout"
+                    >Logout</a
+                >
                 {% else %}
-                <a class="text-success" href="/login">Login</a>
+                <a
+                    class="text-success"
+                    href="{{ launcher.webServer.baseURL }}/login"
+                    >Login</a
+                >
                 {% end %}
             </span>
         </div>

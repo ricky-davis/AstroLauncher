@@ -123,6 +123,9 @@ WebServerPort = 5000
 # Automatically generated SHA256 password hash for the admin panel in the webserver
 WebServerPasswordHash =
 
+# The Base URL that the Web Server hosts at. '/astroneer' would be https://example.com/astroneer/ . Must start with and end with a /
+WebServerBaseURL = /
+
 # Enable HTTPS for the webserver. If no/wrong Cert/Key files are specified, defaults to False
 EnableWebServerSSL = False
 

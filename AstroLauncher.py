@@ -61,6 +61,7 @@ class AstroLauncher():
         DisableWebServer: bool = False
         WebServerPort: int = 5000
         WebServerPasswordHash: str = ""
+        WebServerBaseURL: str = "/"
 
         EnableWebServerSSL: bool = False
         SSLPort: int = 443

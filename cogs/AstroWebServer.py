@@ -6,7 +6,7 @@ import os
 import secrets
 import sys
 import uuid
-#from pprint import pprint
+# from pprint import pprint
 from threading import Thread
 
 import pathvalidate
@@ -39,6 +39,11 @@ class WebServer(tornado.web.Application):
         self.cookieSecret = secrets.token_hex(16).encode()
         self.passwordHash = self.launcher.launcherConfig.WebServerPasswordHash
         cfgOvr = {}
+        self.baseURL = self.launcher.launcherConfig.WebServerBaseURL.rstrip(
+            "/")
+        if self.baseURL != "" and not self.baseURL.startswith("/"):
+            cfgOvr["WebServerBaseURL"] = "/"
+            self.baseURL = ""
 
         if len(self.passwordHash) != 64:
             cfgOvr["WebServerPasswordHash"] = ""
@@ -49,37 +54,48 @@ class WebServer(tornado.web.Application):
             self.launcher.refresh_launcher_config()
 
         settings = {
-            'debug': True,
+            'autoreload': True,
             "static_path": self.assetDir,
             "cookie_secret": self.cookieSecret,
             "login_url": "/login",
             "ui_modules": UIModules,
-            "websocket_ping_interval": 0
+            "websocket_ping_interval": 0,
+            "default_handler_class": NotFoundHandler
         }
 
-        handlers = [(r'/', MainHandler, dict(path=settings['static_path'], launcher=self.launcher)),
-                    (r"/login", LoginHandler,
-                     dict(path=settings['static_path'], launcher=self.launcher)),
-                    (r'/logout', LogoutHandler, dict(launcher=self.launcher)),
-                    (r"/ws", APIWebSocket, dict(launcher=self.launcher)),
-                    (r"/api", APIRequestHandler, dict(launcher=self.launcher)),
-                    (r"/api/savegame", SaveRequestHandler,
-                     dict(launcher=self.launcher)),
-                    (r"/api/savegame/load", LoadSaveRequestHandler,
-                     dict(launcher=self.launcher)),
-                    (r"/api/savegame/delete", DeleteSaveRequestHandler,
-                     dict(launcher=self.launcher)),
-                    (r"/api/savegame/rename", RenameSaveRequestHandler,
-                     dict(launcher=self.launcher)),
-                    (r"/api/reboot", RebootRequestHandler,
-                     dict(launcher=self.launcher)),
-                    (r"/api/shutdown", ShutdownRequestHandler,
-                     dict(launcher=self.launcher)),
-                    (r"/api/player", PlayerRequestHandler,
-                     dict(launcher=self.launcher)),
-                    (r"/api/newsave", NewSaveRequestHandler,
-                     dict(launcher=self.launcher)),
-                    ]
+        thandlers = [(r'', MainAltHandler,
+                      dict(path=settings['static_path'], launcher=self.launcher)),
+                     (r'/', MainHandler,
+                      dict(path=settings['static_path'], launcher=self.launcher)),
+                     (r"/login", LoginHandler,
+                      dict(path=settings['static_path'], launcher=self.launcher)),
+                     (r'/logout', LogoutHandler, dict(launcher=self.launcher)),
+                     (r"/ws", APIWebSocket, dict(launcher=self.launcher)),
+                     (r"/api", APIRequestHandler, dict(launcher=self.launcher)),
+                     (r"/api/savegame", SaveRequestHandler,
+                      dict(launcher=self.launcher)),
+                     (r"/api/savegame/load", LoadSaveRequestHandler,
+                      dict(launcher=self.launcher)),
+                     (r"/api/savegame/delete", DeleteSaveRequestHandler,
+                      dict(launcher=self.launcher)),
+                     (r"/api/savegame/rename", RenameSaveRequestHandler,
+                      dict(launcher=self.launcher)),
+                     (r"/api/reboot", RebootRequestHandler,
+                      dict(launcher=self.launcher)),
+                     (r"/api/shutdown", ShutdownRequestHandler,
+                      dict(launcher=self.launcher)),
+                     (r"/api/player", PlayerRequestHandler,
+                      dict(launcher=self.launcher)),
+                     (r"/api/newsave", NewSaveRequestHandler,
+                      dict(launcher=self.launcher)),
+                     ]
+
+        handlers = []
+        for h in thandlers:
+            t = list(h)
+            t[0] = self.baseURL + t[0]
+            handlers.append(tuple(t))
+
         super().__init__(handlers, **settings)
 
     def run(self):
@@ -186,6 +202,14 @@ class WebServer(tornado.web.Application):
         return res
 
 
+class NotFoundHandler(tornado.web.RequestHandler):
+    def prepare(self):  # for all methods
+        raise tornado.web.HTTPError(
+            status_code=404,
+            reason="Invalid resource path."
+        )
+
+
 class BaseHandler(tornado.web.RequestHandler):
     def initialize(self, launcher):
         self.launcher = launcher
@@ -252,6 +276,17 @@ class APIWebSocket(tornado.websocket.WebSocketHandler):
             self.write_message(newData)
 
 
+class MainAltHandler(BaseHandler):
+    # pylint: disable=arguments-differ
+    def initialize(self, path, launcher):
+        self.path = path
+        self.launcher = launcher
+        self.WS = self.launcher.webServer
+
+    def get(self):
+        self.redirect(self.WS.baseURL+"/")
+
+
 class MainHandler(BaseHandler):
     # pylint: disable=arguments-differ
     def initialize(self, path, launcher):
@@ -267,7 +302,7 @@ class MainHandler(BaseHandler):
                         isAdmin=self.current_user == b"admin",
                         launcher=self.launcher)
         else:
-            self.redirect("/login")
+            self.redirect(self.WS.baseURL+"/login")
 
 
 class LoginHandler(BaseHandler):
@@ -285,7 +320,7 @@ class LoginHandler(BaseHandler):
                         hashSet=not self.application.passwordHash == "",
                         launcher=self.launcher)
         else:
-            self.redirect("/")
+            self.redirect(self.WS.baseURL+"/")
 
     def post(self):
         self.WS.get_client_id(self)
@@ -297,7 +332,7 @@ class LoginHandler(BaseHandler):
             lfcg = AstroLauncher.LauncherConfig(
                 WebServerPasswordHash=self.application.passwordHash)
             self.application.launcher.refresh_launcher_config(lfcg)
-            self.redirect("/login")
+            self.redirect(self.WS.baseURL+"/login")
         else:
             # check hash
             sendHash = hashlib.sha256(
@@ -306,16 +341,16 @@ class LoginHandler(BaseHandler):
             if sendHash == self.application.passwordHash:
                 self.set_secure_cookie("login", bytes(
                     "admin", 'utf-8'))
-                self.redirect("/")
+                self.redirect(self.WS.baseURL+"/")
             else:
-                self.redirect("/login")
+                self.redirect(self.WS.baseURL+"/login")
 
 
 class LogoutHandler(BaseHandler):
     def get(self):
         self.WS.get_client_id(self)
         self.clear_cookie('login')
-        self.redirect('/')
+        self.redirect(self.WS.baseURL+"/")
 
 
 class SaveRequestHandler(BaseHandler):

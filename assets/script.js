@@ -1,13 +1,16 @@
 console.log("Hi there! Feel to explore the code!");
 //let apiURL = 'http://127.0.0.1:80/api'
-let apiURL = "/api";
+let baseURL = location.pathname;
+let apiURL = baseURL + "api";
 let playersTableOriginal = $("#onlinePlayersTable").html();
 let saveGamesTableOriginal = $("#saveGamesTable").html();
 
 let webSocket = null;
 const createWebSocket = async () => {
     let WSprotocol = location.protocol == "https:" ? "wss" : "ws";
-    webSocket = new WebSocket(WSprotocol + "://" + location.host + "/ws");
+    webSocket = new WebSocket(
+        WSprotocol + "://" + location.host + baseURL + "ws"
+    );
     webSocket.onmessage = function (evt) {
         tick(evt.data);
     };

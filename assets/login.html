@@ -20,7 +20,10 @@
 
                         <div id="loginCardBody" class="card-body pt-4 show">
                             {% if isAdmin %}
-                            <form action="/logout" method="GET">
+                            <form
+                                action="{{ launcher.webServer.baseURL }}/logout"
+                                method="GET"
+                            >
                                 <button
                                     id="stopLauncherBtn"
                                     type="submit"
@@ -30,13 +33,16 @@
                                 </button>
                             </form>
                             {% else %}
-                            <form action="/login" method="post">
+                            <form
+                                action="{{ launcher.webServer.baseURL }}/login"
+                                method="post"
+                            >
                                 {% if hashSet %} Password: {% else %} New
                                 password: {% end %}
                                 <input
                                     type="password"
                                     name="password"
-                                    style="color: black;"
+                                    style="color: black"
                                     autofocus
                                 />
 
