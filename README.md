@@ -112,7 +112,7 @@ ShowServerFPSInConsole = True
 AdminAutoConfigureFirewall = True
 
 # How long to keep server logs before removing them. This does not control debug logs.
-LogRetentionDays: int = 7
+LogRetentionDays = 7
 
 # Disable the Web Management Server
 DisableWebServer = False

@@ -41,6 +41,11 @@ class WebServer(tornado.web.Application):
         cfgOvr = {}
         self.baseURL = self.launcher.launcherConfig.WebServerBaseURL.rstrip(
             "/")
+        self.baseURL = self.baseURL.replace("\\", "/")
+        if self.baseURL != self.launcher.launcherConfig.WebServerBaseURL.rstrip(
+                "/"):
+            cfgOvr["WebServerBaseURL"] = self.baseURL
+
         if self.baseURL != "" and not self.baseURL.startswith("/"):
             cfgOvr["WebServerBaseURL"] = "/"
             self.baseURL = ""
