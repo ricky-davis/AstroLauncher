@@ -122,10 +122,10 @@ class WebServer(tornado.web.Application):
                 "keyfile": os.path.join(self.launcher.launcherPath, keyFile),
             }
             self.listen(sslPort, ssl_options=ssl_options)
-            url = f"https://localhost{':'+str(sslPort) if sslPort != 443 else ''}"
+            url = f"https://localhost{':'+str(sslPort) if sslPort != 443 else ''}{self.baseURL+'/' if self.baseURL else ''}"
         else:
             self.listen(self.port)
-            url = f"http://localhost{':'+str(self.port) if self.port != 80 else ''}"
+            url = f"http://localhost{':'+str(self.port) if self.port != 80 else ''}{self.baseURL+'/' if self.baseURL else ''}"
         AstroLogging.logPrint(f"Running a web server at {url}")
         if self.passwordHash == "":
             AstroLogging.logPrint(
