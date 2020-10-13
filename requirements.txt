@@ -2,10 +2,11 @@
 altgraph==0.17
 asyncio==3.4.3
 certifi==2020.6.20
+charamel==1.0.0
 chardet==3.0.4
-colorama==0.4.3; sys_platform == 'win32'
-colorlog==4.2.1
-future==0.18.2; python_version >= '2.6' and python_version not in '3.0, 3.1, 3.2, 3.3'
+colorama==0.4.4; sys_platform == 'win32'
+colorlog==4.4.0
+future==0.18.2; python_version >= '2.6' and python_version not in '3.0, 3.1, 3.2'
 idna==2.10; python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3'
 ipy==1.0
 pathtools==0.1.2

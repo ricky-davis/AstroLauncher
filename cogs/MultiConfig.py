@@ -2,8 +2,7 @@
 import json
 import os
 
-import chardet
-
+from charamel import Detector
 _default_dict = dict
 
 
@@ -116,6 +115,7 @@ class MultiConfig():
             pass
         with open(filePath, 'rb') as fP:
             rawdata = fP.read()
-        result = chardet.detect(rawdata)
-        charenc = result['encoding']
+        detector = Detector()
+        result = detector.detect(rawdata)
+        charenc = result.name
         return charenc

@@ -121,12 +121,13 @@ def get_current_settings(launcher, ovrIP=False):
         settings.update(config.getdict()['URL'])
         # print(settings)
         return settings
-    except:
+    except Exception as e:
         AstroLogging.logPrint("Could not retrieve INI settings!", "critical")
         AstroLogging.logPrint(
             "Please ensure everything is correctly formatted...", "critical")
         AstroLogging.logPrint(
             "or delete the INI and allow the launcher to recreate it!", "critical")
+        AstroLogging.logPrint(e, "critical", True)
         try:
             launcher.DedicatedServer.kill_server()
         except:
