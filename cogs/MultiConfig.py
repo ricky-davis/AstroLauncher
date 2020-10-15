@@ -117,5 +117,5 @@ class MultiConfig():
             rawdata = fP.read()
         detector = Detector()
         result = detector.detect(rawdata)
-        charenc = result.name
+        charenc = result.value
         return charenc
