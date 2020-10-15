@@ -18,7 +18,6 @@ asyncio = "*"
 ipy = "*"
 pathvalidate = "*"
 pypakparser = "==1.2.0"
-charamel = "*"
 
 [requires]
 python_version = "3.7"
