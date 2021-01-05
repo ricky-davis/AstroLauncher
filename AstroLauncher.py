@@ -14,7 +14,6 @@ from subprocess import DEVNULL
 from threading import Thread
 
 import psutil
-import requests
 from watchdog.events import FileSystemEventHandler
 from watchdog.observers import Observer
 
@@ -25,6 +24,7 @@ from cogs.AstroDaemon import AstroDaemon
 from cogs.AstroDedicatedServer import AstroDedicatedServer
 from cogs.AstroLogging import AstroLogging
 from cogs.MultiConfig import MultiConfig
+from cogs.utils import AstroRequests
 
 
 """
@@ -57,6 +57,8 @@ class AstroLauncher():
         ShowServerFPSInConsole: bool = True
         AdminAutoConfigureFirewall: bool = True
         LogRetentionDays: int = 7
+        DiscordWebHookURL: str = ""
+        DiscordWebHookLevel: str = "cmd"
 
         DisableWebServer: bool = False
         WebServerPort: int = 5000
@@ -119,10 +121,10 @@ class AstroLauncher():
             super().__init__()
 
         def handle_files(self):
-            #print(f"first: {self.pendingFiles}")
+            # print(f"first: {self.pendingFiles}")
             time.sleep(2)
-            #print(f"second: {self.pendingFiles}")
-            #AstroLogging.logPrint("DEBUG: INSIDE THREAD")
+            # print(f"second: {self.pendingFiles}")
+            # AstroLogging.logPrint("DEBUG: INSIDE THREAD")
 
             path = os.path.join(self.astroPath, self.moveToPath)
             try:
@@ -163,7 +165,7 @@ class AstroLauncher():
             # AstroLogging.logPrint(event)
             # AstroLogging.logPrint("File in save directory changed")
 
-            #AstroLogging.logPrint("DEBUG: File modified.. Starting thread")
+            # AstroLogging.logPrint("DEBUG: File modified.. Starting thread")
 
             try:
                 self.pendingFiles.append(event.src_path)
@@ -207,6 +209,11 @@ class AstroLauncher():
         self.launcherConfig = self.LauncherConfig()
         self.launcherPath = os.getcwd()
         self.refresh_launcher_config()
+        AstroLogging.discordWebhookURL = self.launcherConfig.DiscordWebHookURL
+        dwhl = self.launcherConfig.DiscordWebHookLevel.lower()
+        dwhl = dwhl if dwhl in ("all", "cmd", "chat") else "cmd"
+        AstroLogging.discordWebhookLevel = dwhl
+        self.start_WebHookLoop()
         AstroLogging.setup_loggingPath(
             astroPath=self.astroPath, logRetention=int(self.launcherConfig.LogRetentionDays))
         if disable_auto_update is not None:
@@ -233,7 +240,7 @@ class AstroLauncher():
             "https://github.com/ricky-davis/AstroLauncher/issues")
         AstroLogging.logPrint(
             "To safely stop the launcher and server press CTRL+C")
-
+        AstroRequests.checkProxies()
         self.latestURL = "https://github.com/ricky-davis/AstroLauncher/releases/latest"
         bName = os.path.basename(sys.executable)
         if sys.argv[0] == os.path.splitext(bName)[0]:
@@ -374,23 +381,20 @@ class AstroLauncher():
         return settings
 
     def check_for_update(self, serverStart=False):
-        try:
-            url = "https://api.github.com/repos/ricky-davis/AstroLauncher/releases/latest"
-            data = ((requests.get(url)).json())
-            latestVersion = data['tag_name']
-            if latestVersion != self.version:
-                self.hasUpdate = latestVersion
-                AstroLogging.logPrint(
-                    f"UPDATE: There is a newer version of the launcher out! {latestVersion}")
-                AstroLogging.logPrint(f"Download it at {self.latestURL}")
-                aupdate = not self.launcherConfig.DisableAutoUpdate
-                if not self.launcherConfig.UpdateOnServerRestart and serverStart:
-                    return
+        url = "https://api.github.com/repos/ricky-davis/AstroLauncher/releases/latest"
+        data = ((AstroRequests.get(url)).json())
+        latestVersion = data['tag_name']
+        if latestVersion != self.version:
+            self.hasUpdate = latestVersion
+            AstroLogging.logPrint(
+                f"UPDATE: There is a newer version of the launcher out! {latestVersion}")
+            AstroLogging.logPrint(f"Download it at {self.latestURL}")
+            aupdate = not self.launcherConfig.DisableAutoUpdate
+            if not self.launcherConfig.UpdateOnServerRestart and serverStart:
+                return
 
-                if self.isExecutable and aupdate:
-                    self.autoupdate(data)
-        except:
-            pass
+            if self.isExecutable and aupdate:
+                self.autoupdate(data)
 
     def autoupdate(self, data):
         x = data
@@ -475,7 +479,8 @@ class AstroLauncher():
                     "Unable to start Server Process after 10 seconds!", "critical")
                 return False
 
-        AstroLogging.logPrint("Server started! Getting ready....")
+        AstroLogging.logPrint(
+            "Server started! Getting ready....", ovrDWHL=True)
 
         try:
             self.DaemonProcess = AstroDaemon.launch(
@@ -523,7 +528,7 @@ class AstroLauncher():
         doneTime = time.time()
         elapsed = doneTime - startTime
         AstroLogging.logPrint(
-            f"Server ready! Took {round(elapsed,2)} seconds to register.")  # {self.DedicatedServer.LobbyID}
+            f"Server ready! Took {round(elapsed,2)} seconds to register.", ovrDWHL=True)  # {self.DedicatedServer.LobbyID}
         self.DedicatedServer.status = "ready"
         self.DedicatedServer.server_loop()
 
@@ -702,6 +707,11 @@ class AstroLauncher():
             os.kill(os.getpid(), 9)
         except:
             pass
+
+    def start_WebHookLoop(self):
+        t = Thread(target=AstroLogging.sendDiscordReqLoop, args=())
+        t.daemon = True
+        t.start()
 
 
 if __name__ == "__main__":

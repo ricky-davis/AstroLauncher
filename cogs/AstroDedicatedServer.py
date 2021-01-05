@@ -307,7 +307,7 @@ class AstroDedicatedServer():
         # time.sleep(1)
         self.AstroRCON.DSServerShutdown()
         self.DSServerStats = None
-        AstroLogging.logPrint("Server shutdown.")
+        AstroLogging.logPrint("Server shutdown.", ovrDWHL=True)
 
     def save_and_shutdown(self):
         if not self.AstroRCON.connected:
@@ -459,7 +459,7 @@ class AstroDedicatedServer():
                         self.stripPlayers.remove(playerDif)
 
                     AstroLogging.logPrint(
-                        f"Player joining: {playerDif}")
+                        f"Player joining: {playerDif}", ovrDWHL=True)
 
                     # Add player to INI with Unlisted category if not exists or is Pending
                     pp = list(self.settings.PlayerProperties)
@@ -475,7 +475,7 @@ class AstroDedicatedServer():
                         set(self.onlinePlayers) - set(curPlayers))[0]
                     self.onlinePlayers = curPlayers
                     AstroLogging.logPrint(
-                        f"Player left: {playerDif}")
+                        f"Player left: {playerDif}", ovrDWHL=True)
 
                 self.players['playerInfo'] = [
                     x for x in playerList['playerInfo'] if x['playerName'] not in self.stripPlayers]

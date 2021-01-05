@@ -137,6 +137,16 @@ h2 {
     width: 18px;
     padding-left: 1px;
 }
+.iconCMD {
+    color: #2a56aa;
+    width: 18px;
+    padding-left: 1px;
+}
+.iconChat {
+    color: #3a96dd;
+    width: 18px;
+    padding-left: 1px;
+}
 .iconWarn {
     color: red;
 }

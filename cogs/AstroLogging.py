@@ -1,16 +1,19 @@
 
 
+import gzip
 import logging
 import os
-import sys
-import gzip
+import random
 import shutil
-
+import sys
 from io import StringIO
 from logging.handlers import TimedRotatingFileHandler as _TRFH
 from pprint import pformat
+from queue import Queue
+from threading import Thread
 
 from colorlog import ColoredFormatter
+from cogs.utils import AstroRequests
 
 
 class TimedRotatingFileHandler(_TRFH):
@@ -37,13 +40,39 @@ class TimedRotatingFileHandler(_TRFH):
 
 class AstroLogging():
     log_stream = None
+    discordWebhookURL = None
+    discordWebhookLevel = "chat"
+    discordWebhookAvatarDict = {}
+    discordWebhookQueue = Queue()
+    discordWebhookHeaders = {
+        'Content-Type': 'application/json; charset=utf-8'
+    }
+    avatarThemes = [
+        "frogideas",
+        "sugarsweets",
+        "heatwave",
+        "daisygarden",
+        "seascape",
+        "summerwarmth",
+        "bythepool",
+        "duskfalling",
+        "berrypie"
+    ]
 
     @staticmethod
-    def logPrint(message, msgType="info", printTraceback=False):
+    def logPrint(message, msgType="info", playerName=None, printTraceback=False, ovrDWHL=False, printToDiscord=None):
+        ptd = True
         if msgType == "debug":
+            ptd = False
             logging.debug(pformat(message), exc_info=printTraceback)
         if msgType == "info":
             logging.info(pformat(message), exc_info=printTraceback)
+        if msgType == "chat":
+            msg = f"{playerName}: {message}"
+            logging.chat(pformat(msg), exc_info=printTraceback)
+        if msgType == "cmd":
+            msg = f"{playerName}: /{message}"
+            logging.cmd(pformat(msg), exc_info=printTraceback)
         if msgType == "warning":
             logging.warning(pformat(message), exc_info=printTraceback)
         if msgType == "error":
@@ -55,6 +84,71 @@ class AstroLogging():
                 logging.critical(pformat(ermsg))
             logging.critical(pformat(message), exc_info=printTraceback)
 
+        if printToDiscord is not None:
+            ptd = printToDiscord
+
+        if AstroLogging.discordWebhookURL and ptd:
+            lvl = AstroLogging.discordWebhookLevel
+            requestObj = {
+                "content": message,
+                "avatar_url": "https://cdn.discordapp.com/attachments/778327974071238676/778334487208525844/AstroLauncherTransparent.png",
+                "allowed_mentions": {
+                    "parse": []
+                }
+            }
+            if msgType in ("chat", "cmd"):
+                if msgType == "cmd":
+                    if lvl != "cmd" and lvl != "all":
+                        return
+                    message = "/"+message
+                requestObj["content"] = message
+                requestObj['username'] = playerName
+                if playerName not in AstroLogging.discordWebhookAvatarDict.keys():
+                    random.seed(playerName)
+                    playerNameTheme = random.choice(AstroLogging.avatarThemes)
+                    avatarURL = f"https://www.tinygraphs.com/squares/{playerName}?theme={playerNameTheme}&numcolors=4&size=220&fmt=png"
+                    AstroLogging.discordWebhookAvatarDict[playerName] = avatarURL
+                requestObj['avatar_url'] = AstroLogging.discordWebhookAvatarDict[playerName]
+            else:
+                if lvl != "all" and not ovrDWHL:
+                    return
+
+            AstroLogging.discordWebhookQueue.put(requestObj)
+
+    # pylint: disable=unused-argument
+    @classmethod
+    def sendDiscordReqLoop(cls):
+        def sendDiscordReq(queueMsg):
+            try:
+                _ = (AstroRequests.post(cls.discordWebhookURL,
+                                        headers=cls.discordWebhookHeaders, json=queueMsg))
+            except:
+                AstroLogging.logPrint(
+                    "Failed to send log msg to discord.", printToDiscord=False)
+        while True:
+            t = Thread(target=sendDiscordReq, args=(
+                cls.discordWebhookQueue.get(),))
+            t.daemon = True
+            t.start()
+
+    @staticmethod
+    def cmd(msg, *args, **kwargs):
+        if logging.getLogger().isEnabledFor(21):
+            logging.log(21, msg)
+
+    logging.addLevelName(21, "CMD")
+    logging.cmd = cmd.__func__
+    logging.Logger.cmd = cmd.__func__
+
+    @staticmethod
+    def chat(msg, *args, **kwargs):
+        if logging.getLogger().isEnabledFor(21):
+            logging.log(22, msg)
+
+    logging.addLevelName(22, "CHAT")
+    logging.chat = chat.__func__
+    logging.Logger.chat = chat.__func__
+
     @staticmethod
     def setup_logging():
         LOGFORMAT = '%(asctime)s - %(levelname)-6s %(message)s'
@@ -63,6 +157,8 @@ class AstroLogging():
         LOGCOLORS = {
             'DEBUG':    'cyan',
             'INFO':     'green',
+            'CMD':      'blue',
+            'CHAT':     'cyan',
             'WARNING':  'red',
             'ERROR':    'red',
             'CRITICAL': 'red,bg_white',
@@ -85,7 +181,7 @@ class AstroLogging():
         rootLogger.addHandler(console)
         rootLogger.addHandler(stringIOLog)
 
-    @staticmethod
+    @ staticmethod
     def setup_loggingPath(astroPath, logRetention=0):
         LOGFORMAT = '%(asctime)s - %(levelname)-6s %(message)s'
         DATEFMT = "%H:%M:%S"

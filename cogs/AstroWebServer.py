@@ -94,6 +94,8 @@ class WebServer(tornado.web.Application):
                       dict(launcher=self.launcher)),
                      (r"/api/newsave", NewSaveRequestHandler,
                       dict(launcher=self.launcher)),
+                     (r"/api/rodata", RODataRequestHandler,
+                      dict(launcher=self.launcher))
                      ]
 
         handlers = []
@@ -357,6 +359,23 @@ class LogoutHandler(BaseHandler):
         self.WS.get_client_id(self)
         self.clear_cookie('login')
         self.redirect(self.WS.baseURL+"/")
+
+
+class RODataRequestHandler(BaseHandler):
+    def get(self):
+        ip = self.request.headers.get("X-Real-IP") or \
+            self.request.headers.get("X-Forwarded-For") or \
+            self.request.remote_ip
+        if ip == "::1":
+            evt = self.get_argument('evt')
+            msg = self.get_argument('msg')
+            name = self.get_argument('name')
+            if evt == "chat" or evt == "cmd":
+                AstroLogging.logPrint(msg, msgType=evt, playerName=name)
+            self.write({"message": "Success"})
+        else:
+            print(f"{ip} Tried to send fake chat message")
+            self.write({"message": "Error"})
 
 
 class SaveRequestHandler(BaseHandler):
