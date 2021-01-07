@@ -371,7 +371,8 @@ class RODataRequestHandler(BaseHandler):
             msg = self.get_argument('msg')
             name = self.get_argument('name')
             if evt == "chat" or evt == "cmd":
-                AstroLogging.logPrint(msg, msgType=evt, playerName=name)
+                AstroLogging.logPrint(
+                    msg, msgType=evt, playerName=name, dwet="c")
             self.write({"message": "Success"})
         else:
             print(f"{ip} Tried to send fake chat message")

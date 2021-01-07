@@ -459,7 +459,7 @@ class AstroDedicatedServer():
                         self.stripPlayers.remove(playerDif)
 
                     AstroLogging.logPrint(
-                        f"Player joining: {playerDif}", ovrDWHL=True)
+                        f"Player joining: {playerDif}", ovrDWHL=True, dwet="j")
 
                     # Add player to INI with Unlisted category if not exists or is Pending
                     pp = list(self.settings.PlayerProperties)
@@ -475,7 +475,7 @@ class AstroDedicatedServer():
                         set(self.onlinePlayers) - set(curPlayers))[0]
                     self.onlinePlayers = curPlayers
                     AstroLogging.logPrint(
-                        f"Player left: {playerDif}", ovrDWHL=True)
+                        f"Player left: {playerDif}", ovrDWHL=True, dwet="l")
 
                 self.players['playerInfo'] = [
                     x for x in playerList['playerInfo'] if x['playerName'] not in self.stripPlayers]

@@ -58,9 +58,16 @@ class AstroLogging():
         "duskfalling",
         "berrypie"
     ]
+    discordWebhookEmoji = {
+        "j": ":wave:",
+        "l": ":x:",
+        "s": ":floppy_disk:",
+        "b": ":recycle:",
+        "c": ":speech_balloon:"
+    }
 
     @staticmethod
-    def logPrint(message, msgType="info", playerName=None, printTraceback=False, ovrDWHL=False, printToDiscord=None):
+    def logPrint(message, msgType="info", playerName=None, printTraceback=False, ovrDWHL=False, printToDiscord=None, dwet=None):
         ptd = True
         if msgType == "debug":
             ptd = False
@@ -89,6 +96,8 @@ class AstroLogging():
 
         if AstroLogging.discordWebhookURL and ptd:
             lvl = AstroLogging.discordWebhookLevel
+            if dwet:
+                message = f"{AstroLogging.discordWebhookEmoji[dwet]} {message}"
             requestObj = {
                 "content": message,
                 "avatar_url": "https://cdn.discordapp.com/attachments/778327974071238676/778334487208525844/AstroLauncherTransparent.png",

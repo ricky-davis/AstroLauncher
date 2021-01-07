@@ -106,7 +106,7 @@ class AstroLauncher():
                 fileName = sorted(
                     fileNames, key=os.path.getmtime, reverse=True)[0]
                 AstroLogging.logPrint(
-                    f"Server saved. {os.path.basename(fileName)}")
+                    f"Server saved. {os.path.basename(fileName)}", dwet="s")
             except:
                 pass
             # self.launcher.saveObserver.stop()
@@ -141,7 +141,8 @@ class AstroLauncher():
             except Exception as e:
                 AstroLogging.logPrint(e, "error")
 
-            AstroLogging.logPrint("Copying backup(s) to retention folder.")
+            AstroLogging.logPrint(
+                "Copying backup(s) to retention folder.", dwet="b")
             # time.sleep(1)
             try:
 
