@@ -205,6 +205,7 @@ class AstroLauncher():
                     "Unable to find server executable anywhere! (AstroServer.exe)", "critical")
                 time.sleep(5)
                 return
+        # AstroRequests.checkProxies()
 
         self.launcherINI = launcherINI
         self.launcherConfig = self.LauncherConfig()
@@ -241,7 +242,7 @@ class AstroLauncher():
             "https://github.com/ricky-davis/AstroLauncher/issues")
         AstroLogging.logPrint(
             "To safely stop the launcher and server press CTRL+C")
-        AstroRequests.checkProxies()
+        # AstroRequests.checkProxies()
         self.latestURL = "https://github.com/ricky-davis/AstroLauncher/releases/latest"
         bName = os.path.basename(sys.executable)
         if sys.argv[0] == os.path.splitext(bName)[0]:
@@ -423,7 +424,7 @@ class AstroLauncher():
     # pylint: disable=unused-argument
     def signal_handler(self, sig, frame):
         self.DedicatedServer.kill_server(
-            reason="Launcher shutting down", save=True)
+            reason="Launcher shutting down via signal", save=True)
 
     def start_server(self, firstLaunch=False):
         """
@@ -431,7 +432,7 @@ class AstroLauncher():
         """
         if firstLaunch:
             atexit.register(self.DedicatedServer.kill_server,
-                            reason="Launcher shutting down",
+                            reason="Launcher shutting down via exit",
                             save=True)
             signal.signal(signal.SIGINT, self.signal_handler)
         else:
@@ -516,7 +517,8 @@ class AstroLauncher():
                         "Server was forcefully closed before registration. Exiting....")
                     return False
             except KeyboardInterrupt:
-                self.DedicatedServer.kill_server("Launcher shutting down")
+                self.DedicatedServer.kill_server(
+                    "Launcher shutting down via KeyboardInterrupt")
             except:
                 AstroLogging.logPrint(
                     "Failed to check server. Probably hit rate limit. Backing off and trying again...")

@@ -495,8 +495,11 @@ class AstroDedicatedServer():
                 # reg_srvr['LobbyID']
                 AstroLogging.logPrint(
                     f"Deregistering {counter+1}/{len(servers_registered)}...")
-                AstroAPI.deregister_server(
+                drg_status = AstroAPI.deregister_server(
                     reg_srvr['LobbyID'], self.launcher.headers)
+                if 'status' in drg_status and drg_status['status'] == "Error":
+                    AstroLogging.logPrint(
+                        "Trouble deregistering server. Multiple servers may still be registered.", msgType="warning")
             AstroLogging.logPrint("All servers deregistered")
             time.sleep(1)
             return [x['LobbyID'] for x in servers_registered]

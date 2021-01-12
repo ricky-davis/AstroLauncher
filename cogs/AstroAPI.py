@@ -47,20 +47,23 @@ def get_server(ipPortCombo, headers):
 
 
 def deregister_server(lobbyID, headers):
-    url = f"https://5EA1.playfabapi.com/Client/ExecuteCloudScript?sdk={base_headers['X-PlayFabSDK']}"
-    requestObj = {
-        "FunctionName": "deregisterDedicatedServer",
-        "FunctionParameter":
-        {
-            "lobbyId": lobbyID
-        },
-        "GeneratePlayStreamEvent": True
-    }
+    try:
+        url = f"https://5EA1.playfabapi.com/Client/ExecuteCloudScript?sdk={base_headers['X-PlayFabSDK']}"
+        requestObj = {
+            "FunctionName": "deregisterDedicatedServer",
+            "FunctionParameter":
+            {
+                "lobbyId": lobbyID
+            },
+            "GeneratePlayStreamEvent": True
+        }
 
-    AstroLogging.logPrint(requestObj, "debug")
-    x = (AstroRequests.post(url, headers=headers, json=requestObj)).json()
-    AstroLogging.logPrint(x, "debug")
-    return x
+        AstroLogging.logPrint(requestObj, "debug")
+        x = (AstroRequests.post(url, headers=headers, json=requestObj)).json()
+        AstroLogging.logPrint(x, "debug")
+        return x
+    except:
+        return {"status": "Error"}
 
 
 def heartbeat_server(serverData, headers, dataToChange=None):

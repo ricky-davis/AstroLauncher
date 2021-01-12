@@ -23,10 +23,12 @@ class AstroRequests():
 
     @classmethod
     def get(cls, url):
-        cls.checkProxies()
-        return requests.get(url, verify=False, proxies=cls.proxies, timeout=5)
+        # cls.checkProxies()
+        # return requests.get(url, verify=False, proxies=cls.proxies, timeout=5)
+        return requests.get(url, verify=False, timeout=5)
 
     @classmethod
     def post(cls, url, headers=None, json=None):
-        cls.checkProxies()
-        return requests.post(url, verify=False, proxies=cls.proxies, headers=headers, json=json, timeout=5)
+        # cls.checkProxies()
+        # return requests.post(url, verify=False, proxies=cls.proxies, headers=headers, json=json, timeout=5)
+        return requests.post(url, verify=False, headers=headers, json=json, timeout=5)
