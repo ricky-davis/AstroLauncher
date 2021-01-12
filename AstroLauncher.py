@@ -46,6 +46,7 @@ class AstroLauncher():
         HideLauncherConsoleWindow: bool = False
         ServerStatusFrequency: float = 2
         PlayfabAPIFrequency: float = 2
+        HeartBeatFailRestartServer: int = 8
         DisableBackupRetention: bool = False
         BackupRetentionPeriodHours: float = 72
         BackupRetentionFolderLocation: str = r"Astro\Saved\Backup\LauncherBackups"
@@ -383,20 +384,24 @@ class AstroLauncher():
         return settings
 
     def check_for_update(self, serverStart=False):
-        url = "https://api.github.com/repos/ricky-davis/AstroLauncher/releases/latest"
-        data = ((AstroRequests.get(url)).json())
-        latestVersion = data['tag_name']
-        if latestVersion != self.version:
-            self.hasUpdate = latestVersion
-            AstroLogging.logPrint(
-                f"UPDATE: There is a newer version of the launcher out! {latestVersion}")
-            AstroLogging.logPrint(f"Download it at {self.latestURL}")
-            aupdate = not self.launcherConfig.DisableAutoUpdate
-            if not self.launcherConfig.UpdateOnServerRestart and serverStart:
-                return
+        try:
+            url = "https://api.github.com/repos/ricky-davis/AstroLauncher/releases/latest"
+            data = ((AstroRequests.get(url)).json())
+            latestVersion = data['tag_name']
+            if latestVersion != self.version:
+                self.hasUpdate = latestVersion
+                AstroLogging.logPrint(
+                    f"UPDATE: There is a newer version of the launcher out! {latestVersion}")
+                AstroLogging.logPrint(f"Download it at {self.latestURL}")
+                aupdate = not self.launcherConfig.DisableAutoUpdate
+                if not self.launcherConfig.UpdateOnServerRestart and serverStart:
+                    return
 
-            if self.isExecutable and aupdate:
-                self.autoupdate(data)
+                if self.isExecutable and aupdate:
+                    self.autoupdate(data)
+        except:
+            AstroLogging.logPrint(
+                "Could not determine if new update exists.", msgType="debug")
 
     def autoupdate(self, data):
         x = data
@@ -449,6 +454,8 @@ class AstroLauncher():
                 gxAuth = AstroAPI.generate_XAUTH(
                     self.DedicatedServer.settings.ServerGuid)
             except:
+                AstroLogging.logPrint(
+                    "Unable to generate XAuth token... Are you connected to the internet?", msgType="warning")
                 time.sleep(5)
         self.headers['X-Authorization'] = gxAuth
         oldLobbyIDs = self.DedicatedServer.deregister_all_server()

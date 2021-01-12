@@ -133,7 +133,7 @@ class AstroLogging():
                                         headers=cls.discordWebhookHeaders, json=queueMsg))
             except:
                 AstroLogging.logPrint(
-                    "Failed to send log msg to discord.", printToDiscord=False)
+                    "Failed to send log msg to discord.", msgType="warning", printToDiscord=False)
         while True:
             t = Thread(target=sendDiscordReq, args=(
                 cls.discordWebhookQueue.get(),))

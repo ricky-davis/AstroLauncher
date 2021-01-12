@@ -404,25 +404,34 @@ class AstroDedicatedServer():
                 hbStatus = AstroAPI.heartbeat_server(
                     self.serverData, self.launcher.headers, {"serverName": json.dumps(hbServerName)})
 
-                hbTryCount = 0
+                hbTryCount = 1
                 while hbStatus['status'] != "OK":
-                    if hbTryCount > 3:
-                        AstroLogging.logPrint(
-                            "Heartbeat failed, trying again...", "debug")
+                    hbrs = self.launcher.launcherConfig.HeartBeatFailRestartServer
+                    if hbrs != 0 and hbTryCount > hbrs:
                         self.kill_server(
                             reason="Server was unable to heartbeat, restarting...",
                             save=True, killLauncher=False)
                         time.sleep(5)
                         return self.launcher.start_server()
+                    if hbTryCount > 1:
+                        time.sleep(5*hbTryCount)
                     self.getXauth()
-                    hbTryCount += 1
                     try:
                         hbStatus = AstroAPI.heartbeat_server(
                             self.serverData, self.launcher.headers, {"serverName": json.dumps(hbServerName)})
+                        AstroLogging.logPrint(
+                            f"hbStatus: {hbStatus}", "debug")
+                        if 'status' in hbStatus and hbStatus['status'] == "Error":
+                            raise "HeartBeatError"
+
                     except:
                         AstroLogging.logPrint(
-                            f"Failed to heartbeat server on attempt: {hbTryCount}")
-                        time.sleep(5*hbTryCount)
+                            f"Failed to heartbeat server on attempt: {hbTryCount}", msgType="warning")
+                    hbTryCount += 1
+
+                if hbTryCount > 1:
+                    AstroLogging.logPrint(
+                        "Connection reestablished! Successful heartbeat!")
 
                 self.lastHeartbeat = datetime.datetime.now()
 
