@@ -4,6 +4,7 @@ import atexit
 import ctypes
 import dataclasses
 import os
+import secrets
 import shutil
 import signal
 import socket
@@ -60,6 +61,7 @@ class AstroLauncher():
         LogRetentionDays: int = 7
         DiscordWebHookURL: str = ""
         DiscordWebHookLevel: str = "cmd"
+        RODataURL: str = secrets.token_hex(16)
 
         DisableWebServer: bool = False
         WebServerPort: int = 5000

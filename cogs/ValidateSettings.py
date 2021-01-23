@@ -114,7 +114,7 @@ def get_current_settings(launcher, ovrIP=False):
                 "MaxInternetClientRate": "1000000"
             },
             '/Game/ChatMod/ChatManager.ChatManager_C': {
-                "WebhookUrl": "\"http://localhost/api/rodata\""
+                "WebhookUrl": f"\"http://localhost/api/{launcher.launcherConfig.RODataURL}\""
             }
         }
         AstroLogging.logPrint("Baselining Engine.ini...", "debug")
