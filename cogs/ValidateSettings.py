@@ -33,6 +33,7 @@ def valid_ip(address):
 def get_current_settings(launcher, ovrIP=False):
     curPath = launcher.astroPath
 
+    curLog = "AstroServerSettings.ini"
     confPath = os.path.join(
         curPath, r"Astro\Saved\Config\WindowsServer\AstroServerSettings.ini")
 
@@ -69,6 +70,7 @@ def get_current_settings(launcher, ovrIP=False):
         AstroLogging.logPrint("Could not update PublicIP!", t)
 
     try:
+        curLog = "AstroServerSettings.ini"
         AstroLogging.logPrint(
             "Forcing standardized settings in AstroServerSettings.ini...", "debug")
         MultiConfig().overwrite_with(confPath, ovrConfig)
@@ -117,6 +119,7 @@ def get_current_settings(launcher, ovrIP=False):
                 "WebhookUrl": f"\"http://localhost/api/{launcher.launcherConfig.RODataURL}\""
             }
         }
+        curLog = "Engine.ini"
         AstroLogging.logPrint("Baselining Engine.ini...", "debug")
         config = MultiConfig().baseline(os.path.join(
             curPath, r"Astro\Saved\Config\WindowsServer\Engine.ini"), baseConfig)
@@ -126,6 +129,7 @@ def get_current_settings(launcher, ovrIP=False):
         # print(settings)
         return settings
     except Exception as e:
+        AstroLogging.logPrint(f"Error parsing {curLog} file!", "critical")
         AstroLogging.logPrint("Could not retrieve INI settings!", "critical")
         AstroLogging.logPrint(
             "Please ensure everything is correctly formatted...", "critical")
