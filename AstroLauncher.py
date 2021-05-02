@@ -278,6 +278,7 @@ class AstroLauncher():
 
         AstroLogging.logPrint("Starting a new session")
 
+        self.validate_playfab_certs()
         self.check_ports_free()
 
         if self.launcherConfig.AdminAutoConfigureFirewall:
@@ -384,6 +385,13 @@ class AstroLauncher():
         # print(settings)
         settings = config.getdict()['AstroLauncher']
         return settings
+
+    def validate_playfab_certs(self):
+        AstroLogging.logPrint("Attempting to validate Playfab Certs")
+        playfabRequestCommand = ["powershell", '-executionpolicy', 'bypass', '-command', 'Invoke-WebRequest -uri https://5ea1.playfabapi.com/ -UseBasicParsing']
+        with open(os.devnull, 'w') as tempf:
+            proc = subprocess.Popen(playfabRequestCommand, stdout=tempf, stderr=tempf)
+            proc.communicate()
 
     def check_for_update(self, serverStart=False):
         try:
