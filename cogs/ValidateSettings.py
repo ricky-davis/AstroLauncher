@@ -126,6 +126,9 @@ def get_current_settings(launcher, ovrIP=False):
         # print(settings)
         EngineINI = config.getdict()
         settings.update(EngineINI['URL'])
+        if type(EngineINI['URL']['Port']) == list:
+            AstroLogging.logPrint("Duplicate Ports detected! Please only list one Port.", "critical")
+            raise TypeError
         # print(settings)
         return settings
     except Exception as e:
