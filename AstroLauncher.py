@@ -4,6 +4,7 @@ import atexit
 import ctypes
 import dataclasses
 import os
+import secrets
 import shutil
 import signal
 import socket
@@ -14,7 +15,6 @@ from subprocess import DEVNULL
 from threading import Thread
 
 import psutil
-import requests
 from watchdog.events import FileSystemEventHandler
 from watchdog.observers import Observer
 
@@ -25,6 +25,7 @@ from cogs.AstroDaemon import AstroDaemon
 from cogs.AstroDedicatedServer import AstroDedicatedServer
 from cogs.AstroLogging import AstroLogging
 from cogs.MultiConfig import MultiConfig
+from cogs.utils import AstroRequests
 
 
 """
@@ -46,6 +47,7 @@ class AstroLauncher():
         HideLauncherConsoleWindow: bool = False
         ServerStatusFrequency: float = 2
         PlayfabAPIFrequency: float = 2
+        HeartBeatFailRestartServer: int = 8
         DisableBackupRetention: bool = False
         BackupRetentionPeriodHours: float = 72
         BackupRetentionFolderLocation: str = r"Astro\Saved\Backup\LauncherBackups"
@@ -57,6 +59,9 @@ class AstroLauncher():
         ShowServerFPSInConsole: bool = True
         AdminAutoConfigureFirewall: bool = True
         LogRetentionDays: int = 7
+        DiscordWebHookURL: str = ""
+        DiscordWebHookLevel: str = "cmd"
+        RODataURL: str = secrets.token_hex(16)
 
         DisableWebServer: bool = False
         WebServerPort: int = 5000
@@ -104,7 +109,7 @@ class AstroLauncher():
                 fileName = sorted(
                     fileNames, key=os.path.getmtime, reverse=True)[0]
                 AstroLogging.logPrint(
-                    f"Server saved. {os.path.basename(fileName)}")
+                    f"Server saved. {os.path.basename(fileName)}", dwet="s")
             except:
                 pass
             # self.launcher.saveObserver.stop()
@@ -119,10 +124,10 @@ class AstroLauncher():
             super().__init__()
 
         def handle_files(self):
-            #print(f"first: {self.pendingFiles}")
+            # print(f"first: {self.pendingFiles}")
             time.sleep(2)
-            #print(f"second: {self.pendingFiles}")
-            #AstroLogging.logPrint("DEBUG: INSIDE THREAD")
+            # print(f"second: {self.pendingFiles}")
+            # AstroLogging.logPrint("DEBUG: INSIDE THREAD")
 
             path = os.path.join(self.astroPath, self.moveToPath)
             try:
@@ -139,7 +144,8 @@ class AstroLauncher():
             except Exception as e:
                 AstroLogging.logPrint(e, "error")
 
-            AstroLogging.logPrint("Copying backup(s) to retention folder.")
+            AstroLogging.logPrint(
+                "Copying backup(s) to retention folder.", dwet="b")
             # time.sleep(1)
             try:
 
@@ -163,7 +169,7 @@ class AstroLauncher():
             # AstroLogging.logPrint(event)
             # AstroLogging.logPrint("File in save directory changed")
 
-            #AstroLogging.logPrint("DEBUG: File modified.. Starting thread")
+            # AstroLogging.logPrint("DEBUG: File modified.. Starting thread")
 
             try:
                 self.pendingFiles.append(event.src_path)
@@ -202,11 +208,17 @@ class AstroLauncher():
                     "Unable to find server executable anywhere! (AstroServer.exe)", "critical")
                 time.sleep(5)
                 return
+        # AstroRequests.checkProxies()
 
         self.launcherINI = launcherINI
         self.launcherConfig = self.LauncherConfig()
         self.launcherPath = os.getcwd()
         self.refresh_launcher_config()
+        AstroLogging.discordWebhookURL = self.launcherConfig.DiscordWebHookURL
+        dwhl = self.launcherConfig.DiscordWebHookLevel.lower()
+        dwhl = dwhl if dwhl in ("all", "cmd", "chat") else "cmd"
+        AstroLogging.discordWebhookLevel = dwhl
+        self.start_WebHookLoop()
         AstroLogging.setup_loggingPath(
             astroPath=self.astroPath, logRetention=int(self.launcherConfig.LogRetentionDays))
         if disable_auto_update is not None:
@@ -233,7 +245,7 @@ class AstroLauncher():
             "https://github.com/ricky-davis/AstroLauncher/issues")
         AstroLogging.logPrint(
             "To safely stop the launcher and server press CTRL+C")
-
+        # AstroRequests.checkProxies()
         self.latestURL = "https://github.com/ricky-davis/AstroLauncher/releases/latest"
         bName = os.path.basename(sys.executable)
         if sys.argv[0] == os.path.splitext(bName)[0]:
@@ -266,6 +278,7 @@ class AstroLauncher():
 
         AstroLogging.logPrint("Starting a new session")
 
+        self.validate_playfab_certs()
         self.check_ports_free()
 
         if self.launcherConfig.AdminAutoConfigureFirewall:
@@ -373,10 +386,17 @@ class AstroLauncher():
         settings = config.getdict()['AstroLauncher']
         return settings
 
+    def validate_playfab_certs(self):
+        AstroLogging.logPrint("Attempting to validate Playfab Certs")
+        playfabRequestCommand = ["powershell", '-executionpolicy', 'bypass', '-command', 'Invoke-WebRequest -uri https://5ea1.playfabapi.com/ -UseBasicParsing']
+        with open(os.devnull, 'w') as tempf:
+            proc = subprocess.Popen(playfabRequestCommand, stdout=tempf, stderr=tempf)
+            proc.communicate()
+
     def check_for_update(self, serverStart=False):
         try:
             url = "https://api.github.com/repos/ricky-davis/AstroLauncher/releases/latest"
-            data = ((requests.get(url)).json())
+            data = ((AstroRequests.get(url)).json())
             latestVersion = data['tag_name']
             if latestVersion != self.version:
                 self.hasUpdate = latestVersion
@@ -390,7 +410,8 @@ class AstroLauncher():
                 if self.isExecutable and aupdate:
                     self.autoupdate(data)
         except:
-            pass
+            AstroLogging.logPrint(
+                "Could not determine if new update exists.", msgType="debug")
 
     def autoupdate(self, data):
         x = data
@@ -418,7 +439,7 @@ class AstroLauncher():
     # pylint: disable=unused-argument
     def signal_handler(self, sig, frame):
         self.DedicatedServer.kill_server(
-            reason="Launcher shutting down", save=True)
+            reason="Launcher shutting down via signal", save=True)
 
     def start_server(self, firstLaunch=False):
         """
@@ -426,7 +447,7 @@ class AstroLauncher():
         """
         if firstLaunch:
             atexit.register(self.DedicatedServer.kill_server,
-                            reason="Launcher shutting down",
+                            reason="Launcher shutting down via exit",
                             save=True)
             signal.signal(signal.SIGINT, self.signal_handler)
         else:
@@ -443,6 +464,8 @@ class AstroLauncher():
                 gxAuth = AstroAPI.generate_XAUTH(
                     self.DedicatedServer.settings.ServerGuid)
             except:
+                AstroLogging.logPrint(
+                    "Unable to generate XAuth token... Are you connected to the internet?", msgType="warning")
                 time.sleep(5)
         self.headers['X-Authorization'] = gxAuth
         oldLobbyIDs = self.DedicatedServer.deregister_all_server()
@@ -475,7 +498,8 @@ class AstroLauncher():
                     "Unable to start Server Process after 10 seconds!", "critical")
                 return False
 
-        AstroLogging.logPrint("Server started! Getting ready....")
+        AstroLogging.logPrint(
+            "Server started! Getting ready....", ovrDWHL=True)
 
         try:
             self.DaemonProcess = AstroDaemon.launch(
@@ -510,7 +534,8 @@ class AstroLauncher():
                         "Server was forcefully closed before registration. Exiting....")
                     return False
             except KeyboardInterrupt:
-                self.DedicatedServer.kill_server("Launcher shutting down")
+                self.DedicatedServer.kill_server(
+                    "Launcher shutting down via KeyboardInterrupt")
             except:
                 AstroLogging.logPrint(
                     "Failed to check server. Probably hit rate limit. Backing off and trying again...")
@@ -523,7 +548,7 @@ class AstroLauncher():
         doneTime = time.time()
         elapsed = doneTime - startTime
         AstroLogging.logPrint(
-            f"Server ready! Took {round(elapsed,2)} seconds to register.")  # {self.DedicatedServer.LobbyID}
+            f"Server ready! Took {round(elapsed,2)} seconds to register.", ovrDWHL=True)  # {self.DedicatedServer.LobbyID}
         self.DedicatedServer.status = "ready"
         self.DedicatedServer.server_loop()
 
@@ -702,6 +727,11 @@ class AstroLauncher():
             os.kill(os.getpid(), 9)
         except:
             pass
+
+    def start_WebHookLoop(self):
+        t = Thread(target=AstroLogging.sendDiscordReqLoop, args=())
+        t.daemon = True
+        t.start()
 
 
 if __name__ == "__main__":

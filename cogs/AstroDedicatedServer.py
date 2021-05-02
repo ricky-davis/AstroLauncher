@@ -307,7 +307,7 @@ class AstroDedicatedServer():
         # time.sleep(1)
         self.AstroRCON.DSServerShutdown()
         self.DSServerStats = None
-        AstroLogging.logPrint("Server shutdown.")
+        AstroLogging.logPrint("Server shutdown.", ovrDWHL=True)
 
     def save_and_shutdown(self):
         if not self.AstroRCON.connected:
@@ -404,25 +404,34 @@ class AstroDedicatedServer():
                 hbStatus = AstroAPI.heartbeat_server(
                     self.serverData, self.launcher.headers, {"serverName": json.dumps(hbServerName)})
 
-                hbTryCount = 0
+                hbTryCount = 1
                 while hbStatus['status'] != "OK":
-                    if hbTryCount > 3:
-                        AstroLogging.logPrint(
-                            "Heartbeat failed, trying again...", "debug")
+                    hbrs = self.launcher.launcherConfig.HeartBeatFailRestartServer
+                    if hbrs != 0 and hbTryCount > hbrs:
                         self.kill_server(
                             reason="Server was unable to heartbeat, restarting...",
                             save=True, killLauncher=False)
                         time.sleep(5)
                         return self.launcher.start_server()
+                    if hbTryCount > 1:
+                        time.sleep(5*hbTryCount)
                     self.getXauth()
-                    hbTryCount += 1
                     try:
                         hbStatus = AstroAPI.heartbeat_server(
                             self.serverData, self.launcher.headers, {"serverName": json.dumps(hbServerName)})
+                        AstroLogging.logPrint(
+                            f"hbStatus: {hbStatus}", "debug")
+                        if 'status' in hbStatus and hbStatus['status'] == "Error":
+                            raise "HeartBeatError"
+
                     except:
                         AstroLogging.logPrint(
-                            f"Failed to heartbeat server on attempt: {hbTryCount}")
-                        time.sleep(5*hbTryCount)
+                            f"Failed to heartbeat server on attempt: {hbTryCount}", msgType="warning")
+                    hbTryCount += 1
+
+                if hbTryCount > 1:
+                    AstroLogging.logPrint(
+                        "Connection reestablished! Successful heartbeat!")
 
                 self.lastHeartbeat = datetime.datetime.now()
 
@@ -459,7 +468,7 @@ class AstroDedicatedServer():
                         self.stripPlayers.remove(playerDif)
 
                     AstroLogging.logPrint(
-                        f"Player joining: {playerDif}")
+                        f"Player joining: {playerDif}", ovrDWHL=True, dwet="j")
 
                     # Add player to INI with Unlisted category if not exists or is Pending
                     pp = list(self.settings.PlayerProperties)
@@ -475,7 +484,7 @@ class AstroDedicatedServer():
                         set(self.onlinePlayers) - set(curPlayers))[0]
                     self.onlinePlayers = curPlayers
                     AstroLogging.logPrint(
-                        f"Player left: {playerDif}")
+                        f"Player left: {playerDif}", ovrDWHL=True, dwet="l")
 
                 self.players['playerInfo'] = [
                     x for x in playerList['playerInfo'] if x['playerName'] not in self.stripPlayers]
@@ -495,8 +504,11 @@ class AstroDedicatedServer():
                 # reg_srvr['LobbyID']
                 AstroLogging.logPrint(
                     f"Deregistering {counter+1}/{len(servers_registered)}...")
-                AstroAPI.deregister_server(
+                drg_status = AstroAPI.deregister_server(
                     reg_srvr['LobbyID'], self.launcher.headers)
+                if 'status' in drg_status and drg_status['status'] == "Error":
+                    AstroLogging.logPrint(
+                        "Trouble deregistering server. Multiple servers may still be registered.", msgType="warning")
             AstroLogging.logPrint("All servers deregistered")
             time.sleep(1)
             return [x['LobbyID'] for x in servers_registered]

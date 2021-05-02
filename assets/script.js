@@ -171,6 +171,22 @@ const tick = async (data) => {
                         parts[0] +
                         //"<span style='color: green;'>INFO</span>" +
                         parts[1];
+                } else if (entry.includes("CMD")) {
+                    levelType = "CMD";
+                    let parts = entry.split("CMD");
+                    content =
+                        "<i class='fas fa-terminal iconCMD'></i> " +
+                        parts[0] +
+                        //"<span style='color: cyan;'>CHAT</span>" +
+                        parts[1];
+                } else if (entry.includes("CHAT")) {
+                    levelType = "CHAT";
+                    let parts = entry.split("CHAT");
+                    content =
+                        "<i class='fas fa-comments iconChat'></i> " +
+                        parts[0] +
+                        //"<span style='color: cyan;'>CHAT</span>" +
+                        parts[1];
                 } else if (entry.includes("WARNING")) {
                     let parts = entry.split("WARNING");
                     levelType = "WARNING";
