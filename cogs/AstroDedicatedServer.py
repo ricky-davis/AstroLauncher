@@ -177,7 +177,7 @@ class AstroDedicatedServer():
 
     def getSaves(self):
         try:
-            if not self.AstroRCON.connected:
+            if self.AstroRCON == None or not self.AstroRCON.connected:
                 return False
             tempSaveGames = {}
             while tempSaveGames == {} and 'activeSaveName' not in tempSaveGames:
@@ -214,7 +214,7 @@ class AstroDedicatedServer():
             pass
 
     def saveGame(self, name=None):
-        if not self.AstroRCON.connected:
+        if self.AstroRCON == None or not self.AstroRCON.connected:
             return False
         self.setStatus("saving")
         self.busy = "Saving"
@@ -225,7 +225,7 @@ class AstroDedicatedServer():
         self.busy = False
 
     def newSaveGame(self):
-        if not self.AstroRCON.connected:
+        if self.AstroRCON == None or not self.AstroRCON.connected:
             return False
         self.setStatus("newsave")
         self.busy = "NewSave"
@@ -237,7 +237,7 @@ class AstroDedicatedServer():
         self.busy = False
 
     def loadSaveGame(self, saveData):
-        if not self.AstroRCON.connected:
+        if self.AstroRCON == None or not self.AstroRCON.connected:
             return False
         self.setStatus("loadsave")
         self.busy = "LoadSave"
@@ -250,7 +250,7 @@ class AstroDedicatedServer():
         self.busy = False
 
     def deleteSaveGame(self, saveData):
-        if not self.AstroRCON.connected:
+        if self.AstroRCON == None or not self.AstroRCON.connected:
             return False
         name = saveData['name']
         if pathvalidate.is_valid_filename(name):
@@ -266,7 +266,7 @@ class AstroDedicatedServer():
         self.busy = False
 
     def renameSaveGame(self, oldSave, newName):
-        if not self.AstroRCON.connected:
+        if self.AstroRCON == None or not self.AstroRCON.connected:
             return False
         self.setStatus("renamesave")
         self.busy = "RenameSave"
@@ -300,7 +300,7 @@ class AstroDedicatedServer():
         self.busy = False
 
     def shutdownServer(self):
-        if not self.AstroRCON.connected:
+        if self.AstroRCON == None or not self.AstroRCON.connected:
             return False
         self.setStatus("shutdown")
         self.busy = "Shutdown"
@@ -310,7 +310,7 @@ class AstroDedicatedServer():
         AstroLogging.logPrint("Server shutdown.", ovrDWHL=True)
 
     def save_and_shutdown(self):
-        if not self.AstroRCON.connected:
+        if self.AstroRCON == None or not self.AstroRCON.connected:
             return False
         self.saveGame()
         self.busy = "S&Shutdown"
@@ -325,7 +325,7 @@ class AstroDedicatedServer():
     def quickToggleWhitelist(self):
         '''Toggling the whitelist is good for forcing the server to put every player who has joined the current save's Guid into the INI'''
 
-        if not self.AstroRCON.connected:
+        if self.AstroRCON == None or not self.AstroRCON.connected:
             return False
         wLOn = self.settings.DenyUnlistedPlayers
         self.AstroRCON.DSSetDenyUnlisted(not wLOn)

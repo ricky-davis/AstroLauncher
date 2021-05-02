@@ -174,7 +174,11 @@ class WebServer(tornado.web.Application):
         n = 200
         groups = logs.split('\n')
         logs = '\n'.join(groups[-n:])
-
+        rconReady = False
+        if dedicatedServer.AstroRCON:
+            rconReady = dedicatedServer.AstroRCON.connected
+        
+        
         s = dedicatedServer.settings
         stats = None
         if dedicatedServer.DSServerStats:
@@ -187,6 +191,7 @@ class WebServer(tornado.web.Application):
             "instanceID": handler.WS.instanceID,
             "admin": isAdmin,
             "status": dedicatedServer.status,
+            "rready": rconReady,
             "stats": stats,
             "hasUpdate": handler.launcher.hasUpdate,
             "settings": {

@@ -36,6 +36,7 @@ let oldSaves = {};
 let oViewCount = "";
 let oInstanceID = "";
 let isAdmin = false;
+let isRconReady = false;
 
 const statusMsg = (msg) => {
     if (oldMsg != msg) {
@@ -119,7 +120,7 @@ const tick = async (data) => {
         if (oInstanceID === "") {
             oInstanceID = data.instanceID;
         }
-
+        isRconReady = data.rready;
         isAdmin = data.admin;
         if (
             ($("#console").length && !isAdmin) ||
@@ -684,41 +685,45 @@ $(".fa-download").click(function (e) {
 
 $("#saveGameBtn").click(function (e) {
     e.preventDefault();
-    statusMsg("saving");
-    $.ajax({
-        type: "POST",
-        url: apiURL + "/savegame",
-        dataType: "json",
-        success: function (result) {},
-        error: function (result) {
-            console.log(result);
-            alert("Error");
-        },
-    });
+    if (isRconReady){
+        statusMsg("saving");
+        $.ajax({
+            type: "POST",
+            url: apiURL + "/savegame",
+            dataType: "json",
+            success: function (result) {},
+            error: function (result) {
+                console.log(result);
+                alert("Error");
+            },
+        });
+    }
 });
 
 $("#rebootServerBtn").click(function (e) {
     e.preventDefault();
-    statusMsg("reboot");
-    $.ajax({
-        type: "POST",
-        url: apiURL + "/reboot",
-        dataType: "json",
-        success: function (result) {},
-        error: function (result) {
-            console.log(result);
-            alert("Error");
-        },
-    });
+    if (isRconReady){
+        statusMsg("reboot");
+        $.ajax({
+            type: "POST",
+            url: apiURL + "/reboot",
+            dataType: "json",
+            success: function (result) {},
+            error: function (result) {
+                console.log(result);
+                alert("Error");
+            },
+        });
+    }
 });
 
 $("#stopLauncherBtn").click(function (e) {
     e.preventDefault();
-    statusMsg("shutdown");
     let reallyShutdown = confirm(
         "Are you sure you want to shut down the launcher? It will have to be manually restarted."
     );
     if (reallyShutdown == true) {
+        statusMsg("shutdown");
         setTimeout(() => {
             statusMsg("off");
         }, 2000);
@@ -737,17 +742,19 @@ $("#stopLauncherBtn").click(function (e) {
 $("#newSaveBtn").click(function (e) {
     e.preventDefault();
     e.stopPropagation();
-    statusMsg("saving");
-    $.ajax({
-        type: "POST",
-        url: apiURL + "/newsave",
-        dataType: "json",
-        success: function (result) {},
-        error: function (result) {
-            console.log(result);
-            alert("Error");
-        },
-    });
+    if (isRconReady){
+        statusMsg("saving");
+        $.ajax({
+            type: "POST",
+            url: apiURL + "/newsave",
+            dataType: "json",
+            success: function (result) {},
+            error: function (result) {
+                console.log(result);
+                alert("Error");
+            },
+        });
+    }
 });
 
 const linkify = (text) => {
