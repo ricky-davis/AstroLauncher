@@ -213,6 +213,9 @@ const tick = async (data) => {
         }
 
         s = data.settings;
+        if (data.server_version) {
+            $("#serverVersion").text(DOMPurify.sanitize(data.server_version));
+        }
         if (data.stats) {
             $("#hWL").text(
                 DOMPurify.sanitize(data.stats.isEnforcingWhitelist.toString())
@@ -250,7 +253,6 @@ const tick = async (data) => {
             data.status == "shutdown"
         ) {
             $("#playersStats").text("");
-            $("#serverVersion").text("");
             $("#framerateStats").text("");
         } else {
             if (data.hasOwnProperty("savegames")) {

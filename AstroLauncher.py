@@ -11,12 +11,15 @@ import socket
 import subprocess
 import sys
 import time
+import zipfile
 from subprocess import DEVNULL
 from threading import Thread
 
 import psutil
 from watchdog.events import FileSystemEventHandler
 from watchdog.observers import Observer
+from packaging import version
+from distutils import dir_util
 
 import cogs.AstroAPI as AstroAPI
 import cogs.AstroWebServer as AstroWebServer
@@ -41,7 +44,8 @@ class AstroLauncher():
 
     @dataclasses.dataclass
     class LauncherConfig():
-        DisableAutoUpdate: bool = False
+        AutoUpdateLauncherSoftware: bool = True
+        AutoUpdateServerSoftware: bool = True
         UpdateOnServerRestart: bool = True
         HideServerConsoleWindow: bool = False
         HideLauncherConsoleWindow: bool = False
@@ -222,7 +226,7 @@ class AstroLauncher():
         AstroLogging.setup_loggingPath(
             astroPath=self.astroPath, logRetention=int(self.launcherConfig.LogRetentionDays))
         if disable_auto_update is not None:
-            self.launcherConfig.DisableAutoUpdate = disable_auto_update
+            self.launcherConfig.AutoUpdateLauncherSoftware = not disable_auto_update
         self.version = "v1.7.6"
         colsize = os.get_terminal_size().columns
         if colsize >= 77:
@@ -252,6 +256,7 @@ class AstroLauncher():
             self.isExecutable = True
         else:
             self.isExecutable = os.path.samefile(sys.executable, sys.argv[0])
+        self.cur_server_version = "0.0"
         self.headers = AstroAPI.base_headers
         self.DaemonProcess = None
         self.saveObserver = None
@@ -273,8 +278,10 @@ class AstroLauncher():
 
         self.DedicatedServer = AstroDedicatedServer(
             self.astroPath, self)
+        
+        self.check_for_server_update()
 
-        self.check_for_update()
+        self.check_for_launcher_update()
 
         AstroLogging.logPrint("Starting a new session")
 
@@ -392,8 +399,160 @@ class AstroLauncher():
         with open(os.devnull, 'w') as tempf:
             proc = subprocess.Popen(playfabRequestCommand, stdout=tempf, stderr=tempf)
             proc.communicate()
+            
+    def recursive_copy(src, dst):
+        os.chdir(src)
+        for item in os.listdir():
 
-    def check_for_update(self, serverStart=False):
+            if os.path.isfile(item):
+                shutil.copy(item, dst)
+
+            elif os.path.isdir(item):
+                new_dst = os.path.join(dst, item)
+                os.mkdir(new_dst)
+                self.recursive_copy(os.path.abspath(item), new_dst)
+
+    def update_server(self,latest_version):
+        updateLocation = os.path.join(self.astroPath,'steamcmd','steamapps','common','ASTRONEER Dedicated Server')
+        steamcmdFolder = os.path.join(self.astroPath,"steamcmd")
+        steamcmdExe = os.path.join(steamcmdFolder,"steamcmd.exe")
+        steamcmdZip = os.path.join(self.astroPath,"steamcmd.zip")
+        try:
+            if not os.path.exists(steamcmdFolder):
+                if not os.path.exists(steamcmdExe):
+                    if not os.path.exists(steamcmdZip):
+                        url = "https://steamcdn-a.akamaihd.net/client/installer/steamcmd.zip"
+                        r = (AstroRequests.get(url))
+                        with open(steamcmdZip,'wb') as f:
+                            f.write(r.content)
+                    with zipfile.ZipFile(steamcmdZip, 'r') as zip_ref:
+                        zip_ref.extractall(steamcmdFolder)
+            update_downloaded = False
+
+            if os.path.exists(updateLocation):
+                upd_version = "0.0"
+                try:
+                    with open(os.path.join(updateLocation, "build.version"), "r") as f:
+                        upd_version = (f.readline())[:-10]
+                    if upd_version == latest_version:
+                        update_downloaded = True
+                except:
+                    try:
+                        shutil.rmtree(updateLocation)
+                    except:
+                        pass
+
+            if not update_downloaded:
+                open("update.p","wb").write(b"download")
+                if os.path.exists(steamcmdExe):
+                    try:
+                        os.remove(steamcmdZip)
+                    except:
+                        pass
+
+                    AstroLogging.logPrint(
+                        f"AUTOMATICALLY UPDATING SERVER TO {latest_version}...")
+                    try:
+                        updateCMD = [steamcmdExe, '+login anonymous', '+app_update 728470', 'validate', '+quit']
+                        update = subprocess.Popen(updateCMD, creationflags=subprocess.DETACHED_PROCESS)
+                        while update.poll() is None:
+                            time.sleep(0.1)
+                    except:
+                        for child in psutil.Process(update.pid).children():
+                            try:
+                                child.kill()
+                            except:
+                                pass
+                        try:
+                            update.kill()
+                        except:
+                            pass
+
+                        raise Exception("")
+                    
+                upd_version = "0.0"
+                try:
+                    with open(os.path.join(updateLocation, "build.version"), "r") as f:
+                        upd_version = (f.readline())[:-10]
+                except:
+                    pass
+                if upd_version == latest_version:
+                    update_downloaded = True
+
+            # print('here1')
+            if update_downloaded:
+                open("update.p","wb").write(b"transfer")
+                dir_util.copy_tree(updateLocation, self.astroPath)
+                open("update.p","wb").write(b"complete")
+
+            cur_version = "0.0"
+            with open(os.path.join(self.astroPath, "build.version"), "r") as f:
+                cur_version = (f.readline())[:-10]
+            # print('here2')
+            if cur_version == latest_version:
+                AstroLogging.logPrint(f"UPDATE TO {latest_version} SUCCESSFUL.")
+                steamcmdZip = os.path.join(self.astroPath,"steamcmd.zip")
+                if os.path.exists(steamcmdZip):
+                    os.remove(steamcmdZip)
+            # print('here3')
+            try:
+                os.remove("update.p")
+            except:
+                pass
+            try:
+                shutil.rmtree(updateLocation)
+            except:
+                pass
+
+        except Exception as e:
+            AstroLogging.logPrint(f"UPDATE TO {latest_version} FAILED.", "warning")
+
+        
+            
+
+    def check_for_server_update(self, serverStart=False):
+        try:
+            
+            if not self.launcherConfig.UpdateOnServerRestart and serverStart:
+                return
+            else:
+                needs_update = False
+                update_status = None
+                if os.path.exists("update.p"):
+                    with open("update.p", "r") as f:
+                        update_status = f.read()
+                    if update_status != "completed":
+                        needs_update = True
+                        
+                cur_version = "0.0"
+                with open(os.path.join(self.astroPath, "build.version"), "r") as f:
+                    cur_version = (f.readline())[:-10]
+                if cur_version == "0.0":
+                    needs_update = True
+                url = "https://servercheck.spycibot.com/stats"
+                data = ((AstroRequests.get(url)).json())
+
+                latest_version = data['LatestVersion']
+                if version.parse(latest_version) > version.parse(cur_version):
+                    needs_update = True
+                if needs_update:
+                    AstroLogging.logPrint(
+                        f"SERVER UPDATE AVAILABLE: {cur_version} -> {latest_version}", "warning")
+                    
+                    if self.launcherConfig.AutoUpdateServerSoftware:
+                        self.update_server(latest_version)
+
+            cur_version = "0.0"
+            with open(os.path.join(self.astroPath, "build.version"), "r") as f:
+                cur_version = (f.readline())[:-10]
+            self.cur_server_version = cur_version
+
+        except Exception as e:
+            print(e)
+            AstroLogging.logPrint(f"Failed to check if update is available", "warning")
+
+
+    def check_for_launcher_update(self, serverStart=False):
         try:
             url = "https://api.github.com/repos/ricky-davis/AstroLauncher/releases/latest"
             data = ((AstroRequests.get(url)).json())
@@ -403,7 +562,7 @@ class AstroLauncher():
                 AstroLogging.logPrint(
                     f"UPDATE: There is a newer version of the launcher out! {latestVersion}")
                 AstroLogging.logPrint(f"Download it at {self.latestURL}")
-                aupdate = not self.launcherConfig.DisableAutoUpdate
+                aupdate = self.launcherConfig.AutoUpdateLauncherSoftware
                 if not self.launcherConfig.UpdateOnServerRestart and serverStart:
                     return
 
@@ -451,7 +610,8 @@ class AstroLauncher():
                             save=True)
             signal.signal(signal.SIGINT, self.signal_handler)
         else:
-            self.check_for_update(serverStart=True)
+            self.check_for_server_update(serverStart=True)
+            self.check_for_launcher_update(serverStart=True)
             self.DedicatedServer = AstroDedicatedServer(
                 self.astroPath, self)
 
@@ -499,7 +659,7 @@ class AstroLauncher():
                 return False
 
         AstroLogging.logPrint(
-            "Server started! Getting ready....", ovrDWHL=True)
+            f"Server started ( {self.cur_server_version} )! Getting ready....", ovrDWHL=True)
 
         try:
             self.DaemonProcess = AstroDaemon.launch(
