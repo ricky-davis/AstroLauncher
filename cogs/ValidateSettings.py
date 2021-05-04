@@ -83,7 +83,7 @@ def get_current_settings(launcher, ovrIP=False):
                 "bWaitForPlayersBeforeShutdown": "False",
                 "PublicIP": "",
                 "ServerName": "Astroneer Dedicated Server",
-                "MaximumPlayerCount": "12",
+                "MaximumPlayerCount": "8",
                 "OwnerName": "",
                 "OwnerGuid": "",
                 "PlayerActivityTimeout": "0",
@@ -183,6 +183,33 @@ def socket_server(port, secret, tcp):
     except:
         return False
 
+def socket_server2(port):
+    try:
+        serversocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        serversocket.settimeout(10)
+        # bind the socket to a public host,
+        # and a well-known port
+        serversocket.bind(("0.0.0.0", port))
+        # become a server socket
+        while 1:
+            # accept connections from outside
+            connection = None
+            while True:
+                data, address = serversocket.recvfrom(32)
+                #print(address)
+
+                bytesData = bytes([0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                             0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x08])
+                if data == bytesData:
+                    serversocket.sendto(b"Hello from AstroLauncher", address)
+                    serversocket.close()
+                    return True
+                else:
+                    return False
+    except Exception as e:
+        print(e)
+        return False
+
 
 def socket_client(ip, port, secret, tcp):
     try:
@@ -217,3 +244,10 @@ def test_network(ip, port, tcp):
                          args=(ip, port, secretPhrase, tcp))
     x.start()
     return socket_server(port, secretPhrase, tcp)
+
+
+def test_nonlocal(ip, port):
+    x = threading.Thread(target=socket_server2, args=(port,))
+    x.start()
+    r = (AstroRequests.post(f"https://servercheck.spycibot.com/api?ip_port={ip}:{port}", timeout=10)).json()
+    return r['Server']

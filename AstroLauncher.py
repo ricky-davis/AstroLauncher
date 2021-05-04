@@ -814,21 +814,24 @@ class AstroLauncher():
                         "Setting custom firewall rules...")
 
     def check_network_config(self):
-        networkCorrect = ValidateSettings.test_network(
-            self.DedicatedServer.settings.PublicIP, int(self.DedicatedServer.settings.Port), False)
-        if networkCorrect:
+        localTest = ValidateSettings.test_network(self.DedicatedServer.settings.PublicIP, int(self.DedicatedServer.settings.Port), False)
+        remoteTest = ValidateSettings.test_nonlocal(self.DedicatedServer.settings.PublicIP, int(self.DedicatedServer.settings.Port))
+        testMatrix = [localTest, remoteTest]
+
+        if testMatrix == [True, True]:
             AstroLogging.logPrint("Server network configuration good!")
-        else:
-            AstroLogging.logPrint(
-                "I can't seem to validate your network settings..", "warning")
-            AstroLogging.logPrint(
-                f"Make sure to Port Forward ({self.DedicatedServer.settings.Port} UDP), enable NAT Loopback...", "warning")
-            AstroLogging.logPrint(
-                f"And allow port {self.DedicatedServer.settings.Port} UDP inbound in your firewall", "warning")
-            AstroLogging.logPrint(
-                "If nobody can connect, Port Forward or fix your firewall.", "warning")
-            AstroLogging.logPrint(
-                "If others are able to connect, but you aren't, enable NAT Loopback.", "warning")
+        elif testMatrix == [True, False]:
+                AstroLogging.logPrint(
+                    "Your server is not accessible from your local network.", "warning")
+                AstroLogging.logPrint("This usually indicates an issue with NAT Loopback", "warning")
+                AstroLogging.logPrint("See if your router supports it, or setup your server with playit.gg", "warning")
+                AstroLogging.logPrint("Guide to setting up playit.gg (11:28): https://youtu.be/SdLNFowq8WI?t=688", "warning")
+        elif testMatrix == [False, True]:
+            AstroLogging.logPrint("Your server can be seen locally, but not remotely.", "warning")
+            AstroLogging.logPrint("This usually means you have a Loopback adapter that needs to be disabled.", "warning")
+        elif testMatrix == [False, False]:
+            AstroLogging.logPrint("The server is completely unreachable!", "warning")
+            AstroLogging.logPrint(f"Please port forward {self.DedicatedServer.settings.Port} UDP and ensure the firewall settings are correct.", "warning")
 
         rconNetworkCorrect = not (ValidateSettings.test_network(
             self.DedicatedServer.settings.PublicIP, int(self.DedicatedServer.settings.ConsolePort), True))
