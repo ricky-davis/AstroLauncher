@@ -193,6 +193,7 @@ class WebServer(tornado.web.Application):
             "status": dedicatedServer.status,
             "rready": rconReady,
             "stats": stats,
+            "server_version":handler.launcher.cur_server_version,
             "hasUpdate": handler.launcher.hasUpdate,
             "settings": {
                 "MaxServerFramerate": s.MaxServerFramerate,

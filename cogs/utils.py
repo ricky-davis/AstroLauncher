@@ -22,13 +22,13 @@ class AstroRequests():
             cls.proxies = None
 
     @classmethod
-    def get(cls, url):
+    def get(cls, url, timeout=5):
         # cls.checkProxies()
         # return requests.get(url, verify=False, proxies=cls.proxies, timeout=5)
-        return requests.get(url, verify=False, timeout=5)
+        return requests.get(url, verify=False, timeout=timeout)
 
     @classmethod
-    def post(cls, url, headers=None, json=None):
+    def post(cls, url, headers=None, json=None, files=None, data=None, timeout=5):
         # cls.checkProxies()
         # return requests.post(url, verify=False, proxies=cls.proxies, headers=headers, json=json, timeout=5)
-        return requests.post(url, verify=False, headers=headers, json=json, timeout=5)
+        return requests.post(url, verify=False, headers=headers, json=json, files=files, data=data, timeout=timeout)
