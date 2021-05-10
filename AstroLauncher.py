@@ -237,7 +237,7 @@ class AstroLauncher():
             astroPath=self.astroPath, logRetention=int(self.launcherConfig.LogRetentionDays))
         if disable_auto_update is not None:
             self.launcherConfig.AutoUpdateLauncherSoftware = not disable_auto_update
-        self.version = "v1.8.0"
+        self.version = "v1.8.1"
         colsize = os.get_terminal_size().columns
         if colsize >= 77:
             vText = "Version " + self.version[1:]
@@ -288,10 +288,11 @@ class AstroLauncher():
 
         self.check_for_server_update()
 
-        self.check_for_launcher_update()
-
         self.DedicatedServer = AstroDedicatedServer(
             self.astroPath, self)
+
+        self.check_for_launcher_update()
+
         
 
         AstroLogging.logPrint("Starting a new session")
@@ -609,8 +610,7 @@ class AstroLauncher():
                            'Write-Host "Download complete!";',
                            'Start-Process', f"'{downloadPath + '.exe'}'"]
             # print(' '.join(downloadCMD))
-            subprocess.Popen(downloadCMD, shell=True,
-                             creationflags=subprocess.DETACHED_PROCESS)
+            subprocess.Popen(downloadCMD, shell=True, creationflags=subprocess.DETACHED_PROCESS, stdin=None, stdout=None, stderr=None, close_fds=True)
         time.sleep(2)
         self.DedicatedServer.kill_server("Auto-Update")
 
