@@ -237,7 +237,7 @@ class AstroLauncher():
             astroPath=self.astroPath, logRetention=int(self.launcherConfig.LogRetentionDays))
         if disable_auto_update is not None:
             self.launcherConfig.AutoUpdateLauncherSoftware = not disable_auto_update
-        self.version = "v1.7.6"
+        self.version = "v1.8.0"
         colsize = os.get_terminal_size().columns
         if colsize >= 77:
             vText = "Version " + self.version[1:]
