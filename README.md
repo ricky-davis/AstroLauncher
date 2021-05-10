@@ -176,7 +176,13 @@ CPUAffinity =
 
 ## Getting Started
 
-To get a local copy up and running follow these simple steps or check the [Latest Release](https://github.com/ricky-davis/AstroLauncher/releases/latest) for a download of the executable.
+**Recommended: Most people will want to just run the .exe, check out the [Latest Release](https://github.com/ricky-davis/AstroLauncher/releases/latest) for a download of the executable.**
+
+
+<br/>
+To get a local "from-source" copy up and running follow these simple steps:
+<br/>
+<br/>
 
 ### Prerequisites
 

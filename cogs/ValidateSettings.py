@@ -207,7 +207,7 @@ def socket_server2(port):
                 else:
                     return False
     except Exception as e:
-        print(e)
+        #print(e)
         return False
 
 
