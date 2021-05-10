@@ -557,7 +557,8 @@ class AstroLauncher():
             url = "https://api.github.com/repos/ricky-davis/AstroLauncher/releases/latest"
             data = ((AstroRequests.get(url)).json())
             latestVersion = data['tag_name']
-            if latestVersion != self.version:
+            
+            if version.parse(latestVersion) > version.parse(self.version):
                 self.hasUpdate = latestVersion
                 AstroLogging.logPrint(
                     f"UPDATE: There is a newer version of the launcher out! {latestVersion}")
@@ -567,12 +568,12 @@ class AstroLauncher():
                     return
 
                 if self.isExecutable and aupdate:
-                    self.autoupdate(data)
+                    self.autoupdate_launcher(data)
         except:
             AstroLogging.logPrint(
                 "Could not determine if new update exists.", msgType="debug")
 
-    def autoupdate(self, data):
+    def autoupdate_launcher(self, data):
         x = data
         downloadFolder = os.path.dirname(sys.executable)
         for fileObj in x['assets']:
@@ -861,7 +862,7 @@ class AstroLauncher():
         t.start()
         return ws
 
-    def autoUpdateLoop(self):
+    def autoUpdate_websockets_Loop(self):
         while True:
             time.sleep(1)
             self.webServer.iterWebSocketConnections()
@@ -872,7 +873,7 @@ class AstroLauncher():
                 asyncio.set_event_loop_policy(
                     asyncio.WindowsSelectorEventLoopPolicy())
             asyncio.set_event_loop(asyncio.new_event_loop())
-            self.autoUpdateLoop()
+            self.autoUpdate_websockets_Loop()
 
         t = Thread(target=start_InfoLoopThread, args=(self,))
         t.daemon = True

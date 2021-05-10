@@ -9,6 +9,9 @@
 <p align="center">
   <img src="https://raw.githubusercontent.com/ricky-davis/AstroLauncher/master/assets/astrolauncherlogo.ico" width="128px">
   <h3 align="center">AstroLauncher - Dedicated Server Launcher</h3>
+  <p align="center">
+    An all-in-one server management tool for Astroneer Dedicated Servers.
+  </p>
 
   <p align="center">
     <a href="https://github.com/ricky-davis/AstroLauncher/issues">AstroLauncher Bugs</a>
@@ -25,7 +28,6 @@
 - [Table of Contents](#table-of-contents)
 - [Overview](#overview)
 - [What does it do?](#what-does-it-do)
-- [TODO](#todo)
 - [INI File options](#ini-file-options)
 - [Getting Started](#getting-started)
   - [Prerequisites](#prerequisites)
@@ -42,28 +44,29 @@ This tool is perfect for you if you are hosting your own dedicated server for As
 
 ## What does it do?
 
-1. Verifies your network settings to check for Port Forwarding/NAT Loopback
-2. Automatically sets up the base Config files
-3. Fixes the double server problem in the server list
-4. Starts, and automatically restarts the server
-5. Displays when users join/leave the server
-6. Keeps a log of everything in the logs folder
-7. Auto Restart every X hours
-8. Backup Retention for X hours
-9. Web Interface w/ login to monitor server data, force saves and restarts, and manage users (kick, ban, whitelist, admin)
+1. Automatic updating of your server to the latest version!
+2. Verifies your network settings to check for Port Forwarding/NAT Loopback
+3. Automatically sets up the base Config files
+4. Fixes the double server problem in the server list
+5. Starts, and automatically restarts the server
+6. Displays when users join/leave the server
+7. Keeps a log of everything in the logs folder
+8. Ability to send all logs to a Discord webhook!
+9. Auto Restart every X hours
+10. Backup Retention for X hours
+11. Web Interface w/ login to monitor server data, force saves and restarts, and manage users (kick, ban, whitelist, admin)
 
-## TODO
-
-1. Detect servers running on same port
-2. Refactor error handling to be more verbose
 
 ## INI File options
 
 Below are the descriptions and defaults for the INI file options. Do not copy/paste this into the INI file, allow the INI file to be automatically generated. Every option must be present and set, and there must be no comments or extra options.
 
 ```python
-# Disables Auto Update -- Notifies but does not download
-DisableAutoUpdate = False
+# Enables/Disables Auto Update for the Launcher
+AutoUpdateLauncherSoftware = True
+
+# Enables/Disables Auto Update for the Server.
+AutoUpdateServerSoftware = True
 
 # Allows the launcher to autoUpdate every time the server restarts
 UpdateOnServerRestart = True
@@ -74,11 +77,18 @@ HideServerConsoleWindow = False
 # Disable the Launcher console popup window.
 HideLauncherConsoleWindow = False
 
+
+
 # Specifies how often the launcher will check for players joining/leaving
 ServerStatusFrequency = 2
 
 # Specifies how often the launcher will check for server registration status
 PlayfabAPIFrequency = 2
+
+# How many times to allow Playfab to fail before restarting the server
+HeartBeatFailRestartServer = 8
+
+
 
 # Disable Backup Retention
 DisableBackupRetention = False
@@ -89,6 +99,8 @@ BackupRetentionPeriodHours= 72
 # Location to backup the save files to
 BackupRetentionFolderLocation = Astro\Saved\Backup\LauncherBackups
 
+
+
 # Enable auto restart
 EnableAutoRestart = False
 
@@ -98,6 +110,8 @@ AutoRestartSyncTimestamp = 00:00
 
 # After the first restart specified above, how often do you want to restart?
 AutoRestartEveryHours = 24
+
+
 
 # Disable the Port Forward / NAT Loopback check on startup
 DisableNetworkCheck = False
@@ -113,6 +127,19 @@ AdminAutoConfigureFirewall = True
 
 # How long to keep server logs before removing them. This does not control debug logs.
 LogRetentionDays = 7
+
+
+
+# Discord Webhook URL to display AstroLauncher console data in a discord channel
+DiscordWebHookURL: str = ""
+
+# Discord Webhook Log Level, all / cmd / chat
+DiscordWebHookLevel: str = "cmd"
+
+# This is the URL the webserver serves to interact with the webhook.
+RODataURL: str = secrets.token_hex(16)
+
+
 
 # Disable the Web Management Server
 DisableWebServer = False
@@ -135,6 +162,8 @@ SSLPort = 443
 # Paths to Cert and Key files
 SSLCertFile =
 SSLKeyFile =
+
+
 
 # CPU Affinity - Specify logical cores to run on. Automatically chooses if empty.
 # ex:
@@ -252,7 +281,7 @@ Distributed under the MIT License. See `LICENSE` for more information.
 
 Ricky Davis - Discord: @Spyci#0001
 
-If you have any questions you can DM me, or preferrably, join the [Astroneer discord] (discord.gg/Astroneer) and ask in the #self_host_talk channel
+If you have any questions you can join the [Astroneer discord] (discord.gg/Astroneer) and ask in the #self_host_talk channel
 
 Project Link: [https://github.com/ricky-davis/AstroLauncher](https://github.com/ricky-davis/AstroLauncher)
 
