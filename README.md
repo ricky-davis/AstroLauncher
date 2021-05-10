@@ -44,7 +44,7 @@ This tool is perfect for you if you are hosting your own dedicated server for As
 
 ## What does it do?
 
-1. Automatic updating of your server to the latest version!
+1. Automatic initial download and updating of your server to the latest version!
 2. Verifies your network settings to check for Port Forwarding/NAT Loopback
 3. Automatically sets up the base Config files
 4. Fixes the double server problem in the server list
@@ -68,7 +68,7 @@ AutoUpdateLauncherSoftware = True
 # Enables/Disables Auto Update for the Server.
 AutoUpdateServerSoftware = True
 
-# Allows the launcher to autoUpdate every time the server restarts
+# Allows the launcher and server to auto update every time the server restarts
 UpdateOnServerRestart = True
 
 # Disable the server console popup window.

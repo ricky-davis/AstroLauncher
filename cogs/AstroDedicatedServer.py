@@ -383,6 +383,17 @@ class AstroDedicatedServer():
             self.getXauth()
 
             if self.lastHeartbeat is None or (datetime.datetime.now() - self.lastHeartbeat).total_seconds() > 30:
+                
+                try:
+                    needs_update, latest_version = self.launcher.check_for_server_update(serverStart=True, check_only=True)
+
+                    if needs_update and self.launcher.launcherConfig.AutoUpdateServerSoftware:
+                        self.save_and_shutdown()
+                        self.launcher.update_server(latest_version)
+                        continue
+                except:
+                    pass
+
                 serverData = []
                 try:
 

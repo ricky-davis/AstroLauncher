@@ -186,6 +186,10 @@ class AstroLauncher():
 
     def __init__(self, astroPath, launcherINI="Launcher.ini", disable_auto_update=None):
         AstroLogging.setup_logging()
+        self.launcherINI = launcherINI
+        self.launcherConfig = self.LauncherConfig()
+        self.launcherPath = os.getcwd()
+        self.refresh_launcher_config()
 
         # check if path specified
         if astroPath is not None:
@@ -210,14 +214,20 @@ class AstroLauncher():
             except:
                 AstroLogging.logPrint(
                     "Unable to find server executable anywhere! (AstroServer.exe)", "critical")
+                
+        # finally, try to install the server
+        try:
+            if self.astroPath is None:
+                self.astroPath = os.getcwd()
+                AstroLogging.logPrint(
+                    "Attempting to install. Press CTRL+C or kill the process to abort the server install.", "critical")
                 time.sleep(5)
-                return
+                self.check_for_server_update()
+        except:
+            return
+
         # AstroRequests.checkProxies()
 
-        self.launcherINI = launcherINI
-        self.launcherConfig = self.LauncherConfig()
-        self.launcherPath = os.getcwd()
-        self.refresh_launcher_config()
         AstroLogging.discordWebhookURL = self.launcherConfig.DiscordWebHookURL
         dwhl = self.launcherConfig.DiscordWebHookLevel.lower()
         dwhl = dwhl if dwhl in ("all", "cmd", "chat") else "cmd"
@@ -276,12 +286,13 @@ class AstroLauncher():
                 "Please correct this in your launcher config", "critical")
             return
 
-        self.DedicatedServer = AstroDedicatedServer(
-            self.astroPath, self)
-        
         self.check_for_server_update()
 
         self.check_for_launcher_update()
+
+        self.DedicatedServer = AstroDedicatedServer(
+            self.astroPath, self)
+        
 
         AstroLogging.logPrint("Starting a new session")
 
@@ -510,7 +521,7 @@ class AstroLauncher():
         
             
 
-    def check_for_server_update(self, serverStart=False):
+    def check_for_server_update(self, serverStart=False, check_only=False):
         try:
             
             if not self.launcherConfig.UpdateOnServerRestart and serverStart:
@@ -525,8 +536,12 @@ class AstroLauncher():
                         needs_update = True
                         
                 cur_version = "0.0"
-                with open(os.path.join(self.astroPath, "build.version"), "r") as f:
-                    cur_version = (f.readline())[:-10]
+                try:
+                    with open(os.path.join(self.astroPath, "build.version"), "r") as f:
+                        cur_version = (f.readline())[:-10]
+                except:
+                    pass
+                # print(cur_version)
                 if cur_version == "0.0":
                     needs_update = True
                 url = "https://servercheck.spycibot.com/stats"
@@ -539,8 +554,9 @@ class AstroLauncher():
                     AstroLogging.logPrint(
                         f"SERVER UPDATE AVAILABLE: {cur_version} -> {latest_version}", "warning")
                     
-                    if self.launcherConfig.AutoUpdateServerSoftware:
+                    if self.launcherConfig.AutoUpdateServerSoftware and not check_only:
                         self.update_server(latest_version)
+                    return True, latest_version
 
             cur_version = "0.0"
             with open(os.path.join(self.astroPath, "build.version"), "r") as f:
@@ -550,6 +566,8 @@ class AstroLauncher():
         except Exception as e:
             print(e)
             AstroLogging.logPrint(f"Failed to check if update is available", "warning")
+
+        return False, "0.0"
 
 
     def check_for_launcher_update(self, serverStart=False):
