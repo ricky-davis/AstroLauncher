@@ -9,6 +9,7 @@ PyInstaller.__main__.run([
     '--name=%s' % "AstroLauncher",
     '--onefile',
     '--add-data=%s' % "assets;./assets",
+    '--noupx',
     '--icon=%s' % "assets/astrolauncherlogo.ico",
     'AstroLauncher.py'
 ])

@@ -350,6 +350,7 @@ class AstroDedicatedServer():
                 self.lastXAuth += datetime.timedelta(seconds=20)
 
     def server_loop(self):
+        # AstroLogging.logPrint("Starting server_loop: 2", "debug")
         while True:
             # Ensure RCON is connected
             try:
@@ -359,30 +360,47 @@ class AstroDedicatedServer():
             except:
                 pass
             while not self.AstroRCON.connected:
+                # AstroLogging.logPrint("Waiting on AstroRCON to connect", "debug")
                 time.sleep(0.1)
             ###########################
+
+            # AstroLogging.logPrint("Running through another loop...", "debug")
+            now = datetime.datetime.now()
 
             if not self.launcher.launcherConfig.DisableBackupRetention:
                 self.launcher.backup_retention()
 
+            # AstroLogging.logPrint("Server_loop section: 1", "debug")
             self.launcher.save_reporting()
+
+            # AstroLogging.logPrint("Server_loop section: 2", "debug")
             if self.launcher.launcherConfig.EnableAutoRestart:
-                if (((datetime.datetime.now() - self.lastRestart).total_seconds() > 60) and ((self.nextRestartTime - datetime.datetime.now()).total_seconds() < 0)):
+                if (((now - self.lastRestart).total_seconds() > 60) and ((self.nextRestartTime - now).total_seconds() < 0)):
                     AstroLogging.logPrint(
                         "Preparing to shutdown the server.")
-                    self.lastRestart = datetime.datetime.now()
+                    self.lastRestart = now
                     self.nextRestartTime += datetime.timedelta(
                         hours=self.launcher.launcherConfig.AutoRestartEveryHours)
                     self.save_and_shutdown()
 
+            # AstroLogging.logPrint("Server_loop section: 3", "debug")
             if self.process.poll() is not None:
                 AstroLogging.logPrint(
                     "Server was closed. Restarting..")
                 return self.launcher.start_server()
 
+            # AstroLogging.logPrint("Server_loop section: 4", "debug")
             self.getXauth()
 
-            if self.lastHeartbeat is None or (datetime.datetime.now() - self.lastHeartbeat).total_seconds() > 30:
+
+            
+            # AstroLogging.logPrint("Server_loop section: 5", "debug")
+            # AstroLogging.logPrint(f"self.lastHeartbeat: {self.lastHeartbeat}", "debug")
+            # try:
+            #     AstroLogging.logPrint(f"total_seconds: {(now - self.lastHeartbeat).total_seconds()}", "debug")
+            # except:
+            #     pass
+            if self.lastHeartbeat is None or (now - self.lastHeartbeat).total_seconds() > 30:
                 
                 try:
                     needs_update, latest_version = self.launcher.check_for_server_update(serverStart=True, check_only=True)
@@ -446,12 +464,14 @@ class AstroDedicatedServer():
 
                 self.lastHeartbeat = datetime.datetime.now()
 
+            # AstroLogging.logPrint("Server_loop section: 6", "debug")
             if self.launcher.webServer is not None:
                 self.setStatus("ready")
                 self.busy = "getSavesInLoop"
                 self.getSaves()
                 self.busy = False
 
+            # AstroLogging.logPrint("Server_loop section: 7", "debug")
             self.setStatus("ready")
             serverStats = self.AstroRCON.DSServerStatistics()
             if serverStats is not None and 'averageFPS' in serverStats:
@@ -464,6 +484,7 @@ class AstroDedicatedServer():
                             f"Server FPS: {round(self.DSServerStats['averageFPS'])}")
                 self.oldServerStats = self.DSServerStats
 
+            # AstroLogging.logPrint("Server_loop section: 8", "debug")
             self.setStatus("ready")
             playerList = self.AstroRCON.DSListPlayers()
             if playerList is not None and 'playerInfo' in playerList:
@@ -499,6 +520,8 @@ class AstroDedicatedServer():
 
                 self.players['playerInfo'] = [
                     x for x in playerList['playerInfo'] if x['playerName'] not in self.stripPlayers]
+
+            # AstroLogging.logPrint("Server_loop section: 9", "debug")
             time.sleep(
                 self.launcher.launcherConfig.ServerStatusFrequency)
 

@@ -237,7 +237,7 @@ class AstroLauncher():
             astroPath=self.astroPath, logRetention=int(self.launcherConfig.LogRetentionDays))
         if disable_auto_update is not None:
             self.launcherConfig.AutoUpdateLauncherSoftware = not disable_auto_update
-        self.version = "v1.8.1"
+        self.version = "v1.8.1.1"
         colsize = os.get_terminal_size().columns
         if colsize >= 77:
             vText = "Version " + self.version[1:]
@@ -411,18 +411,6 @@ class AstroLauncher():
         with open(os.devnull, 'w') as tempf:
             proc = subprocess.Popen(playfabRequestCommand, stdout=tempf, stderr=tempf)
             proc.communicate()
-            
-    def recursive_copy(src, dst):
-        os.chdir(src)
-        for item in os.listdir():
-
-            if os.path.isfile(item):
-                shutil.copy(item, dst)
-
-            elif os.path.isdir(item):
-                new_dst = os.path.join(dst, item)
-                os.mkdir(new_dst)
-                self.recursive_copy(os.path.abspath(item), new_dst)
 
     def update_server(self,latest_version):
         updateLocation = os.path.join(self.astroPath,'steamcmd','steamapps','common','ASTRONEER Dedicated Server')
@@ -491,7 +479,6 @@ class AstroLauncher():
                 if upd_version == latest_version:
                     update_downloaded = True
 
-            # print('here1')
             if update_downloaded:
                 open("update.p","wb").write(b"transfer")
                 dir_util.copy_tree(updateLocation, self.astroPath)
@@ -500,13 +487,12 @@ class AstroLauncher():
             cur_version = "0.0"
             with open(os.path.join(self.astroPath, "build.version"), "r") as f:
                 cur_version = (f.readline())[:-10]
-            # print('here2')
+
             if cur_version == latest_version:
                 AstroLogging.logPrint(f"UPDATE TO {latest_version} SUCCESSFUL.")
                 steamcmdZip = os.path.join(self.astroPath,"steamcmd.zip")
                 if os.path.exists(steamcmdZip):
                     os.remove(steamcmdZip)
-            # print('here3')
             try:
                 os.remove("update.p")
             except:
@@ -726,9 +712,11 @@ class AstroLauncher():
         self.DedicatedServer.serverData = serverData
         doneTime = time.time()
         elapsed = doneTime - startTime
+        # AstroLogging.logPrint("This is to show we're in the debug AstroLauncher version", "debug")
         AstroLogging.logPrint(
             f"Server ready! Took {round(elapsed,2)} seconds to register.", ovrDWHL=True)  # {self.DedicatedServer.LobbyID}
         self.DedicatedServer.status = "ready"
+        # AstroLogging.logPrint("Starting server_loop: 1", "debug")
         self.DedicatedServer.server_loop()
 
     def check_ports_free(self):
@@ -839,13 +827,13 @@ class AstroLauncher():
 
         if testMatrix == [True, True]:
             AstroLogging.logPrint("Server network configuration good!")
-        elif testMatrix == [True, False]:
+        elif testMatrix == [False, True]:
                 AstroLogging.logPrint(
                     "Your server is not accessible from your local network.", "warning")
                 AstroLogging.logPrint("This usually indicates an issue with NAT Loopback", "warning")
                 AstroLogging.logPrint("See if your router supports it, or setup your server with playit.gg", "warning")
                 AstroLogging.logPrint("Guide to setting up playit.gg (11:28): https://youtu.be/SdLNFowq8WI?t=688", "warning")
-        elif testMatrix == [False, True]:
+        elif testMatrix == [True, False]:
             AstroLogging.logPrint("Your server can be seen locally, but not remotely.", "warning")
             AstroLogging.logPrint("This usually means you have a Loopback adapter that needs to be disabled.", "warning")
         elif testMatrix == [False, False]:

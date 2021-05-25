@@ -249,5 +249,12 @@ def test_network(ip, port, tcp):
 def test_nonlocal(ip, port):
     x = threading.Thread(target=socket_server2, args=(port,))
     x.start()
-    r = (AstroRequests.post(f"https://servercheck.spycibot.com/api?ip_port={ip}:{port}", timeout=10)).json()
+    try:
+        r = (AstroRequests.post(f"https://servercheck.spycibot.com/api?ip_port={ip}:{port}", timeout=10)).json()
+    except:
+        AstroLogging.logPrint("Unable to verify outside connectivity.", "warning")
+        AstroLogging.logPrint("Connection to external service failed.", "warning")
+        return False
+    
+    AstroLogging.logPrint(r, "debug")
     return r['Server']
