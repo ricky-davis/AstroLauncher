@@ -205,26 +205,17 @@ class AstroLauncher():
         elif os.path.exists(os.path.join(os.getcwd(), "AstroServer.exe")):
             self.astroPath = os.getcwd()
 
-        # fallback to automatic detection (experimental, do NOT rely on it)
         else:
+            AstroLogging.logPrint("Unable to find server executable anywhere! (AstroServer.exe)", "warning")
+            
+            # finally, try to install the server
             try:
-                autoPath = AstroAPI.getInstallPath()
-                if os.path.exists(os.path.join(autoPath, "AstroServer.exe")):
-                    self.astroPath = autoPath
-            except:
-                AstroLogging.logPrint(
-                    "Unable to find server executable anywhere! (AstroServer.exe)", "critical")
-                
-        # finally, try to install the server
-        try:
-            if self.astroPath is None:
-                self.astroPath = os.getcwd()
-                AstroLogging.logPrint(
-                    "Attempting to install. Press CTRL+C or kill the process to abort the server install.", "critical")
-                time.sleep(5)
-                self.check_for_server_update()
-        except:
-            return
+                if astroPath is None:
+                    self.astroPath = os.getcwd()
+                    self.check_for_server_update()
+            except Exception as e:
+                AstroLogging.logPrint(e, "critical")
+                return
 
         # AstroRequests.checkProxies()
 
@@ -237,7 +228,7 @@ class AstroLauncher():
             astroPath=self.astroPath, logRetention=int(self.launcherConfig.LogRetentionDays))
         if disable_auto_update is not None:
             self.launcherConfig.AutoUpdateLauncherSoftware = not disable_auto_update
-        self.version = "v1.8.1.1"
+        self.version = "v1.8.1.2"
         colsize = os.get_terminal_size().columns
         if colsize >= 77:
             vText = "Version " + self.version[1:]
@@ -528,7 +519,7 @@ class AstroLauncher():
                         cur_version = (f.readline())[:-10]
                 except:
                     pass
-                # print(cur_version)
+                #print(cur_version)
                 if cur_version == "0.0":
                     needs_update = True
                 url = "https://servercheck.spycibot.com/stats"
@@ -536,6 +527,8 @@ class AstroLauncher():
 
                 latest_version = data['LatestVersion']
                 if version.parse(latest_version) > version.parse(cur_version):
+                    needs_update = True
+                if not os.path.exists(os.path.join(self.astroPath, "AstroServer.exe")):
                     needs_update = True
                 if needs_update:
                     AstroLogging.logPrint(
@@ -835,7 +828,8 @@ class AstroLauncher():
                 AstroLogging.logPrint("Guide to setting up playit.gg (11:28): https://youtu.be/SdLNFowq8WI?t=688", "warning")
         elif testMatrix == [True, False]:
             AstroLogging.logPrint("Your server can be seen locally, but not remotely.", "warning")
-            AstroLogging.logPrint("This usually means you have a Loopback adapter that needs to be disabled.", "warning")
+            AstroLogging.logPrint("This usually means you have a Loopback adapter that needs to be disabled", "warning")
+            AstroLogging.logPrint("and that you may need to Port Forward/open your firewall.", "warning")
         elif testMatrix == [False, False]:
             AstroLogging.logPrint("The server is completely unreachable!", "warning")
             AstroLogging.logPrint(f"Please port forward {self.DedicatedServer.settings.Port} UDP and ensure the firewall settings are correct.", "warning")

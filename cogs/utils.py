@@ -11,6 +11,12 @@ class AstroRequests():
         "http": "http://127.0.0.1:8888",
         "https": "http://127.0.0.1:8888"
     }
+    session = None
+
+    @classmethod
+    def setupSession(cls):
+        if cls.session is None:
+            cls.session = requests.Session()
 
     @classmethod
     def checkProxies(cls):
@@ -21,14 +27,18 @@ class AstroRequests():
         except:
             cls.proxies = None
 
+    # https://stackoverflow.com/questions/64236686/python-requests-exceptions-connectionerror-only-one-usage-of-each-socket-addr
     @classmethod
     def get(cls, url, timeout=5):
+        cls.setupSession()
         # cls.checkProxies()
         # return requests.get(url, verify=False, proxies=cls.proxies, timeout=5)
-        return requests.get(url, verify=False, timeout=timeout)
+        return cls.session.get(url, verify=False, timeout=timeout)
 
     @classmethod
     def post(cls, url, headers=None, json=None, files=None, data=None, timeout=5):
+        cls.setupSession()
         # cls.checkProxies()
         # return requests.post(url, verify=False, proxies=cls.proxies, headers=headers, json=json, timeout=5)
-        return requests.post(url, verify=False, headers=headers, json=json, files=files, data=data, timeout=timeout)
+        
+        return cls.session.post(url, verify=False, headers=headers, json=json, files=files, data=data, timeout=timeout)

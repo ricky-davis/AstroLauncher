@@ -489,37 +489,50 @@ class AstroDedicatedServer():
             playerList = self.AstroRCON.DSListPlayers()
             if playerList is not None and 'playerInfo' in playerList:
                 self.players = playerList
-                curPlayers = [x['playerName']
-                              for x in self.players['playerInfo'] if x['inGame']]
+                curPlayers = [x for x in self.players['playerInfo'] if x['inGame']]
+                curPIDList = [x['playerGuid'] for x in curPlayers]
+                onlinePIDList = [x['playerGuid'] for x in self.onlinePlayers]
 
                 if len(curPlayers) > len(self.onlinePlayers):
-                    playerDif = list(set(curPlayers) -
-                                     set(self.onlinePlayers))[0]
-                    self.onlinePlayers = curPlayers
-                    if playerDif in self.stripPlayers:
-                        self.stripPlayers.remove(playerDif)
+                    playerDif = list(set(curPIDList) - set(onlinePIDList))
+                    AstroLogging.logPrint(f"P. Joining - OnlinePlayers: {onlinePIDList}", "debug")
+                    AstroLogging.logPrint(f"P. Joining - CurPlayers: {curPIDList}", "debug")
+                    AstroLogging.logPrint(f"P. Joining - dif: {playerDif}", "debug")
+                    if len(playerDif) > 0:
+                        playerDif = playerDif[0]
+                        self.onlinePlayers = curPlayers
+                        if playerDif in self.stripPlayers:
+                            self.stripPlayers.remove(playerDif)
+                            
+                        difName = [x for x in self.players['playerInfo']
+                                if x['playerGuid'] == playerDif][0]["playerName"]
 
-                    AstroLogging.logPrint(
-                        f"Player joining: {playerDif}", ovrDWHL=True, dwet="j")
+                        AstroLogging.logPrint(
+                            f"Player joining: {difName}", ovrDWHL=True, dwet="j")
 
-                    # Add player to INI with Unlisted category if not exists or is Pending
-                    pp = list(self.settings.PlayerProperties)
-                    difGuid = [x for x in self.players['playerInfo']
-                               if x['playerName'] == playerDif][0]["playerGuid"]
-                    if len([x for x in pp if difGuid in x and "PlayerCategory=Pending" not in x]) == 0:
-                        self.AstroRCON.DSSetPlayerCategoryForPlayerName(
-                            playerDif, "Unlisted")
-                        self.refresh_settings()
+                        # Add player to INI with Unlisted category if not exists or is Pending
+                        pp = list(self.settings.PlayerProperties)
+                        if len([x for x in pp if playerDif in x and "PlayerCategory=Pending" not in x]) == 0:
+                            self.AstroRCON.DSSetPlayerCategoryForPlayerName(
+                                playerDif, "Unlisted")
+                            self.refresh_settings()
 
                 elif len(curPlayers) < len(self.onlinePlayers):
-                    playerDif = list(
-                        set(self.onlinePlayers) - set(curPlayers))[0]
-                    self.onlinePlayers = curPlayers
-                    AstroLogging.logPrint(
-                        f"Player left: {playerDif}", ovrDWHL=True, dwet="l")
+                    playerDif = list(set(onlinePIDList) - set(curPIDList))
+                    AstroLogging.logPrint(f"P. Leaving - OnlinePlayers: {onlinePIDList}", "debug")
+                    AstroLogging.logPrint(f"P. Leaving - CurPlayers: {curPIDList}", "debug")
+                    AstroLogging.logPrint(f"P. Leaving - dif: {playerDif}", "debug")
+                    if len(playerDif) > 0:
+                        playerDif = playerDif[0]
+                        self.onlinePlayers = curPlayers
+                        
+                        difName = [x for x in self.players['playerInfo']
+                                if x['playerGuid'] == playerDif][0]["playerName"]
+                        AstroLogging.logPrint(
+                            f"Player left: {difName}", ovrDWHL=True, dwet="l")
 
                 self.players['playerInfo'] = [
-                    x for x in playerList['playerInfo'] if x['playerName'] not in self.stripPlayers]
+                    x for x in playerList['playerInfo'] if x['playerGuid'] not in self.stripPlayers]
 
             # AstroLogging.logPrint("Server_loop section: 9", "debug")
             time.sleep(
