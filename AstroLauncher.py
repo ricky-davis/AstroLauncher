@@ -3,6 +3,7 @@ import asyncio
 import atexit
 import ctypes
 import dataclasses
+import json
 import os
 import secrets
 import shutil
@@ -12,14 +13,14 @@ import subprocess
 import sys
 import time
 import zipfile
+from distutils import dir_util
 from subprocess import DEVNULL
 from threading import Thread
 
 import psutil
+from packaging import version
 from watchdog.events import FileSystemEventHandler
 from watchdog.observers import Observer
-from packaging import version
-from distutils import dir_util
 
 import cogs.AstroAPI as AstroAPI
 import cogs.AstroWebServer as AstroWebServer
@@ -29,7 +30,6 @@ from cogs.AstroDedicatedServer import AstroDedicatedServer
 from cogs.AstroLogging import AstroLogging
 from cogs.MultiConfig import MultiConfig
 from cogs.utils import AstroRequests
-
 
 """
 Build:
@@ -206,8 +206,9 @@ class AstroLauncher():
             self.astroPath = os.getcwd()
 
         else:
-            AstroLogging.logPrint("Unable to find server executable anywhere! (AstroServer.exe)", "warning")
-            
+            AstroLogging.logPrint(
+                "Unable to find server executable anywhere! (AstroServer.exe)", "warning")
+
             # finally, try to install the server
             try:
                 if astroPath is None:
@@ -228,7 +229,7 @@ class AstroLauncher():
             astroPath=self.astroPath, logRetention=int(self.launcherConfig.LogRetentionDays))
         if disable_auto_update is not None:
             self.launcherConfig.AutoUpdateLauncherSoftware = not disable_auto_update
-        self.version = "v1.8.1.2"
+        self.version = "v1.8.1.13"
         colsize = os.get_terminal_size().columns
         if colsize >= 77:
             vText = "Version " + self.version[1:]
@@ -250,7 +251,7 @@ class AstroLauncher():
             "https://github.com/ricky-davis/AstroLauncher/issues")
         AstroLogging.logPrint(
             "To safely stop the launcher and server press CTRL+C")
-        # AstroRequests.checkProxies()
+
         self.latestURL = "https://github.com/ricky-davis/AstroLauncher/releases/latest"
         bName = os.path.basename(sys.executable)
         if sys.argv[0] == os.path.splitext(bName)[0]:
@@ -283,8 +284,6 @@ class AstroLauncher():
             self.astroPath, self)
 
         self.check_for_launcher_update()
-
-        
 
         AstroLogging.logPrint("Starting a new session")
 
@@ -398,23 +397,26 @@ class AstroLauncher():
 
     def validate_playfab_certs(self):
         AstroLogging.logPrint("Attempting to validate Playfab Certs")
-        playfabRequestCommand = ["powershell", '-executionpolicy', 'bypass', '-command', 'Invoke-WebRequest -uri https://5ea1.playfabapi.com/ -UseBasicParsing']
+        playfabRequestCommand = ["powershell", '-executionpolicy', 'bypass', '-command',
+                                 'Invoke-WebRequest -uri https://5ea1.playfabapi.com/ -UseBasicParsing']
         with open(os.devnull, 'w') as tempf:
-            proc = subprocess.Popen(playfabRequestCommand, stdout=tempf, stderr=tempf)
+            proc = subprocess.Popen(
+                playfabRequestCommand, stdout=tempf, stderr=tempf)
             proc.communicate()
 
-    def update_server(self,latest_version):
-        updateLocation = os.path.join(self.astroPath,'steamcmd','steamapps','common','ASTRONEER Dedicated Server')
-        steamcmdFolder = os.path.join(self.astroPath,"steamcmd")
-        steamcmdExe = os.path.join(steamcmdFolder,"steamcmd.exe")
-        steamcmdZip = os.path.join(self.astroPath,"steamcmd.zip")
+    def update_server(self, latest_version):
+        updateLocation = os.path.join(
+            self.astroPath, 'steamcmd', 'steamapps', 'common', 'ASTRONEER Dedicated Server')
+        steamcmdFolder = os.path.join(self.astroPath, "steamcmd")
+        steamcmdExe = os.path.join(steamcmdFolder, "steamcmd.exe")
+        steamcmdZip = os.path.join(self.astroPath, "steamcmd.zip")
         try:
             if not os.path.exists(steamcmdFolder):
                 if not os.path.exists(steamcmdExe):
                     if not os.path.exists(steamcmdZip):
                         url = "https://steamcdn-a.akamaihd.net/client/installer/steamcmd.zip"
                         r = (AstroRequests.get(url))
-                        with open(steamcmdZip,'wb') as f:
+                        with open(steamcmdZip, 'wb') as f:
                             f.write(r.content)
                     with zipfile.ZipFile(steamcmdZip, 'r') as zip_ref:
                         zip_ref.extractall(steamcmdFolder)
@@ -434,7 +436,7 @@ class AstroLauncher():
                         pass
 
             if not update_downloaded:
-                open("update.p","wb").write(b"download")
+                open("update.p", "wb").write(b"download")
                 if os.path.exists(steamcmdExe):
                     try:
                         os.remove(steamcmdZip)
@@ -444,11 +446,13 @@ class AstroLauncher():
                     AstroLogging.logPrint(
                         f"AUTOMATICALLY UPDATING SERVER TO {latest_version}...")
                     try:
-                        updateCMD = [steamcmdExe, '+login anonymous', '+app_update 728470', 'validate', '+quit']
-                        update = subprocess.Popen(updateCMD, creationflags=subprocess.DETACHED_PROCESS)
+                        updateCMD = [steamcmdExe, '+login anonymous',
+                                     '+app_update 728470', 'validate', '+quit']
+                        update = subprocess.Popen(
+                            updateCMD, creationflags=subprocess.DETACHED_PROCESS)
                         while update.poll() is None:
                             time.sleep(0.1)
-                    except:
+                    except Exception as e:
                         for child in psutil.Process(update.pid).children():
                             try:
                                 child.kill()
@@ -459,8 +463,8 @@ class AstroLauncher():
                         except:
                             pass
 
-                        raise Exception("")
-                    
+                        raise Exception("") from e
+
                 upd_version = "0.0"
                 try:
                     with open(os.path.join(updateLocation, "build.version"), "r") as f:
@@ -471,17 +475,18 @@ class AstroLauncher():
                     update_downloaded = True
 
             if update_downloaded:
-                open("update.p","wb").write(b"transfer")
+                open("update.p", "wb").write(b"transfer")
                 dir_util.copy_tree(updateLocation, self.astroPath)
-                open("update.p","wb").write(b"complete")
+                open("update.p", "wb").write(b"complete")
 
             cur_version = "0.0"
             with open(os.path.join(self.astroPath, "build.version"), "r") as f:
                 cur_version = (f.readline())[:-10]
 
             if cur_version == latest_version:
-                AstroLogging.logPrint(f"UPDATE TO {latest_version} SUCCESSFUL.")
-                steamcmdZip = os.path.join(self.astroPath,"steamcmd.zip")
+                AstroLogging.logPrint(
+                    f"UPDATE TO {latest_version} SUCCESSFUL.")
+                steamcmdZip = os.path.join(self.astroPath, "steamcmd.zip")
                 if os.path.exists(steamcmdZip):
                     os.remove(steamcmdZip)
             try:
@@ -493,15 +498,13 @@ class AstroLauncher():
             except:
                 pass
 
-        except Exception as e:
-            AstroLogging.logPrint(f"UPDATE TO {latest_version} FAILED.", "warning")
-
-        
-            
+        except:  # Exception as e:
+            AstroLogging.logPrint(
+                f"UPDATE TO {latest_version} FAILED.", "warning")
 
     def check_for_server_update(self, serverStart=False, check_only=False):
         try:
-            
+
             if not self.launcherConfig.UpdateOnServerRestart and serverStart:
                 return
             else:
@@ -512,18 +515,18 @@ class AstroLauncher():
                         update_status = f.read()
                     if update_status != "completed":
                         needs_update = True
-                        
+
                 cur_version = "0.0"
                 try:
                     with open(os.path.join(self.astroPath, "build.version"), "r") as f:
                         cur_version = (f.readline())[:-10]
                 except:
                     pass
-                #print(cur_version)
+                # print(cur_version)
                 if cur_version == "0.0":
                     needs_update = True
                 url = "https://servercheck.spycibot.com/stats"
-                data = ((AstroRequests.get(url)).json())
+                data = json.load((AstroRequests.get(url)))
 
                 latest_version = data['LatestVersion']
                 if version.parse(latest_version) > version.parse(cur_version):
@@ -533,7 +536,7 @@ class AstroLauncher():
                 if needs_update:
                     AstroLogging.logPrint(
                         f"SERVER UPDATE AVAILABLE: {cur_version} -> {latest_version}", "warning")
-                    
+
                     if self.launcherConfig.AutoUpdateServerSoftware and not check_only:
                         self.update_server(latest_version)
                     return True, latest_version
@@ -545,17 +548,17 @@ class AstroLauncher():
 
         except Exception as e:
             print(e)
-            AstroLogging.logPrint(f"Failed to check if update is available", "warning")
+            AstroLogging.logPrint(
+                "Failed to check if update is available", "warning")
 
         return False, "0.0"
-
 
     def check_for_launcher_update(self, serverStart=False):
         try:
             url = "https://api.github.com/repos/ricky-davis/AstroLauncher/releases/latest"
-            data = ((AstroRequests.get(url)).json())
+            data = json.load((AstroRequests.get(url)))
             latestVersion = data['tag_name']
-            
+
             if version.parse(latestVersion) > version.parse(self.version):
                 self.hasUpdate = latestVersion
                 AstroLogging.logPrint(
@@ -589,7 +592,8 @@ class AstroLauncher():
                            'Write-Host "Download complete!";',
                            'Start-Process', f"'{downloadPath + '.exe'}'"]
             # print(' '.join(downloadCMD))
-            subprocess.Popen(downloadCMD, shell=True, creationflags=subprocess.DETACHED_PROCESS, stdin=None, stdout=None, stderr=None, close_fds=True)
+            subprocess.Popen(downloadCMD, shell=True, creationflags=subprocess.DETACHED_PROCESS,
+                             stdin=None, stdout=None, stderr=None, close_fds=True)
         time.sleep(2)
         self.DedicatedServer.kill_server("Auto-Update")
 
@@ -814,25 +818,35 @@ class AstroLauncher():
                         "Setting custom firewall rules...")
 
     def check_network_config(self):
-        localTest = ValidateSettings.test_network(self.DedicatedServer.settings.PublicIP, int(self.DedicatedServer.settings.Port), False)
-        remoteTest = ValidateSettings.test_nonlocal(self.DedicatedServer.settings.PublicIP, int(self.DedicatedServer.settings.Port))
+        localTest = ValidateSettings.test_network(
+            self.DedicatedServer.settings.PublicIP, int(self.DedicatedServer.settings.Port), False)
+        remoteTest = ValidateSettings.test_nonlocal(
+            self.DedicatedServer.settings.PublicIP, int(self.DedicatedServer.settings.Port))
         testMatrix = [localTest, remoteTest]
 
         if testMatrix == [True, True]:
             AstroLogging.logPrint("Server network configuration good!")
         elif testMatrix == [False, True]:
-                AstroLogging.logPrint(
-                    "Your server is not accessible from your local network.", "warning")
-                AstroLogging.logPrint("This usually indicates an issue with NAT Loopback", "warning")
-                AstroLogging.logPrint("See if your router supports it, or setup your server with playit.gg", "warning")
-                AstroLogging.logPrint("Guide to setting up playit.gg (11:28): https://youtu.be/SdLNFowq8WI?t=688", "warning")
+            AstroLogging.logPrint(
+                "Your server is not accessible from your local network.", "warning")
+            AstroLogging.logPrint(
+                "This usually indicates an issue with NAT Loopback", "warning")
+            AstroLogging.logPrint(
+                "See if your router supports it, or setup your server with playit.gg", "warning")
+            AstroLogging.logPrint(
+                "Guide to setting up playit.gg (11:28): https://youtu.be/SdLNFowq8WI?t=688", "warning")
         elif testMatrix == [True, False]:
-            AstroLogging.logPrint("Your server can be seen locally, but not remotely.", "warning")
-            AstroLogging.logPrint("This usually means you have a Loopback adapter that needs to be disabled", "warning")
-            AstroLogging.logPrint("and that you may need to Port Forward/open your firewall.", "warning")
+            AstroLogging.logPrint(
+                "Your server can be seen locally, but not remotely.", "warning")
+            AstroLogging.logPrint(
+                "This usually means you have a Loopback adapter that needs to be disabled", "warning")
+            AstroLogging.logPrint(
+                "and that you may need to Port Forward/open your firewall.", "warning")
         elif testMatrix == [False, False]:
-            AstroLogging.logPrint("The server is completely unreachable!", "warning")
-            AstroLogging.logPrint(f"Please port forward {self.DedicatedServer.settings.Port} UDP and ensure the firewall settings are correct.", "warning")
+            AstroLogging.logPrint(
+                "The server is completely unreachable!", "warning")
+            AstroLogging.logPrint(
+                f"Please port forward {self.DedicatedServer.settings.Port} UDP and ensure the firewall settings are correct.", "warning")
 
         rconNetworkCorrect = not (ValidateSettings.test_network(
             self.DedicatedServer.settings.PublicIP, int(self.DedicatedServer.settings.ConsolePort), True))
@@ -938,4 +952,6 @@ if __name__ == "__main__":
     except KeyboardInterrupt:
         pass
     except Exception as err:
-        AstroLogging.logPrint(err, "critical", True)
+        ermsg = ('FINAL Error on line {}'.format(
+            sys.exc_info()[-1].tb_lineno), type(err).__name__, err)
+        AstroLogging.logPrint(f"{ermsg}", "critical", True)

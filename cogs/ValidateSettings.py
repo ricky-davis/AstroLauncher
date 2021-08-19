@@ -1,5 +1,5 @@
 
-
+import json
 import os
 import secrets
 import socket
@@ -17,7 +17,7 @@ from cogs.utils import AstroRequests
 
 def get_public_ip():
     url = "https://api.ipify.org?format=json"
-    x = (AstroRequests.get(url)).json()
+    x = json.load(AstroRequests.get(url))
     AstroLogging.logPrint(x, "debug")
     return x['ip']
 
@@ -126,8 +126,9 @@ def get_current_settings(launcher, ovrIP=False):
         # print(settings)
         EngineINI = config.getdict()
         settings.update(EngineINI['URL'])
-        if type(EngineINI['URL']['Port']) == list:
-            AstroLogging.logPrint("Duplicate Ports detected! Please only list one Port.", "critical")
+        if isinstance(EngineINI['URL']['Port'], list):
+            AstroLogging.logPrint(
+                "Duplicate Ports detected! Please only list one Port.", "critical")
             raise TypeError
         # print(settings)
         return settings
@@ -183,6 +184,7 @@ def socket_server(port, secret, tcp):
     except:
         return False
 
+
 def socket_server2(port):
     try:
         serversocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -193,21 +195,19 @@ def socket_server2(port):
         # become a server socket
         while 1:
             # accept connections from outside
-            connection = None
             while True:
                 data, address = serversocket.recvfrom(32)
-                #print(address)
+                # print(address)
 
                 bytesData = bytes([0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-                             0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x08])
+                                   0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x08])
                 if data == bytesData:
                     serversocket.sendto(b"Hello from AstroLauncher", address)
                     serversocket.close()
                     return True
                 else:
                     return False
-    except Exception as e:
-        #print(e)
+    except:  # Exception as e:
         return False
 
 
@@ -250,11 +250,14 @@ def test_nonlocal(ip, port):
     x = threading.Thread(target=socket_server2, args=(port,))
     x.start()
     try:
-        r = (AstroRequests.post(f"https://servercheck.spycibot.com/api?ip_port={ip}:{port}", timeout=10)).json()
+        r = json.load(AstroRequests.post(
+            f"https://servercheck.spycibot.com/api?ip_port={ip}:{port}", timeout=10))
     except:
-        AstroLogging.logPrint("Unable to verify outside connectivity.", "warning")
-        AstroLogging.logPrint("Connection to external service failed.", "warning")
+        AstroLogging.logPrint(
+            "Unable to verify outside connectivity.", "warning")
+        AstroLogging.logPrint(
+            "Connection to external service failed.", "warning")
         return False
-    
+
     AstroLogging.logPrint(r, "debug")
     return r['Server']

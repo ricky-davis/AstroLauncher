@@ -1,44 +1,47 @@
-import requests
+#import requests
+import json
+import urllib
+import urllib.error
+from urllib import request
 
 # pylint: disable=no-member
-requests.packages.urllib3.disable_warnings(
-    requests.packages.urllib3.exceptions.InsecureRequestWarning)
 
 
 class AstroRequests():
-    proxies = None
-    fiddlerProxies = {
-        "http": "http://127.0.0.1:8888",
-        "https": "http://127.0.0.1:8888"
-    }
-    session = None
-
-    @classmethod
-    def setupSession(cls):
-        if cls.session is None:
-            cls.session = requests.Session()
-
-    @classmethod
-    def checkProxies(cls):
-        try:
-            x = requests.get(cls.fiddlerProxies['http'], timeout=0.3)
-            if x.status_code == 200:
-                cls.proxies = cls.fiddlerProxies.copy()
-        except:
-            cls.proxies = None
-
-    # https://stackoverflow.com/questions/64236686/python-requests-exceptions-connectionerror-only-one-usage-of-each-socket-addr
     @classmethod
     def get(cls, url, timeout=5):
-        cls.setupSession()
-        # cls.checkProxies()
-        # return requests.get(url, verify=False, proxies=cls.proxies, timeout=5)
-        return cls.session.get(url, verify=False, timeout=timeout)
+        proxies = request.getproxies()
+        proxy_handler = request.ProxyHandler(proxies)
+        opener = request.build_opener(proxy_handler)
+        request.install_opener(opener)
+        # print(f"get: {proxies}")
+        resp = request.urlopen(url, timeout=timeout)
+        return resp  # cls.session.get(url, verify=False, timeout=timeout)
 
     @classmethod
-    def post(cls, url, headers=None, json=None, files=None, data=None, timeout=5):
-        cls.setupSession()
-        # cls.checkProxies()
-        # return requests.post(url, verify=False, proxies=cls.proxies, headers=headers, json=json, timeout=5)
-        
-        return cls.session.post(url, verify=False, headers=headers, json=json, files=files, data=data, timeout=timeout)
+    def post(cls, url, headers=None, jsonD=None, timeout=5):
+        if not headers:
+            headers = {}
+        if not jsonD:
+            jsonD = {}
+        req = request.Request(url)
+        if jsonD != {}:
+            jsonD = json.dumps(jsonD).encode('utf-8')
+            req.add_header('Content-Type', 'application/json; charset=utf-8')
+
+        # print(f"data: {jsonD}")
+        # print(f"headers:{headers}")
+        for header, value in headers.items():
+            req.add_header(header, value)
+
+        proxies = request.getproxies()
+        proxy_handler = request.ProxyHandler(proxies)
+        opener = request.build_opener(proxy_handler)
+        request.install_opener(opener)
+        # print(f"post: {proxies}")
+        # print(f"url: {url}")
+        try:
+            resp = request.urlopen(req, data=jsonD, timeout=timeout)
+        except urllib.error.HTTPError as e:
+            resp = e
+        return resp

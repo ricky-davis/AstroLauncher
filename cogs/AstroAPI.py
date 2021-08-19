@@ -1,8 +1,5 @@
-
-import os
-import re
+import json
 import time
-import winreg
 
 from cogs.AstroLogging import AstroLogging
 from cogs.utils import AstroRequests
@@ -22,12 +19,14 @@ def generate_XAUTH(serverGUID):
         "TitleId": "5EA1"
     }
     AstroLogging.logPrint(requestObj, "debug")
-    x = (AstroRequests.post(url, headers=base_headers,json=requestObj)).json()
-    
+    x = json.load(AstroRequests.post(
+        url, headers=base_headers, jsonD=requestObj))
+
     if x['code'] == 400 and x['error'] == "AccountNotFound":
         time.sleep(0.2)
         requestObj["CreateAccount"] = True
-        x = (AstroRequests.post(url, headers=base_headers, json=requestObj)).json()
+        x = json.load(AstroRequests.post(
+            url, headers=base_headers, jsonD=requestObj))
     AstroLogging.logPrint(x, "debug")
     return x['data']['SessionTicket']
 
@@ -43,8 +42,8 @@ def get_server(ipPortCombo, headers):
             }
         }
         AstroLogging.logPrint(requestObj, "debug")
-        x = (AstroRequests.post(url, headers=headers,
-                                json=requestObj)).json()
+        x = json.load(AstroRequests.post(url, headers=headers,
+                                         jsonD=requestObj))
         AstroLogging.logPrint(x, "debug")
         return x
     except:
@@ -64,7 +63,8 @@ def deregister_server(lobbyID, headers):
         }
 
         AstroLogging.logPrint(requestObj, "debug")
-        x = (AstroRequests.post(url, headers=headers, json=requestObj)).json()
+        x = json.load(AstroRequests.post(
+            url, headers=headers, jsonD=requestObj))
         AstroLogging.logPrint(x, "debug")
         return x
     except:
@@ -96,8 +96,8 @@ def heartbeat_server(serverData, headers, dataToChange=None):
             requestObj['FunctionParameter'].update(dataToChange)
 
         AstroLogging.logPrint(requestObj, "debug")
-        x = (AstroRequests.post(url, headers=headers,
-                                json=requestObj)).json()
+        x = json.load(AstroRequests.post(url, headers=headers,
+                                         jsonD=requestObj))
         AstroLogging.logPrint(x, "debug")
         return x
     except:

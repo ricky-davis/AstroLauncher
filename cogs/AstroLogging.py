@@ -13,6 +13,7 @@ from queue import Queue
 from threading import Thread
 
 from colorlog import ColoredFormatter
+
 from cogs.utils import AstroRequests
 
 
@@ -130,7 +131,7 @@ class AstroLogging():
         def sendDiscordReq(queueMsg):
             try:
                 _ = (AstroRequests.post(cls.discordWebhookURL,
-                                        headers=cls.discordWebhookHeaders, json=queueMsg))
+                                        headers=cls.discordWebhookHeaders, jsonD=queueMsg))
             except:
                 AstroLogging.logPrint(
                     "Failed to send log msg to discord.", msgType="warning", printToDiscord=False)
