@@ -14,7 +14,6 @@ import sys
 import time
 import zipfile
 from distutils import dir_util
-from subprocess import DEVNULL
 from threading import Thread
 
 import psutil
@@ -791,8 +790,8 @@ class AstroLauncher():
                         f'netsh advfirewall firewall delete rule name=astroserver-win64-shipping.exe dir=in program="{serverExePath}"' +
                         f'& netsh advfirewall firewall add rule name=astroserver-win64-shipping.exe dir=in action=allow program="{serverExePath}"',
                         shell=True,
-                        stdout=DEVNULL,
-                        stderr=DEVNULL
+                        stdout=subprocess.DEVNULL,
+                        stderr=subprocess.DEVNULL
                     )
                 if self.isExecutable:
                     if not ALRule:
@@ -801,8 +800,8 @@ class AstroLauncher():
                             f'netsh advfirewall firewall delete rule name=astrolauncher.exe dir=in program="{launcherEXEPath}"' +
                             f'& netsh advfirewall firewall add rule name=astrolauncher.exe dir=in action=allow program="{launcherEXEPath}"',
                             shell=True,
-                            stdout=DEVNULL,
-                            stderr=DEVNULL
+                            stdout=subprocess.DEVNULL,
+                            stderr=subprocess.DEVNULL
                         )
                 if not self.launcherConfig.DisableWebServer and not ALWRule:
                     newRules = True
@@ -810,8 +809,8 @@ class AstroLauncher():
                         f'netsh advfirewall firewall delete rule name=AstroLauncherWeb dir=in protocol=TCP localport={self.launcherConfig.WebServerPort}' +
                         f'& netsh advfirewall firewall add rule name=AstroLauncherWeb dir=in action=allow protocol=TCP localport={self.launcherConfig.WebServerPort}',
                         shell=True,
-                        stdout=DEVNULL,
-                        stderr=DEVNULL
+                        stdout=subprocess.DEVNULL,
+                        stderr=subprocess.DEVNULL
                     )
                 if newRules:
                     AstroLogging.logPrint(

@@ -212,7 +212,7 @@ const tick = async (data) => {
             if (isBottom) log.scrollTop = log.scrollHeight - log.clientHeight;
         }
 
-        s = data.settings;
+        let s = data.settings;
         if (data.server_version) {
             $("#serverVersion").text(DOMPurify.sanitize(data.server_version));
         }
@@ -239,7 +239,6 @@ const tick = async (data) => {
         }
         if (!compareObj(oldSettings, s)) {
             oldSettings = s;
-            bannerServerName;
             $("#bannerServerName").text(DOMPurify.sanitize(`${s.ServerName}`));
             $("#serverName").text(DOMPurify.sanitize(`${s.ServerName}`));
             $("#serverPort").text(
@@ -382,8 +381,8 @@ const tick = async (data) => {
 };
 
 const createSaveActionButtons = function (status, save, index) {
-    dropDownDiv = $("<div/>").attr({ class: "btn-group dropup" });
-    DDButton = $("<button/>")
+    let dropDownDiv = $("<div/>").attr({ class: "btn-group dropup" });
+    let DDButton = $("<button/>")
         .attr({
             type: "button",
             class: "btn btn-secondary dropdown-toggle",
@@ -393,29 +392,29 @@ const createSaveActionButtons = function (status, save, index) {
             id: "dropdownMenu2",
         })
         .text("Actions");
-    DDMenu = $("<div/>").attr({
+    let DDMenu = $("<div/>").attr({
         class: "dropdown-menu",
         "aria-labelledby": "dropdownMenu2",
     });
     dropDownDiv.append(DDButton);
     dropDownDiv.append(DDMenu);
-    sButton = $("<button/>").attr({
+    let sButton = $("<button/>").attr({
         type: "button",
         class: "dropdown-item p-1",
         "data-name": save.name,
         "data-index": index,
     });
 
-    actionButtonBufferList = [];
+    let actionButtonBufferList = [];
 
-    loadButton = sButton
+    let loadButton = sButton
         .clone()
         .attr("data-action", "load")
         .addClass("sBtn")
         .text("Load");
     actionButtonBufferList.push(loadButton);
 
-    deleteButton = sButton
+    let deleteButton = sButton
         .clone()
         .addClass("sdBtn")
         .attr("data-action", "delete")
@@ -424,7 +423,7 @@ const createSaveActionButtons = function (status, save, index) {
         .text("Delete");
     actionButtonBufferList.push(deleteButton);
 
-    renameButton = sButton
+    let renameButton = sButton
         .clone()
         .addClass("sdBtn")
         .attr("data-action", "rename")
@@ -446,9 +445,9 @@ const createSaveActionButtons = function (status, save, index) {
 };
 
 const createPlayerActionButtons = function (status, player) {
-    dropDownDiv = $("<div/>").attr({ class: "btn-group dropup" });
+    let dropDownDiv = $("<div/>").attr({ class: "btn-group dropup" });
     if (player.playerCategory != "Owner") {
-        DDButton = $("<button/>")
+        let DDButton = $("<button/>")
             .attr({
                 type: "button",
                 class: "btn btn-secondary dropdown-toggle",
@@ -458,37 +457,37 @@ const createPlayerActionButtons = function (status, player) {
                 id: "dropdownMenu2",
             })
             .text("Actions");
-        DDMenu = $("<div/>").attr({
+        let DDMenu = $("<div/>").attr({
             class: "dropdown-menu",
             "aria-labelledby": "dropdownMenu2",
         });
         dropDownDiv.append(DDButton);
         dropDownDiv.append(DDMenu);
-        sButton = $("<button/>").attr({
+        let sButton = $("<button/>").attr({
             type: "button",
             class: "dropdown-item pBtn p-1",
             "data-guid": player.playerGuid,
             "data-name": player.playerName,
         });
 
-        actionButtonBufferList = [];
+        let actionButtonBufferList = [];
 
-        kickButton = sButton.clone().attr("data-action", "kick").text("Kick");
+        let kickButton = sButton.clone().attr("data-action", "kick").text("Kick");
         actionButtonBufferList.push(kickButton);
 
-        banButton = sButton.clone().attr("data-action", "ban").text("Ban");
+        let banButton = sButton.clone().attr("data-action", "ban").text("Ban");
         actionButtonBufferList.push(banButton);
 
-        WLButton = sButton.clone().attr("data-action", "WL").text("Whitelist");
+        let WLButton = sButton.clone().attr("data-action", "WL").text("Whitelist");
         actionButtonBufferList.push(WLButton);
 
-        AdminButton = sButton
+        let AdminButton = sButton
             .clone()
             .attr("data-action", "admin")
             .text("Give Admin");
         actionButtonBufferList.push(AdminButton);
 
-        ResetButton = sButton
+        let ResetButton = sButton
             .clone()
             .attr("data-action", "reset")
             .text("Reset Perms");
@@ -532,28 +531,28 @@ $(document).on("input", "#WLPlayerInp", function (e) {
 });
 
 $(document).on("click", "button[data-action='rename']", function (e) {
-    oName = $(e.target).attr("data-name");
-    oIndex = $(e.target).attr("data-index");
-    nameSpan = $(`span[data-index='${oIndex}']`);
-    sName = nameSpan.text();
-    swidth = nameSpan.width();
-    parent = nameSpan.parent();
+    let oName = $(e.target).attr("data-name");
+    let oIndex = $(e.target).attr("data-index");
+    let nameSpan = $(`span[data-index='${oIndex}']`);
+    let sName = nameSpan.text();
+    let swidth = nameSpan.width();
+    let parent = nameSpan.parent();
     parent.addClass("inputBox");
-    a = $("<div/>").attr({
+    let a = $("<div/>").attr({
         class: "input-group mb-3",
     });
-    b = $("<div/>").attr({
+    let b = $("<div/>").attr({
         class: "input-group-append",
     });
 
-    sInput = $("<input/>").attr({
+    let sInput = $("<input/>").attr({
         type: "text",
         class: "saveNameInput form-control",
         "data-saveOName": sName,
         "data-saveOIndex": oIndex,
     });
     sInput.val(sName);
-    sButton = $("<button/>")
+    let sButton = $("<button/>")
         .attr({
             type: "button",
             class: "saveNameSubmit btn btn-outline-secondary text-white",
@@ -570,13 +569,13 @@ $(document).on("click", "button[data-action='rename']", function (e) {
 
 $(document).on("click", ".saveNameSubmit", function (e) {
     e.preventDefault();
-    parent = $(e.target).closest(".inputBox");
+    let parent = $(e.target).closest(".inputBox");
     parent.removeClass("inputBox");
-    sInput = parent.find(".saveNameInput");
-    sName = sInput.val();
-    oName = $(e.target).attr("data-saveOName");
-    sIndex = $(e.target).attr("data-saveOIndex");
-    sSave = oldSaves["gameList"][sIndex];
+    let sInput = parent.find(".saveNameInput");
+    let sName = sInput.val();
+    let oName = $(e.target).attr("data-saveOName");
+    let sIndex = $(e.target).attr("data-saveOIndex");
+    let sSave = oldSaves["gameList"][sIndex];
     if (sName.length < 3) {
         sName = oName;
     }
@@ -598,16 +597,16 @@ $(document).on("click", ".saveNameSubmit", function (e) {
     } else {
         sName = oName;
     }
-    nameSpan = $("<span/>").addClass("saveName").attr("data-name", sName);
+    let nameSpan = $("<span/>").addClass("saveName").attr("data-name", sName);
     nameSpan.text(sName);
     parent.html(nameSpan);
 });
 
 $(document).on("click", ".pBtn", function (e) {
     e.preventDefault();
-    pGuid = $(e.target).attr("data-guid");
-    pName = $(e.target).attr("data-name");
-    pAction = $(e.target).attr("data-action");
+    let pGuid = $(e.target).attr("data-guid");
+    let pName = $(e.target).attr("data-name");
+    let pAction = $(e.target).attr("data-action");
 
     $.ajax({
         type: "POST",
@@ -624,10 +623,10 @@ $(document).on("click", ".pBtn", function (e) {
 
 $(document).on("click", ".sBtn", function (e) {
     e.preventDefault();
-    sName = $(e.target).attr("data-name");
-    sIndex = $(e.target).attr("data-index");
-    sAction = $(e.target).attr("data-action");
-    sSave = oldSaves["gameList"][sIndex];
+    let sName = $(e.target).attr("data-name");
+    let sIndex = $(e.target).attr("data-index");
+    let sAction = $(e.target).attr("data-action");
+    let sSave = oldSaves["gameList"][sIndex];
     $.ajax({
         type: "POST",
         url: apiURL + "/savegame/" + sAction,
@@ -676,7 +675,7 @@ const saveLog = function (filename, data) {
 $(".fa-download").click(function (e) {
     e.stopPropagation();
 
-    fileBuffer = "";
+    let fileBuffer = "";
     logList.forEach((entry) => {
         fileBuffer += entry;
         fileBuffer += "\n";
