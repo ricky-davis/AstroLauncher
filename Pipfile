@@ -9,7 +9,6 @@ pylint = "*"
 pywin32-ctypes = "*"
 
 [packages]
-requests = "*"
 psutil = "*"
 watchdog = "*"
 colorlog = "*"
