@@ -228,7 +228,7 @@ class AstroLauncher():
             astroPath=self.astroPath, logRetention=int(self.launcherConfig.LogRetentionDays))
         if disable_auto_update is not None:
             self.launcherConfig.AutoUpdateLauncherSoftware = not disable_auto_update
-        self.version = "v1.8.2"
+        self.version = "v1.8.2.1"
         colsize = os.get_terminal_size().columns
         if colsize >= 77:
             vText = "Version " + self.version[1:]
@@ -414,9 +414,9 @@ class AstroLauncher():
                 if not os.path.exists(steamcmdExe):
                     if not os.path.exists(steamcmdZip):
                         url = "https://steamcdn-a.akamaihd.net/client/installer/steamcmd.zip"
-                        r = (AstroRequests.get(url))
+                        r = (AstroRequests.get(url)).read()
                         with open(steamcmdZip, 'wb') as f:
-                            f.write(r.content)
+                            f.write(r)
                     with zipfile.ZipFile(steamcmdZip, 'r') as zip_ref:
                         zip_ref.extractall(steamcmdFolder)
             update_downloaded = False
