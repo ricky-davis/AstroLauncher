@@ -6,6 +6,8 @@ from urllib import request
 
 # pylint: disable=no-member
 
+ALVERSION = "v1.8.2.2"
+
 
 class AstroRequests():
     @classmethod

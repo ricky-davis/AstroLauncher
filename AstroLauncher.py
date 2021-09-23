@@ -30,6 +30,10 @@ from cogs.AstroLogging import AstroLogging
 from cogs.MultiConfig import MultiConfig
 from cogs.utils import AstroRequests
 
+
+from cogs.utils import ALVERSION
+
+
 """
 Build:
 pyinstaller AstroLauncher.py -F --add-data "assets;./assets" --icon=assets/astrolauncherlogo.ico
@@ -228,7 +232,7 @@ class AstroLauncher():
             astroPath=self.astroPath, logRetention=int(self.launcherConfig.LogRetentionDays))
         if disable_auto_update is not None:
             self.launcherConfig.AutoUpdateLauncherSoftware = not disable_auto_update
-        self.version = "v1.8.2.1"
+        self.version = ALVERSION
         colsize = os.get_terminal_size().columns
         if colsize >= 77:
             vText = "Version " + self.version[1:]

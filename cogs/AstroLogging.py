@@ -16,6 +16,8 @@ from colorlog import ColoredFormatter
 
 from cogs.utils import AstroRequests
 
+from cogs.utils import ALVERSION
+
 
 class TimedRotatingFileHandler(_TRFH):
     def __init__(self, *args, **kwargs):
@@ -46,8 +48,10 @@ class AstroLogging():
     discordWebhookAvatarDict = {}
     discordWebhookQueue = Queue()
     discordWebhookHeaders = {
-        'Content-Type': 'application/json; charset=utf-8'
+        'Content-Type': 'application/json; charset=utf-8',
+        'User-Agent': f"AstroLauncherWebhooks ( https://github.com/ricky-davis/AstroLauncher/releases/latest , {ALVERSION} )"
     }
+    # print(discordWebhookHeaders)
     avatarThemes = [
         "frogideas",
         "sugarsweets",
@@ -132,9 +136,11 @@ class AstroLogging():
             try:
                 _ = (AstroRequests.post(cls.discordWebhookURL,
                                         headers=cls.discordWebhookHeaders, jsonD=queueMsg))
-            except:
+            except Exception as err:
+                ermsg = ('FINAL Error on line {}'.format(
+                    sys.exc_info()[-1].tb_lineno), type(err).__name__, err)
                 AstroLogging.logPrint(
-                    "Failed to send log msg to discord.", msgType="warning", printToDiscord=False)
+                    f"Failed to send log msg to discord. {ermsg}", msgType="warning", printToDiscord=False, printTraceback=True)
         while True:
             t = Thread(target=sendDiscordReq, args=(
                 cls.discordWebhookQueue.get(),))
