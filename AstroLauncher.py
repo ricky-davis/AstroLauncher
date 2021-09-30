@@ -507,10 +507,11 @@ class AstroLauncher():
 
     def check_for_server_update(self, serverStart=False, check_only=False):
         try:
-
+            # print('here1')
             if not self.launcherConfig.UpdateOnServerRestart and serverStart:
                 return
             else:
+                # print('here2')
                 needs_update = False
                 update_status = None
                 if os.path.exists("update.p"):
@@ -519,6 +520,7 @@ class AstroLauncher():
                     if update_status != "completed":
                         needs_update = True
 
+                # print('here3')
                 cur_version = "0.0"
                 try:
                     with open(os.path.join(self.astroPath, "build.version"), "r") as f:
@@ -526,11 +528,14 @@ class AstroLauncher():
                 except:
                     pass
                 # print(cur_version)
+                # print('here4')
                 if cur_version == "0.0":
                     needs_update = True
                 url = "https://servercheck.spycibot.com/stats"
-                data = json.load((AstroRequests.get(url)))
+                data = json.load(AstroRequests.get(url))
+                print(data)
 
+                # print('here6')
                 latest_version = data['LatestVersion']
                 if version.parse(latest_version) > version.parse(cur_version):
                     needs_update = True
@@ -540,15 +545,17 @@ class AstroLauncher():
                     AstroLogging.logPrint(
                         f"SERVER UPDATE AVAILABLE: {cur_version} -> {latest_version}", "warning")
 
+                    # print('here7')
                     if self.launcherConfig.AutoUpdateServerSoftware and not check_only:
                         self.update_server(latest_version)
+                    # print('here8')
                     return True, latest_version
 
             cur_version = "0.0"
             with open(os.path.join(self.astroPath, "build.version"), "r") as f:
                 cur_version = (f.readline())[:-10]
             self.cur_server_version = cur_version
-
+            # print('here9')
         except Exception as e:
             print(e)
             AstroLogging.logPrint(

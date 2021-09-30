@@ -3,6 +3,7 @@ import json
 import urllib
 import urllib.error
 from urllib import request
+import ssl
 
 # pylint: disable=no-member
 
@@ -15,9 +16,11 @@ class AstroRequests():
         proxies = request.getproxies()
         proxy_handler = request.ProxyHandler(proxies)
         opener = request.build_opener(proxy_handler)
+        gcontext = ssl.SSLContext()
         request.install_opener(opener)
-        # print(f"get: {proxies}")
-        resp = request.urlopen(url, timeout=timeout)
+        #print(f"get: {proxies}")
+        resp = request.urlopen(url, timeout=timeout, context=gcontext)
+        # print(resp)
         return resp  # cls.session.get(url, verify=False, timeout=timeout)
 
     @classmethod
@@ -30,6 +33,7 @@ class AstroRequests():
         if jsonD != {}:
             jsonD = json.dumps(jsonD).encode('utf-8')
             req.add_header('Content-Type', 'application/json; charset=utf-8')
+        gcontext = ssl.SSLContext()
 
         # print(f"data: {jsonD}")
         # print(f"headers:{headers}")
@@ -43,7 +47,8 @@ class AstroRequests():
         # print(f"post: {proxies}")
         # print(f"url: {url}")
         try:
-            resp = request.urlopen(req, data=jsonD, timeout=timeout)
+            resp = request.urlopen(
+                req, data=jsonD, timeout=timeout, context=gcontext)
         except urllib.error.HTTPError as e:
             resp = e
         return resp
