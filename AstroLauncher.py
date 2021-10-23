@@ -117,9 +117,14 @@ class AstroLauncher():
                     fileNames, key=os.path.getmtime, reverse=True)[0]
                 AstroLogging.logPrint(
                     f"Server saved. {os.path.basename(fileName)}", dwet="s")
+                AstroLogging.logPrint(f"{event.src_path}")
             except:
                 pass
             # self.launcher.saveObserver.stop()
+
+        def on_deleted(self, event):
+            AstroLogging.logPrint(
+                f"Detected save file deletion. {event.src_path}", msgType="debug")
 
     class BackupHandler(FileSystemEventHandler):
         def __init__(self, launcher):
@@ -188,145 +193,151 @@ class AstroLauncher():
                 pass
 
     def __init__(self, astroPath, launcherINI="Launcher.ini", disable_auto_update=None):
-        AstroLogging.setup_logging()
-        self.launcherINI = launcherINI
-        self.launcherConfig = self.LauncherConfig()
-        self.launcherPath = os.getcwd()
-        self.refresh_launcher_config()
+        try:
+            AstroLogging.setup_logging()
+            self.launcherINI = launcherINI
+            self.launcherConfig = self.LauncherConfig()
+            self.launcherPath = os.getcwd()
+            self.refresh_launcher_config()
 
-        # check if path specified
-        if astroPath is not None:
-            if os.path.exists(os.path.join(astroPath, "AstroServer.exe")):
-                self.astroPath = astroPath
+            # check if path specified
+            if astroPath is not None:
+                if os.path.exists(os.path.join(astroPath, "AstroServer.exe")):
+                    self.astroPath = astroPath
+                else:
+                    AstroLogging.logPrint(
+                        "Specified path does not contain the server executable! (AstroServer.exe)", "critical")
+                    time.sleep(5)
+                    return
+
+            # check if executable in current directory
+            elif os.path.exists(os.path.join(os.getcwd(), "AstroServer.exe")):
+                self.astroPath = os.getcwd()
+
             else:
                 AstroLogging.logPrint(
-                    "Specified path does not contain the server executable! (AstroServer.exe)", "critical")
-                time.sleep(5)
-                return
+                    "Unable to find server executable anywhere! (AstroServer.exe)", "warning")
 
-        # check if executable in current directory
-        elif os.path.exists(os.path.join(os.getcwd(), "AstroServer.exe")):
-            self.astroPath = os.getcwd()
+                # finally, try to install the server
+                try:
+                    if astroPath is None:
+                        self.astroPath = os.getcwd()
+                        self.check_for_server_update()
+                except Exception as e:
+                    AstroLogging.logPrint(e, "critical")
+                    return
 
-        else:
+            # AstroRequests.checkProxies()
+
+            AstroLogging.discordWebhookURL = self.launcherConfig.DiscordWebHookURL
+            dwhl = self.launcherConfig.DiscordWebHookLevel.lower()
+            dwhl = dwhl if dwhl in ("all", "cmd", "chat") else "cmd"
+            AstroLogging.discordWebhookLevel = dwhl
+            self.start_WebHookLoop()
+            AstroLogging.setup_loggingPath(
+                astroPath=self.astroPath, logRetention=int(self.launcherConfig.LogRetentionDays))
+            if disable_auto_update is not None:
+                self.launcherConfig.AutoUpdateLauncherSoftware = not disable_auto_update
+            self.version = ALVERSION
+            colsize = os.get_terminal_size().columns
+            if colsize >= 77:
+                vText = "Version " + self.version[1:]
+                # pylint: disable=anomalous-backslash-in-string
+                print(" __________________________________________________________________________\n" +
+                      "|     _        _               _                           _               |\n" +
+                      "|    /_\\   ___| |_  _ _  ___  | |    __ _  _  _  _ _   __ | |_   ___  _ _  |\n" +
+                      "|   / _ \\ (_-<|  _|| '_|/ _ \\ | |__ / _` || || || ' \\ / _|| ' \\ / -_)| '_| |\n" +
+                      "|  /_/ \\_\\/__/ \\__||_|  \\___/ |____|\\__,_| \\_,_||_||_|\\__||_||_|\\___||_|   |\n" +
+                      "|                                                                          |\n" +
+                      "|"+vText.center(74)+"|\n" +
+                      "|__________________________________________________________________________|")
+
             AstroLogging.logPrint(
-                "Unable to find server executable anywhere! (AstroServer.exe)", "warning")
+                f"AstroLauncher - Unofficial Dedicated Server Launcher {self.version}")
+            AstroLogging.logPrint(
+                "If you encounter any bugs please open a new issue at:")
+            AstroLogging.logPrint(
+                "https://github.com/ricky-davis/AstroLauncher/issues")
+            AstroLogging.logPrint(
+                "To safely stop the launcher and server press CTRL+C")
 
-            # finally, try to install the server
+            self.latestURL = "https://github.com/ricky-davis/AstroLauncher/releases/latest"
+            bName = os.path.basename(sys.executable)
+            if sys.argv[0] == os.path.splitext(bName)[0]:
+                self.isExecutable = True
+            else:
+                self.isExecutable = os.path.samefile(
+                    sys.executable, sys.argv[0])
+            self.cur_server_version = "0.0"
+            self.headers = AstroAPI.base_headers
+            self.DaemonProcess = None
+            self.saveObserver = None
+            self.backupObserver = None
+            self.hasUpdate = False
+            self.is_admin = ctypes.windll.shell32.IsUserAnAdmin() != 0
+            self.affinity = self.launcherConfig.CPUAffinity
             try:
-                if astroPath is None:
-                    self.astroPath = os.getcwd()
-                    self.check_for_server_update()
-            except Exception as e:
-                AstroLogging.logPrint(e, "critical")
+                if self.affinity != "":
+                    affinityList = [int(x.strip())
+                                    for x in self.affinity.split(',')]
+                    p = psutil.Process()
+                    p.cpu_affinity(affinityList)
+            except ValueError as e:
+                AstroLogging.logPrint(f"CPU Affinity Error: {e}", "critical")
+                AstroLogging.logPrint(
+                    "Please correct this in your launcher config", "critical")
                 return
 
-        # AstroRequests.checkProxies()
+            self.check_for_server_update()
 
-        AstroLogging.discordWebhookURL = self.launcherConfig.DiscordWebHookURL
-        dwhl = self.launcherConfig.DiscordWebHookLevel.lower()
-        dwhl = dwhl if dwhl in ("all", "cmd", "chat") else "cmd"
-        AstroLogging.discordWebhookLevel = dwhl
-        self.start_WebHookLoop()
-        AstroLogging.setup_loggingPath(
-            astroPath=self.astroPath, logRetention=int(self.launcherConfig.LogRetentionDays))
-        if disable_auto_update is not None:
-            self.launcherConfig.AutoUpdateLauncherSoftware = not disable_auto_update
-        self.version = ALVERSION
-        colsize = os.get_terminal_size().columns
-        if colsize >= 77:
-            vText = "Version " + self.version[1:]
-            # pylint: disable=anomalous-backslash-in-string
-            print(" __________________________________________________________________________\n" +
-                  "|     _        _               _                           _               |\n" +
-                  "|    /_\\   ___| |_  _ _  ___  | |    __ _  _  _  _ _   __ | |_   ___  _ _  |\n" +
-                  "|   / _ \\ (_-<|  _|| '_|/ _ \\ | |__ / _` || || || ' \\ / _|| ' \\ / -_)| '_| |\n" +
-                  "|  /_/ \\_\\/__/ \\__||_|  \\___/ |____|\\__,_| \\_,_||_||_|\\__||_||_|\\___||_|   |\n" +
-                  "|                                                                          |\n" +
-                  "|"+vText.center(74)+"|\n" +
-                  "|__________________________________________________________________________|")
+            self.DedicatedServer = AstroDedicatedServer(
+                self.astroPath, self)
 
-        AstroLogging.logPrint(
-            f"AstroLauncher - Unofficial Dedicated Server Launcher {self.version}")
-        AstroLogging.logPrint(
-            "If you encounter any bugs please open a new issue at:")
-        AstroLogging.logPrint(
-            "https://github.com/ricky-davis/AstroLauncher/issues")
-        AstroLogging.logPrint(
-            "To safely stop the launcher and server press CTRL+C")
+            self.check_for_launcher_update()
 
-        self.latestURL = "https://github.com/ricky-davis/AstroLauncher/releases/latest"
-        bName = os.path.basename(sys.executable)
-        if sys.argv[0] == os.path.splitext(bName)[0]:
-            self.isExecutable = True
-        else:
-            self.isExecutable = os.path.samefile(sys.executable, sys.argv[0])
-        self.cur_server_version = "0.0"
-        self.headers = AstroAPI.base_headers
-        self.DaemonProcess = None
-        self.saveObserver = None
-        self.backupObserver = None
-        self.hasUpdate = False
-        self.is_admin = ctypes.windll.shell32.IsUserAnAdmin() != 0
-        self.affinity = self.launcherConfig.CPUAffinity
-        try:
-            if self.affinity != "":
-                affinityList = [int(x.strip())
-                                for x in self.affinity.split(',')]
-                p = psutil.Process()
-                p.cpu_affinity(affinityList)
-        except ValueError as e:
-            AstroLogging.logPrint(f"CPU Affinity Error: {e}", "critical")
-            AstroLogging.logPrint(
-                "Please correct this in your launcher config", "critical")
-            return
+            AstroLogging.logPrint("Starting a new session")
 
-        self.check_for_server_update()
+            self.validate_playfab_certs()
+            self.check_ports_free()
 
-        self.DedicatedServer = AstroDedicatedServer(
-            self.astroPath, self)
+            if self.launcherConfig.AdminAutoConfigureFirewall:
+                self.configure_firewall()
 
-        self.check_for_launcher_update()
+            if not self.launcherConfig.DisableNetworkCheck:
+                AstroLogging.logPrint("Checking the network configuration..")
+                self.check_network_config()
 
-        AstroLogging.logPrint("Starting a new session")
+            self.save_reporting()
 
-        self.validate_playfab_certs()
-        self.check_ports_free()
+            if not self.launcherConfig.DisableBackupRetention:
+                self.backup_retention()
+                AstroLogging.logPrint("Backup retention started")
+            # setup queue for data exchange
+            self.webServer = None
+            if not self.launcherConfig.DisableWebServer:
+                # start http server
+                self.webServer = self.start_WebServer()
+                self.start_InfoLoop()
+                # AstroLogging.logPrint(
+                #    f"HTTP Server started at 127.0.0.1:{self.launcherConfig.WebServerPort}")
 
-        if self.launcherConfig.AdminAutoConfigureFirewall:
-            self.configure_firewall()
+            if self.launcherConfig.HideLauncherConsoleWindow:
+                # hide window
+                AstroLogging.logPrint(
+                    "HideLauncherConsoleWindow enabled, Hiding window in 5 seconds...")
+                time.sleep(5)
+                # pylint: disable=redefined-outer-name
+                kernel32 = ctypes.WinDLL('kernel32')
+                user32 = ctypes.WinDLL('user32')
 
-        if not self.launcherConfig.DisableNetworkCheck:
-            AstroLogging.logPrint("Checking the network configuration..")
-            self.check_network_config()
+                hWnd = kernel32.GetConsoleWindow()
+                user32.ShowWindow(hWnd, 0)
 
-        self.save_reporting()
-
-        if not self.launcherConfig.DisableBackupRetention:
-            self.backup_retention()
-            AstroLogging.logPrint("Backup retention started")
-        # setup queue for data exchange
-        self.webServer = None
-        if not self.launcherConfig.DisableWebServer:
-            # start http server
-            self.webServer = self.start_WebServer()
-            self.start_InfoLoop()
-            # AstroLogging.logPrint(
-            #    f"HTTP Server started at 127.0.0.1:{self.launcherConfig.WebServerPort}")
-
-        if self.launcherConfig.HideLauncherConsoleWindow:
-            # hide window
-            AstroLogging.logPrint(
-                "HideLauncherConsoleWindow enabled, Hiding window in 5 seconds...")
-            time.sleep(5)
-            # pylint: disable=redefined-outer-name
-            kernel32 = ctypes.WinDLL('kernel32')
-            user32 = ctypes.WinDLL('user32')
-
-            hWnd = kernel32.GetConsoleWindow()
-            user32.ShowWindow(hWnd, 0)
-
-        self.start_server(firstLaunch=True)
+            self.start_server(firstLaunch=True)
+        except Exception as err:
+            ermsg2 = ('INIT Error on line {}'.format(
+                sys.exc_info()[-1].tb_lineno), type(err).__name__, err)
+            AstroLogging.logPrint(f"{ermsg2}", "critical", True)
 
     def save_reporting(self):
         if self.saveObserver:
@@ -399,13 +410,18 @@ class AstroLauncher():
         return settings
 
     def validate_playfab_certs(self):
-        AstroLogging.logPrint("Attempting to validate Playfab Certs")
-        playfabRequestCommand = ["powershell", '-executionpolicy', 'bypass', '-command',
-                                 'Invoke-WebRequest -uri https://5ea1.playfabapi.com/ -UseBasicParsing']
-        with open(os.devnull, 'w') as tempf:
-            proc = subprocess.Popen(
-                playfabRequestCommand, stdout=tempf, stderr=tempf)
-            proc.communicate()
+        try:
+            AstroLogging.logPrint("Attempting to validate Playfab Certs")
+            playfabRequestCommand = ["powershell", '-executionpolicy', 'bypass', '-command',
+                                     'Invoke-WebRequest -uri https://5ea1.playfabapi.com/ -UseBasicParsing']
+            with open(os.devnull, 'w') as tempf:
+                proc = subprocess.Popen(
+                    playfabRequestCommand, stdout=tempf, stderr=tempf)
+                proc.communicate()
+        except Exception as err:
+            ermsg3 = ('VerifyPlayfabCert Error on line {}'.format(
+                sys.exc_info()[-1].tb_lineno), type(err).__name__, err)
+            AstroLogging.logPrint(f"{ermsg3}", "warning", True)
 
     def update_server(self, latest_version):
         updateLocation = os.path.join(
@@ -962,6 +978,6 @@ if __name__ == "__main__":
     except KeyboardInterrupt:
         pass
     except Exception as err:
-        ermsg = ('FINAL Error on line {}'.format(
+        ermsg1 = ('FINAL Error on line {}'.format(
             sys.exc_info()[-1].tb_lineno), type(err).__name__, err)
-        AstroLogging.logPrint(f"{ermsg}", "critical", True)
+        AstroLogging.logPrint(f"{ermsg1}", "critical", True)

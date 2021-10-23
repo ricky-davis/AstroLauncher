@@ -313,6 +313,7 @@ class AstroDedicatedServer():
         if self.AstroRCON is None or not self.AstroRCON.connected:
             return False
         self.saveGame()
+        time.sleep(1)
         self.busy = "S&Shutdown"
         self.shutdownServer()
 
@@ -578,7 +579,7 @@ class AstroDedicatedServer():
             if save:
                 self.AstroRCON.lock = False
                 self.saveGame()
-                # time.sleep(1)
+                time.sleep(1)
                 self.AstroRCON.lock = False
                 self.shutdownServer()
         except:
