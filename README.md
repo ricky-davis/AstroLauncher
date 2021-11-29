@@ -285,8 +285,6 @@ Distributed under the MIT License. See `LICENSE` for more information.
 
 ## Contact
 
-Ricky Davis - Discord: @Spyci#0001
-
 If you have any questions you can join the [Astroneer discord] (discord.gg/Astroneer) and ask in the #self_host_talk channel
 
 Project Link: [https://github.com/ricky-davis/AstroLauncher](https://github.com/ricky-davis/AstroLauncher)
