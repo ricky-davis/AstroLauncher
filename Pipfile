@@ -19,6 +19,7 @@ pathvalidate = "*"
 pypakparser = "==1.2.0"
 pyinstaller = "*"
 packaging = "*"
+chardet = "*"
 
 [requires]
 python_version = "3.7"

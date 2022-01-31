@@ -30,7 +30,6 @@ from cogs.AstroLogging import AstroLogging
 from cogs.MultiConfig import MultiConfig
 from cogs.utils import AstroRequests
 
-
 from cogs.utils import ALVERSION
 
 

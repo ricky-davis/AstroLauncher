@@ -1,0 +1,10 @@
+__pycache__
+.github
+.vscode
+.dockerignore
+.editorconfig
+.gitignore
+.pylintrc
+notes
+build_docker.ps1
+Launcher.ini
