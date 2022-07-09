@@ -1,6 +1,7 @@
 
 import json
-import os
+import ntpath
+# import os
 import secrets
 import socket
 import threading
@@ -34,7 +35,7 @@ def get_current_settings(launcher, ovrIP=False):
     curPath = launcher.astroPath
 
     curLog = "AstroServerSettings.ini"
-    confPath = os.path.join(
+    confPath = ntpath.join(
         curPath, r"Astro\Saved\Config\WindowsServer\AstroServerSettings.ini")
 
     AstroLogging.logPrint("Verifying PublicIP setting...", "debug")
@@ -121,7 +122,7 @@ def get_current_settings(launcher, ovrIP=False):
         }
         curLog = "Engine.ini"
         AstroLogging.logPrint("Baselining Engine.ini...", "debug")
-        config = MultiConfig().baseline(os.path.join(
+        config = MultiConfig().baseline(ntpath.join(
             curPath, r"Astro\Saved\Config\WindowsServer\Engine.ini"), baseConfig)
         # print(settings)
         EngineINI = config.getdict()

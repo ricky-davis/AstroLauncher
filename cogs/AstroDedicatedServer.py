@@ -4,6 +4,7 @@ import datetime
 import glob
 import json
 import math
+import ntpath
 import os
 import subprocess
 import time
@@ -117,9 +118,9 @@ class AstroDedicatedServer():
 
     def start(self):
         if self.launcher.launcherConfig.HideServerConsoleWindow:
-            cmd = [os.path.join(self.astroPath, "AstroServer.exe")]
+            cmd = [ntpath.join(self.astroPath, "AstroServer.exe")]
         else:
-            cmd = [os.path.join(self.astroPath, "AstroServer.exe"), '-log']
+            cmd = [ntpath.join(self.astroPath, "AstroServer.exe"), '-log']
         self.process = subprocess.Popen(cmd)
 
     @staticmethod
@@ -134,16 +135,16 @@ class AstroDedicatedServer():
 
     def getPaks(self):
         try:
-            pakPath = os.path.join(self.astroPath, r"Astro\Saved\Paks")
+            pakPath = ntpath.join(self.astroPath, r"Astro\Saved\Paks")
             for f in os.listdir(pakPath):
                 try:
-                    with open(os.path.join(pakPath, f), "rb") as pakFile:
+                    with open(ntpath.join(pakPath, f), "rb") as pakFile:
                         PP = PakParser(pakFile)
                         mdFile = "metadata.json"
                         md = PP.List(mdFile)
                         if mdFile in md:
                             ppData = PP.Unpack(mdFile).Data.decode()
-                            self.pakList.append({os.path.basename(f): ppData})
+                            self.pakList.append({ntpath.basename(f): ppData})
                 except:
                     pass
         except:
@@ -151,7 +152,7 @@ class AstroDedicatedServer():
 
     def get_save_file_name(self, save):
         saveGamePath = r"Astro\Saved\SaveGames"
-        saveGamePath = os.path.join(
+        saveGamePath = ntpath.join(
             self.astroPath, saveGamePath)
         fullName = None
 
@@ -172,7 +173,7 @@ class AstroDedicatedServer():
                 glob.glob(saveGamePath + f"/{save['name']}.savegame"))
             if len(saveFileName) > 0:
                 fullName = saveFileName[0]
-        saveFileName = os.path.basename(fullName)
+        saveFileName = ntpath.basename(fullName)
         return fullName, saveFileName
 
     def getSaves(self):
@@ -191,7 +192,7 @@ class AstroDedicatedServer():
                         if saveFileName:
                             save['fileName'] = saveFileName
                         size = AstroDedicatedServer.convert_size(
-                            os.path.getsize(sfPath))
+                            ntpath.getsize(sfPath))
                         save["size"] = size
                     except:
                         pass
@@ -213,15 +214,16 @@ class AstroDedicatedServer():
         except:
             pass
 
-    def saveGame(self, name=None):
+    def saveGame(self, name=None, shutdown=False):
         if self.AstroRCON is None or not self.AstroRCON.connected:
             return False
         self.setStatus("saving")
         self.busy = "Saving"
-        # time.sleep(1)
         AstroLogging.logPrint("Saving the current game...")
         self.AstroRCON.DSSaveGame(name)
-        self.getSaves()
+        time.sleep(0.5)
+        if not shutdown:
+            self.getSaves()
         self.busy = False
 
     def newSaveGame(self):
@@ -258,9 +260,9 @@ class AstroDedicatedServer():
             self.busy = "DelSave"
             saveGamePath = r"Astro\Saved\SaveGames"
             AstroLogging.logPrint(f"Deleting save: {saveData['fileName']}")
-            sfPath = os.path.join(
+            sfPath = ntpath.join(
                 self.astroPath, saveGamePath, saveData['fileName'])
-            if os.path.exists(sfPath):
+            if ntpath.exists(sfPath):
                 os.remove(sfPath)
         self.getSaves()
         self.busy = False
@@ -272,28 +274,28 @@ class AstroDedicatedServer():
         self.busy = "RenameSave"
         if pathvalidate.is_valid_filename(oldSave['name']) and pathvalidate.is_valid_filename(newName):
             saveGamePath = r"Astro\Saved\SaveGames"
-            saveGamePath = os.path.join(self.astroPath, saveGamePath)
+            saveGamePath = ntpath.join(self.astroPath, saveGamePath)
             AstroLogging.logPrint(
                 f"Renaming save: {oldSave['name']} to {newName}")
             if oldSave['active']:
                 self.saveGame(newName)
-                sfPath = os.path.join(saveGamePath, oldSave['fileName'])
+                sfPath = ntpath.join(saveGamePath, oldSave['fileName'])
                 self.getSaves()
                 newSave = [x for x in self.DSListGames['gameList']
                            if x['name'] == newName]
                 if newSave:
                     newSave = newSave[0]
-                    sfNPath = os.path.join(saveGamePath, newSave['fileName'])
-                    if os.path.exists(sfNPath) and os.path.exists(sfPath):
+                    sfNPath = ntpath.join(saveGamePath, newSave['fileName'])
+                    if ntpath.exists(sfNPath) and ntpath.exists(sfPath):
                         os.remove(sfPath)
             else:
                 saveFileName = oldSave['fileName']
-                sfPath = os.path.join(saveGamePath, saveFileName)
+                sfPath = ntpath.join(saveGamePath, saveFileName)
                 newSaveFileName = saveFileName.replace(
                     oldSave['name'], newName)
-                sfNPath = os.path.join(saveGamePath, newSaveFileName)
+                sfNPath = ntpath.join(saveGamePath, newSaveFileName)
                 # time.sleep(1)
-                if os.path.exists(sfPath) and not os.path.exists(sfNPath):
+                if ntpath.exists(sfPath) and not ntpath.exists(sfNPath):
                     os.rename(sfPath, sfNPath)
 
         self.getSaves()
@@ -312,8 +314,7 @@ class AstroDedicatedServer():
     def save_and_shutdown(self):
         if self.AstroRCON is None or not self.AstroRCON.connected:
             return False
-        self.saveGame()
-        time.sleep(1)
+        self.saveGame(shutdown=True)
         self.busy = "S&Shutdown"
         self.shutdownServer()
 
@@ -578,10 +579,8 @@ class AstroDedicatedServer():
         try:
             if save:
                 self.AstroRCON.lock = False
-                self.saveGame()
-                time.sleep(1)
-                self.AstroRCON.lock = False
                 self.shutdownServer()
+                time.sleep(1)
         except:
             pass
         try:

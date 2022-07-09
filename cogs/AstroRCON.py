@@ -1,6 +1,7 @@
 
 import json
 import socket
+import time
 from contextlib import contextmanager
 
 from cogs.AstroLogging import AstroLogging
@@ -120,6 +121,8 @@ class AstroRCON():
                 #rawdata = AstroRCON.recvall(s.socket)
                 #parsedData = AstroRCON.parseData(rawdata)
                 # pprint(parsedData)
+                
+                time.sleep(1.1)
                 return  # parsedData
         except:  # Exception as e:
             # print(e)

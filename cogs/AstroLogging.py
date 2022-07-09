@@ -2,6 +2,7 @@
 
 import gzip
 import logging
+import ntpath
 import os
 import random
 import shutil
@@ -25,15 +26,15 @@ class TimedRotatingFileHandler(_TRFH):
 
     def doRollover(self):
         super(TimedRotatingFileHandler, self).doRollover()
-        log_dir = os.path.dirname(self.baseFilename)
+        log_dir = ntpath.dirname(self.baseFilename)
         to_compress = [
-            os.path.join(log_dir, f) for f in os.listdir(log_dir) if f.startswith(
-                os.path.basename(os.path.splitext(self.baseFilename)[0])
+            ntpath.join(log_dir, f) for f in os.listdir(log_dir) if f.startswith(
+                ntpath.basename(ntpath.splitext(self.baseFilename)[0])
             ) and not f.endswith((".gz", ".log"))
         ]
         for f in to_compress:
             try:
-                if os.path.exists(f):
+                if ntpath.exists(f):
                     with open(f, "rb") as _old, gzip.open(f + ".gz", "wb") as _new:
                         shutil.copyfileobj(_old, _new)
                     os.remove(f)
@@ -205,15 +206,15 @@ class AstroLogging():
 
         rootLogger = logging.getLogger()
 
-        logsPath = os.path.join(astroPath, 'logs\\')
-        if not os.path.exists(logsPath):
+        logsPath = ntpath.join(astroPath, 'logs\\')
+        if not ntpath.exists(logsPath):
             os.makedirs(logsPath)
-        fileLogHandler = TimedRotatingFileHandler(os.path.join(
+        fileLogHandler = TimedRotatingFileHandler(ntpath.join(
             astroPath, 'logs', "server.log"), 'midnight', 1, int(logRetention))
         fileLogHandler.setFormatter(formatter)
         fileLogHandler.setLevel(logging.INFO)
 
-        debugLogHandler = TimedRotatingFileHandler(os.path.join(
+        debugLogHandler = TimedRotatingFileHandler(ntpath.join(
             astroPath, 'logs', "debug.log"), 'midnight', 1, 3)
         debugLogHandler.setFormatter(formatter)
         debugLogHandler.setLevel(logging.DEBUG)
