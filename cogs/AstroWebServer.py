@@ -2,7 +2,8 @@
 import datetime
 import hashlib
 import logging
-import os
+import ntpath
+# import os
 import secrets
 import sys
 import uuid
@@ -30,7 +31,7 @@ class WebServer(tornado.web.Application):
         curDir = self.launcher.launcherPath
         if self.launcher.isExecutable:
             curDir = sys._MEIPASS
-        self.assetDir = os.path.join(curDir, "assets")
+        self.assetDir = ntpath.join(curDir, "assets")
 
         self.connections = {}
         self.iterTimer = None
@@ -112,7 +113,7 @@ class WebServer(tornado.web.Application):
         if self.launcher.launcherConfig.EnableWebServerSSL:
             certFile = self.launcher.launcherConfig.SSLCertFile
             keyFile = self.launcher.launcherConfig.SSLKeyFile
-            if os.path.exists(keyFile) and os.path.exists(certFile):
+            if ntpath.exists(keyFile) and ntpath.exists(certFile):
                 self.ssl = True
             else:
                 AstroLogging.logPrint(
@@ -120,8 +121,8 @@ class WebServer(tornado.web.Application):
         if self.ssl:
             sslPort = self.launcher.launcherConfig.SSLPort
             ssl_options = {
-                "certfile": os.path.join(self.launcher.launcherPath, certFile),
-                "keyfile": os.path.join(self.launcher.launcherPath, keyFile),
+                "certfile": ntpath.join(self.launcher.launcherPath, certFile),
+                "keyfile": ntpath.join(self.launcher.launcherPath, keyFile),
             }
             self.listen(sslPort, ssl_options=ssl_options)
             url = f"https://localhost{':'+str(sslPort) if sslPort != 443 else ''}{self.baseURL+'/' if self.baseURL else ''}"
@@ -312,7 +313,7 @@ class MainHandler(BaseHandler):
     def get(self):
         self.WS.get_client_id(self)
         if not self.application.passwordHash == "":
-            self.render(os.path.join(self.path, 'index.html'),
+            self.render(ntpath.join(self.path, 'index.html'),
                         isAdmin=self.current_user == b"admin",
                         launcher=self.launcher)
         else:
@@ -329,7 +330,7 @@ class LoginHandler(BaseHandler):
     def get(self):
         self.WS.get_client_id(self)
         if not self.current_user == b"admin":
-            self.render(os.path.join(self.path, 'login.html'),
+            self.render(ntpath.join(self.path, 'login.html'),
                         isAdmin=self.current_user == b"admin",
                         hashSet=not self.application.passwordHash == "",
                         launcher=self.launcher)
@@ -597,7 +598,7 @@ class PlayerRequestHandler(BaseHandler):
                                             and f'PlayerRecentJoinName="{playerName}"' in x))
                                           or f'PlayerGuid="{playerGUID}"' in x)]
 
-                confPath = os.path.join(
+                confPath = ntpath.join(
                     self.launcher.astroPath, r"Astro\Saved\Config\WindowsServer\AstroServerSettings.ini")
 
                 ovrConfig = {

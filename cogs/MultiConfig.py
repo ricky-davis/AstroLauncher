@@ -1,5 +1,6 @@
 
 import json
+import ntpath
 import os
 import chardet
 
@@ -110,8 +111,8 @@ class MultiConfig():
 
     @staticmethod
     def get_encoding(filePath):
-        pathname = os.path.dirname(filePath)
-        if pathname and not os.path.exists(pathname):
+        pathname = ntpath.dirname(filePath)
+        if pathname and not ntpath.exists(pathname):
             os.makedirs(pathname)
         with open(filePath, 'a+', encoding="utf_8"):
             pass

@@ -3,7 +3,9 @@ import asyncio
 import atexit
 import ctypes
 import dataclasses
+from fileinput import filename
 import json
+import ntpath
 import os
 import secrets
 import shutil
@@ -29,7 +31,6 @@ from cogs.AstroDedicatedServer import AstroDedicatedServer
 from cogs.AstroLogging import AstroLogging
 from cogs.MultiConfig import MultiConfig
 from cogs.utils import AstroRequests
-
 
 from cogs.utils import ALVERSION
 
@@ -108,23 +109,26 @@ class AstroLauncher():
             # print(event)
             # time.sleep(1)
             try:
-                time.sleep(0.5)
-                dirName = os.path.dirname(event.src_path)
-                fileNames = [os.path.join(dirName, f) for f in os.listdir(
-                    dirName) if os.path.isfile(os.path.join(dirName, f))]
-                # print(fileNames)
-                fileName = sorted(
-                    fileNames, key=os.path.getmtime, reverse=True)[0]
+                # time.sleep(0.5)
+                # dirName = ntpath.dirname(event.src_path)
+                # fileNames = [ntpath.join(dirName, f) for f in os.listdir(
+                #     dirName) if ntpath.isfile(ntpath.join(dirName, f))]
+                # # print(fileNames)
+                # fileName = sorted(
+                #     fileNames, key=ntpath.getmtime, reverse=True)[0]
+                fileName = ntpath.basename(event.src_path)
                 AstroLogging.logPrint(
-                    f"Server saved. {os.path.basename(fileName)}", dwet="s")
-                AstroLogging.logPrint(f"{event.src_path}")
+                    f"Server saved. {ntpath.basename(fileName)}", dwet="s")
+                AstroLogging.logPrint(f"{event.src_path}", msgType='debug')
             except:
                 pass
             # self.launcher.saveObserver.stop()
 
         def on_deleted(self, event):
+            fileName = ntpath.basename(event.src_path)
             AstroLogging.logPrint(
-                f"Detected save file deletion. {event.src_path}", msgType="debug")
+                f"Server deleted save. {ntpath.basename(fileName)}", dwet="s")
+            AstroLogging.logPrint(f"{event.src_path}", msgType='debug')
 
     class BackupHandler(FileSystemEventHandler):
         def __init__(self, launcher):
@@ -141,16 +145,16 @@ class AstroLauncher():
             # print(f"second: {self.pendingFiles}")
             # AstroLogging.logPrint("DEBUG: INSIDE THREAD")
 
-            path = os.path.join(self.astroPath, self.moveToPath)
+            path = ntpath.join(self.astroPath, self.moveToPath)
             try:
-                if not os.path.exists(path):
+                if not ntpath.exists(path):
                     os.makedirs(path)
             except Exception as e:
                 AstroLogging.logPrint(e, "error")
             now = time.time()
             try:
                 for f in os.listdir(path):
-                    fpath = os.path.join(path, f)
+                    fpath = ntpath.join(path, f)
                     if os.stat(fpath).st_mtime < (now - (self.retentionPeriodHours * 60 * 60)):
                         os.remove(fpath)
             except Exception as e:
@@ -161,9 +165,9 @@ class AstroLauncher():
             # time.sleep(1)
             try:
 
-                dirName = os.path.dirname(self.pendingFiles[0])
-                fileNames = [os.path.join(dirName, f) for f in os.listdir(
-                    dirName) if os.path.isfile(os.path.join(dirName, f))]
+                dirName = ntpath.dirname(self.pendingFiles[0])
+                fileNames = [ntpath.join(dirName, f) for f in os.listdir(
+                    dirName) if ntpath.isfile(ntpath.join(dirName, f))]
                 for cFile in fileNames:
                     # AstroLogging.logPrint(newFile, "debug")
                     # print(cFile)
@@ -202,7 +206,7 @@ class AstroLauncher():
 
             # check if path specified
             if astroPath is not None:
-                if os.path.exists(os.path.join(astroPath, "AstroServer.exe")):
+                if ntpath.exists(ntpath.join(astroPath, "AstroServer.exe")):
                     self.astroPath = astroPath
                 else:
                     AstroLogging.logPrint(
@@ -211,7 +215,7 @@ class AstroLauncher():
                     return
 
             # check if executable in current directory
-            elif os.path.exists(os.path.join(os.getcwd(), "AstroServer.exe")):
+            elif ntpath.exists(ntpath.join(os.getcwd(), "AstroServer.exe")):
                 self.astroPath = os.getcwd()
 
             else:
@@ -262,11 +266,11 @@ class AstroLauncher():
                 "To safely stop the launcher and server press CTRL+C")
 
             self.latestURL = "https://github.com/ricky-davis/AstroLauncher/releases/latest"
-            bName = os.path.basename(sys.executable)
-            if sys.argv[0] == os.path.splitext(bName)[0]:
+            bName = ntpath.basename(sys.executable)
+            if sys.argv[0] == ntpath.splitext(bName)[0]:
                 self.isExecutable = True
             else:
-                self.isExecutable = os.path.samefile(
+                self.isExecutable = ntpath.samefile(
                     sys.executable, sys.argv[0])
             self.cur_server_version = "0.0"
             self.headers = AstroAPI.base_headers
@@ -347,10 +351,10 @@ class AstroLauncher():
         else:
             self.saveObserver = Observer()
             saveGamePath = r"Astro\Saved\SaveGames"
-            watchPath = os.path.join(
+            watchPath = ntpath.join(
                 self.astroPath, saveGamePath)
             try:
-                if not os.path.exists(watchPath):
+                if not ntpath.exists(watchPath):
                     os.makedirs(watchPath)
             except Exception as e:
                 AstroLogging.logPrint(e)
@@ -366,10 +370,10 @@ class AstroLauncher():
         else:
             self.backupObserver = Observer()
             backupSaveGamePath = r"Astro\Saved\Backup\SaveGames"
-            watchPath = os.path.join(
+            watchPath = ntpath.join(
                 self.astroPath, backupSaveGamePath)
             try:
-                if not os.path.exists(watchPath):
+                if not ntpath.exists(watchPath):
                     os.makedirs(watchPath)
             except Exception as e:
                 AstroLogging.logPrint(e)
@@ -424,15 +428,15 @@ class AstroLauncher():
             AstroLogging.logPrint(f"{ermsg3}", "warning", True)
 
     def update_server(self, latest_version):
-        updateLocation = os.path.join(
+        updateLocation = ntpath.join(
             self.astroPath, 'steamcmd', 'steamapps', 'common', 'ASTRONEER Dedicated Server')
-        steamcmdFolder = os.path.join(self.astroPath, "steamcmd")
-        steamcmdExe = os.path.join(steamcmdFolder, "steamcmd.exe")
-        steamcmdZip = os.path.join(self.astroPath, "steamcmd.zip")
+        steamcmdFolder = ntpath.join(self.astroPath, "steamcmd")
+        steamcmdExe = ntpath.join(steamcmdFolder, "steamcmd.exe")
+        steamcmdZip = ntpath.join(self.astroPath, "steamcmd.zip")
         try:
-            if not os.path.exists(steamcmdFolder):
-                if not os.path.exists(steamcmdExe):
-                    if not os.path.exists(steamcmdZip):
+            if not ntpath.exists(steamcmdFolder):
+                if not ntpath.exists(steamcmdExe):
+                    if not ntpath.exists(steamcmdZip):
                         url = "https://steamcdn-a.akamaihd.net/client/installer/steamcmd.zip"
                         r = (AstroRequests.get(url)).read()
                         with open(steamcmdZip, 'wb') as f:
@@ -441,10 +445,10 @@ class AstroLauncher():
                         zip_ref.extractall(steamcmdFolder)
             update_downloaded = False
 
-            if os.path.exists(updateLocation):
+            if ntpath.exists(updateLocation):
                 upd_version = "0.0"
                 try:
-                    with open(os.path.join(updateLocation, "build.version"), "r") as f:
+                    with open(ntpath.join(updateLocation, "build.version"), "r") as f:
                         upd_version = (f.readline())[:-10]
                     if upd_version == latest_version:
                         update_downloaded = True
@@ -456,7 +460,7 @@ class AstroLauncher():
 
             if not update_downloaded:
                 open("update.p", "wb").write(b"download")
-                if os.path.exists(steamcmdExe):
+                if ntpath.exists(steamcmdExe):
                     try:
                         os.remove(steamcmdZip)
                     except:
@@ -486,7 +490,7 @@ class AstroLauncher():
 
                 upd_version = "0.0"
                 try:
-                    with open(os.path.join(updateLocation, "build.version"), "r") as f:
+                    with open(ntpath.join(updateLocation, "build.version"), "r") as f:
                         upd_version = (f.readline())[:-10]
                 except:
                     pass
@@ -499,14 +503,14 @@ class AstroLauncher():
                 open("update.p", "wb").write(b"complete")
 
             cur_version = "0.0"
-            with open(os.path.join(self.astroPath, "build.version"), "r") as f:
+            with open(ntpath.join(self.astroPath, "build.version"), "r") as f:
                 cur_version = (f.readline())[:-10]
 
             if cur_version == latest_version:
                 AstroLogging.logPrint(
                     f"UPDATE TO {latest_version} SUCCESSFUL.")
-                steamcmdZip = os.path.join(self.astroPath, "steamcmd.zip")
-                if os.path.exists(steamcmdZip):
+                steamcmdZip = ntpath.join(self.astroPath, "steamcmd.zip")
+                if ntpath.exists(steamcmdZip):
                     os.remove(steamcmdZip)
             try:
                 os.remove("update.p")
@@ -530,7 +534,7 @@ class AstroLauncher():
                 # print('here2')
                 needs_update = False
                 update_status = None
-                if os.path.exists("update.p"):
+                if ntpath.exists("update.p"):
                     with open("update.p", "r") as f:
                         update_status = f.read()
                     if update_status != "completed":
@@ -539,7 +543,7 @@ class AstroLauncher():
                 # print('here3')
                 cur_version = "0.0"
                 try:
-                    with open(os.path.join(self.astroPath, "build.version"), "r") as f:
+                    with open(ntpath.join(self.astroPath, "build.version"), "r") as f:
                         cur_version = (f.readline())[:-10]
                 except:
                     pass
@@ -555,7 +559,7 @@ class AstroLauncher():
                 latest_version = data['LatestVersion']
                 if version.parse(latest_version) > version.parse(cur_version):
                     needs_update = True
-                if not os.path.exists(os.path.join(self.astroPath, "AstroServer.exe")):
+                if not ntpath.exists(ntpath.join(self.astroPath, "AstroServer.exe")):
                     needs_update = True
                 if needs_update:
                     AstroLogging.logPrint(
@@ -568,7 +572,7 @@ class AstroLauncher():
                     return True, latest_version
 
             cur_version = "0.0"
-            with open(os.path.join(self.astroPath, "build.version"), "r") as f:
+            with open(ntpath.join(self.astroPath, "build.version"), "r") as f:
                 cur_version = (f.readline())[:-10]
             self.cur_server_version = cur_version
             # print('here9')
@@ -602,11 +606,11 @@ class AstroLauncher():
 
     def autoupdate_launcher(self, data):
         x = data
-        downloadFolder = os.path.dirname(sys.executable)
+        downloadFolder = ntpath.dirname(sys.executable)
         for fileObj in x['assets']:
             downloadURL = fileObj['browser_download_url']
-            fileName = (os.path.splitext(fileObj['name'])[0])
-            downloadPath = os.path.join(downloadFolder, fileName)
+            fileName = (ntpath.splitext(fileObj['name'])[0])
+            downloadPath = ntpath.join(downloadFolder, fileName)
 
             downloadCMD = ["powershell", '-executionpolicy', 'bypass', '-command',
                            'Write-Host "Downloading latest AstroLauncher.exe..";', 'wait-process', str(
@@ -789,13 +793,13 @@ class AstroLauncher():
             isFirewallEnabled = fwCheck.read()
 
         if isFirewallEnabled:
-            serverExePath = os.path.join(
+            serverExePath = ntpath.join(
                 self.astroPath, 'astro\\binaries\\win64\\astroserver-win64-shipping.exe')
             ASRule = os.popen(
                 f'netsh advfirewall firewall show rule name=astroserver-win64-shipping.exe verbose | findstr /L "{serverExePath}"').read()
 
             if self.isExecutable:
-                launcherEXEPath = os.path.join(os.getcwd(), sys.argv[0])
+                launcherEXEPath = ntpath.join(os.getcwd(), sys.argv[0])
                 ALRule = os.popen(
                     f'netsh advfirewall firewall show rule name=astrolauncher.exe verbose | findstr /L "{launcherEXEPath}"').read()
 
@@ -880,11 +884,11 @@ class AstroLauncher():
             AstroLogging.logPrint("Remote Console network configuration good!")
         else:
             AstroLogging.logPrint(
-                f"SECURITY ALERT: Your console port ({self.DedicatedServer.settings.ConsolePort}) is Port Forwarded!", "warning")
+                f"SECURITY ALERT: Your console port ({self.DedicatedServer.settings.ConsolePort}) is Port Forwarded!", "warning", printToDiscord=False)
             AstroLogging.logPrint(
-                "SECURITY ALERT: This allows anybody to control your server.", "warning")
+                "SECURITY ALERT: This allows access to the server backend from outside of your network.", "warning", printToDiscord=False)
             AstroLogging.logPrint(
-                "SECURITY ALERT: Disable this ASAP to prevent issues.", "warning")
+                "SECURITY ALERT: Disable this ASAP to prevent issues.", "warning", printToDiscord=False)
             time.sleep(5)
 
     def start_WebServer(self):
