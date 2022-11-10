@@ -103,7 +103,7 @@ class AstroDedicatedServer():
         self.DSListGames = ""
         self.busy = False
         self.getPaks()
-        self.refresh_settings(ovrIP=True)
+        self.refresh_settings(ovrIP=launcher.launcherConfig.OverwritePublicIP)
         self.AstroRCON = None
 
     def start_RCON(self):

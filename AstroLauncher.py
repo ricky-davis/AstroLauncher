@@ -63,7 +63,7 @@ class AstroLauncher():
         AutoRestartEveryHours: float = 24
         AutoRestartSyncTimestamp: str = "00:00"
         DisableNetworkCheck: bool = False
-        OverwritePublicIP: bool = False
+        OverwritePublicIP: bool = True
         ShowServerFPSInConsole: bool = True
         AdminAutoConfigureFirewall: bool = True
         LogRetentionDays: int = 7

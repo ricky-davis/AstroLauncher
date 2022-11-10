@@ -117,7 +117,7 @@ AutoRestartEveryHours = 24
 DisableNetworkCheck = False
 
 # Always Overwrite the PublicIP setting in AstroServerSettings.ini
-OverwritePublicIP = False
+OverwritePublicIP = True
 
 # Enable/Disable showing server FPS in console. This will probably spam your console when playing are in your server
 ShowServerFPSInConsole = True
