@@ -19,7 +19,7 @@ pyinstaller-hooks-contrib==2022.8; python_version >= '3.7'
 pyinstaller==5.3
 pypakparser==1.2.0
 pyparsing==3.0.9; python_full_version >= '3.6.8'
-setuptools==63.3.0; python_version >= '3.7'
+setuptools==65.5.1; python_version >= '3.7'
 tornado==6.2
 typing-extensions==4.3.0; python_version < '3.8'
 watchdog==2.1.9
