@@ -556,7 +556,7 @@ class AstroLauncher():
                 # print(data)
 
                 # print('here6')
-                latest_version = data['stats']['LatestVersion']
+                latest_version = data['stats']['latestVersion']
                 if version.parse(latest_version) > version.parse(cur_version):
                     needs_update = True
                 if not ntpath.exists(ntpath.join(self.astroPath, "AstroServer.exe")):
