@@ -251,7 +251,7 @@ def test_nonlocal(ip, port):
     x = threading.Thread(target=socket_server2, args=(port,))
     x.start()
     try:
-        r = json.load(AstroRequests.post(
+        r = json.load(AstroRequests.get(
             f"https://astroneermods.space/tools/servercheck/api/check?url={ip}:{port}", timeout=10))
     except Exception as e:
         print(e)
