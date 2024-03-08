@@ -252,7 +252,7 @@ def test_nonlocal(ip, port):
     x.start()
     try:
         r = json.load(AstroRequests.post(
-            f"https://servercheck.spycibot.com/api?ip_port={ip}:{port}", timeout=10))
+            f"https://astroneermods.space/tools/servercheck/api/check?url={ip}:{port}", timeout=10))
     except:
         AstroLogging.logPrint(
             "Unable to verify outside connectivity.", "warning")
@@ -261,4 +261,4 @@ def test_nonlocal(ip, port):
         return False
 
     AstroLogging.logPrint(r, "debug")
-    return r['Server']
+    return r['server']['network']

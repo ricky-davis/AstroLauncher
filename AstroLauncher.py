@@ -551,12 +551,12 @@ class AstroLauncher():
                 # print('here4')
                 if cur_version == "0.0":
                     needs_update = True
-                url = "https://servercheck.spycibot.com/stats"
+                url = "https://astroneermods.space/tools/servercheck/stats"
                 data = json.load(AstroRequests.get(url))
                 # print(data)
 
                 # print('here6')
-                latest_version = data['LatestVersion']
+                latest_version = data['stats']['LatestVersion']
                 if version.parse(latest_version) > version.parse(cur_version):
                     needs_update = True
                 if not ntpath.exists(ntpath.join(self.astroPath, "AstroServer.exe")):
@@ -585,7 +585,7 @@ class AstroLauncher():
 
     def check_for_launcher_update(self, serverStart=False):
         try:
-            url = "https://api.github.com/repos/ricky-davis/AstroLauncher/releases/latest"
+            url = "https://api.github.com/repos/JoeJoeTV/AstroLauncher/releases/latest"
             data = json.load((AstroRequests.get(url)))
             latestVersion = data['tag_name']
 
