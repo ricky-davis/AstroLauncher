@@ -253,7 +253,8 @@ def test_nonlocal(ip, port):
     try:
         r = json.load(AstroRequests.post(
             f"https://astroneermods.space/tools/servercheck/api/check?url={ip}:{port}", timeout=10))
-    except:
+    except Exception as e:
+        print(e)
         AstroLogging.logPrint(
             "Unable to verify outside connectivity.", "warning")
         AstroLogging.logPrint(
