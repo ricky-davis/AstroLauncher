@@ -12,6 +12,9 @@
   <p align="center">
     An all-in-one server management tool for Astroneer Dedicated Servers.
   </p>
+  <p align="center">
+    <b>This is a fork to fix some issues, since the original repository has been archived</b>
+  </p>
 
   <p align="center">
     <a href="https://github.com/JoeJoeTV/AstroLauncher/issues">AstroLauncher Bugs</a>
