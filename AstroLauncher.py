@@ -261,11 +261,11 @@ class AstroLauncher():
             AstroLogging.logPrint(
                 "If you encounter any bugs please open a new issue at:")
             AstroLogging.logPrint(
-                "https://github.com/ricky-davis/AstroLauncher/issues")
+                "https://github.com/JoeJoeTV/AstroLauncher/issues")
             AstroLogging.logPrint(
                 "To safely stop the launcher and server press CTRL+C")
 
-            self.latestURL = "https://github.com/ricky-davis/AstroLauncher/releases/latest"
+            self.latestURL = "https://github.com/JoeJoeTV/AstroLauncher/releases/latest"
             bName = ntpath.basename(sys.executable)
             if sys.argv[0] == ntpath.splitext(bName)[0]:
                 self.isExecutable = True

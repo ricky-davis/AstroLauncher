@@ -50,7 +50,7 @@ class AstroLogging():
     discordWebhookQueue = Queue()
     discordWebhookHeaders = {
         'Content-Type': 'application/json; charset=utf-8',
-        'User-Agent': f"AstroLauncherWebhooks ( https://github.com/ricky-davis/AstroLauncher/releases/latest , {ALVERSION} )"
+        'User-Agent': f"AstroLauncherWebhooks ( https://github.com/JoeJoeTV/AstroLauncher/releases/latest , {ALVERSION} )"
     }
     # print(discordWebhookHeaders)
     avatarThemes = [
