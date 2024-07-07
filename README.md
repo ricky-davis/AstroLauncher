@@ -13,7 +13,7 @@
     An all-in-one server management tool for Astroneer Dedicated Servers.
   </p>
   <p align="center">
-    <b>This is a fork to fix some issues, since the [original repository](https://github.com/ricky-davis/AstroLauncher) has been archived</b>
+    <b>This is a fork to fix some issues, since the <a href="https://github.com/ricky-davis/AstroLauncher">original repository</a> has been archived</b>
   </p>
 
   <p align="center">
