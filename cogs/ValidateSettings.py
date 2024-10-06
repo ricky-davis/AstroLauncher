@@ -258,7 +258,15 @@ def test_nonlocal(ip, port):
         AstroLogging.logPrint(
             "Unable to verify outside connectivity.", "warning")
         AstroLogging.logPrint(
-            "Connection to external service failed.", "warning")
+            "Could not contact server checker API!", "warning")
+        AstroLogging.logPrint(
+            "+------------------------------------------------+", "warning")
+        AstroLogging.logPrint(
+            "|THIS DOES NOT MEAN YOUR SERVER IS NOT REACHABLE,|", "warning")
+        AstroLogging.logPrint(
+            "|JUST THAT IT COULDN'T BE VERIFIED!              |", "warning")
+        AstroLogging.logPrint(
+            "+------------------------------------------------+", "warning")
         return False
 
     AstroLogging.logPrint(r, "debug")
