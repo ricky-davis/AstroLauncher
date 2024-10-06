@@ -252,7 +252,7 @@ def test_nonlocal(ip, port):
     x.start()
     try:
         r = json.load(AstroRequests.get(
-            f"https://astroneermods.space/tools/servercheck/api/check?url={ip}:{port}", timeout=10))
+            f"https://astroservercheck.joejoetv.de/api/check?url={ip}:{port}", timeout=10))
     except Exception as e:
         print(e)
         AstroLogging.logPrint(

@@ -551,7 +551,7 @@ class AstroLauncher():
                 # print('here4')
                 if cur_version == "0.0":
                     needs_update = True
-                url = "https://astroneermods.space/tools/servercheck/api/stats"
+                url = "https://astroservercheck.joejoetv.de/api/stats"
                 data = json.load(AstroRequests.get(url))
                 # print(data)
 
