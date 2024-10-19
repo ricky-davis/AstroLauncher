@@ -521,9 +521,10 @@ class AstroLauncher():
             except:
                 pass
 
-        except:  # Exception as e:
+        except Exception as e:
             AstroLogging.logPrint(
                 f"UPDATE TO {latest_version} FAILED.", "warning")
+            AstroLogging.logPrint(f"{type(e).__name__}: {str(e)}", msgType="debug", printTraceback=True)
 
     def check_for_server_update(self, serverStart=False, check_only=False):
         try:
