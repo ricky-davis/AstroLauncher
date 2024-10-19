@@ -7,7 +7,7 @@ import ssl
 
 # pylint: disable=no-member
 
-ALVERSION = "v1.8.5.0"
+ALVERSION = "v1.8.5.1"
 
 
 class AstroRequests():
