@@ -251,14 +251,23 @@ def test_nonlocal(ip, port):
     x = threading.Thread(target=socket_server2, args=(port,))
     x.start()
     try:
-        r = json.load(AstroRequests.post(
-            f"https://servercheck.spycibot.com/api?ip_port={ip}:{port}", timeout=10))
-    except:
+        r = json.load(AstroRequests.get(
+            f"https://astroservercheck.joejoetv.de/api/check?url={ip}:{port}", timeout=10))
+    except Exception as e:
+        print(e)
         AstroLogging.logPrint(
             "Unable to verify outside connectivity.", "warning")
         AstroLogging.logPrint(
-            "Connection to external service failed.", "warning")
+            "Could not contact server checker API!", "warning")
+        AstroLogging.logPrint(
+            "+------------------------------------------------+", "warning")
+        AstroLogging.logPrint(
+            "|THIS DOES NOT MEAN YOUR SERVER IS NOT REACHABLE,|", "warning")
+        AstroLogging.logPrint(
+            "|JUST THAT IT COULDN'T BE VERIFIED!              |", "warning")
+        AstroLogging.logPrint(
+            "+------------------------------------------------+", "warning")
         return False
 
     AstroLogging.logPrint(r, "debug")
-    return r['Server']
+    return r['server']['network']

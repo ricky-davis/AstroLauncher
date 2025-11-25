@@ -357,6 +357,7 @@ class AstroDedicatedServer():
             # Ensure RCON is connected
             try:
                 if not self.AstroRCON or not self.AstroRCON.connected:
+                    AstroLogging.logPrint("Starting RCON connection...", "debug")
                     self.AstroRCON = self.start_RCON()
                     self.quickToggleWhitelist()
             except:
@@ -408,6 +409,7 @@ class AstroDedicatedServer():
 
                     if needs_update and self.launcher.launcherConfig.AutoUpdateServerSoftware:
                         self.save_and_shutdown()
+                        AstroLogging.logPrint("Told server to shut down, continuing with update...", msgType="debug")
                         self.launcher.update_server(latest_version)
                         continue
                 except:

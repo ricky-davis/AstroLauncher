@@ -261,11 +261,11 @@ class AstroLauncher():
             AstroLogging.logPrint(
                 "If you encounter any bugs please open a new issue at:")
             AstroLogging.logPrint(
-                "https://github.com/ricky-davis/AstroLauncher/issues")
+                "https://github.com/JoeJoeTV/AstroLauncher/issues")
             AstroLogging.logPrint(
                 "To safely stop the launcher and server press CTRL+C")
 
-            self.latestURL = "https://github.com/ricky-davis/AstroLauncher/releases/latest"
+            self.latestURL = "https://github.com/JoeJoeTV/AstroLauncher/releases/latest"
             bName = ntpath.basename(sys.executable)
             if sys.argv[0] == ntpath.splitext(bName)[0]:
                 self.isExecutable = True
@@ -494,7 +494,7 @@ class AstroLauncher():
                         upd_version = (f.readline())[:-10]
                 except:
                     pass
-                if upd_version == latest_version:
+                if upd_version == latest_version or (latest_version == "unknown"):
                     update_downloaded = True
 
             if update_downloaded:
@@ -506,7 +506,7 @@ class AstroLauncher():
             with open(ntpath.join(self.astroPath, "build.version"), "r") as f:
                 cur_version = (f.readline())[:-10]
 
-            if cur_version == latest_version:
+            if cur_version == latest_version or (latest_version == "unknown"):
                 AstroLogging.logPrint(
                     f"UPDATE TO {latest_version} SUCCESSFUL.")
                 steamcmdZip = ntpath.join(self.astroPath, "steamcmd.zip")
@@ -521,9 +521,10 @@ class AstroLauncher():
             except:
                 pass
 
-        except:  # Exception as e:
+        except Exception as e:
             AstroLogging.logPrint(
                 f"UPDATE TO {latest_version} FAILED.", "warning")
+            AstroLogging.logPrint(f"{type(e).__name__}: {str(e)}", msgType="debug", printTraceback=True)
 
     def check_for_server_update(self, serverStart=False, check_only=False):
         try:
@@ -551,25 +552,38 @@ class AstroLauncher():
                 # print('here4')
                 if cur_version == "0.0":
                     needs_update = True
-                url = "https://servercheck.spycibot.com/stats"
-                data = json.load(AstroRequests.get(url))
-                # print(data)
+                url = "https://astroservercheck.joejoetv.de/api/stats"
+                try:
+                    data = json.load(AstroRequests.get(url))
+                    # print(data)
 
-                # print('here6')
-                latest_version = data['LatestVersion']
-                if version.parse(latest_version) > version.parse(cur_version):
-                    needs_update = True
-                if not ntpath.exists(ntpath.join(self.astroPath, "AstroServer.exe")):
-                    needs_update = True
-                if needs_update:
+                    # print('here6')
+                    latest_version = data['stats']['latestVersion']
+                    if version.parse(latest_version) > version.parse(cur_version):
+                        needs_update = True
+                    if not ntpath.exists(ntpath.join(self.astroPath, "AstroServer.exe")):
+                        needs_update = True
+                    if needs_update:
+                        AstroLogging.logPrint(
+                            f"SERVER UPDATE AVAILABLE: {cur_version} -> {latest_version}", "warning")
+
+                        # print('here7')
+                        if self.launcherConfig.AutoUpdateServerSoftware and not check_only:
+                            self.update_server(latest_version)
+                        # print('here8')
+                        return True, latest_version
+                except Exception as e:
+                    print(e)
                     AstroLogging.logPrint(
-                        f"SERVER UPDATE AVAILABLE: {cur_version} -> {latest_version}", "warning")
-
-                    # print('here7')
+                        "Couldn't get latest version number!", "warning")
+                    
                     if self.launcherConfig.AutoUpdateServerSoftware and not check_only:
-                        self.update_server(latest_version)
-                    # print('here8')
-                    return True, latest_version
+                        self.update_server("unknown")
+                    
+                    with open(ntpath.join(self.astroPath, "build.version"), "r") as f:
+                        cur_version = (f.readline())[:-10]
+                    
+                    return True, cur_version
 
             cur_version = "0.0"
             with open(ntpath.join(self.astroPath, "build.version"), "r") as f:
@@ -585,7 +599,7 @@ class AstroLauncher():
 
     def check_for_launcher_update(self, serverStart=False):
         try:
-            url = "https://api.github.com/repos/ricky-davis/AstroLauncher/releases/latest"
+            url = "https://api.github.com/repos/JoeJoeTV/AstroLauncher/releases/latest"
             data = json.load((AstroRequests.get(url)))
             latestVersion = data['tag_name']
 

@@ -7,16 +7,19 @@
 
 <br />
 <p align="center">
-  <img src="https://raw.githubusercontent.com/ricky-davis/AstroLauncher/master/assets/astrolauncherlogo.ico" width="128px">
+  <img src="https://raw.githubusercontent.com/JoeJoeTV/AstroLauncher/master/assets/astrolauncherlogo.ico" width="128px">
   <h3 align="center">AstroLauncher - Dedicated Server Launcher</h3>
   <p align="center">
     An all-in-one server management tool for Astroneer Dedicated Servers.
   </p>
+  <p align="center">
+    <b>This is a fork to fix some issues, since the <a href="https://github.com/ricky-davis/AstroLauncher">original repository</a> has been archived</b>
+  </p>
 
   <p align="center">
-    <a href="https://github.com/ricky-davis/AstroLauncher/issues">AstroLauncher Bugs</a>
+    <a href="https://github.com/JoeJoeTV/AstroLauncher/issues">AstroLauncher Bugs</a>
     ·
-    <a href="https://github.com/ricky-davis/AstroLauncher/issues">Request Feature</a>
+    <a href="https://github.com/JoeJoeTV/AstroLauncher/issues">Request Feature</a>
   </p>
 </p>
 <img src = "https://user-images.githubusercontent.com/48695279/88715011-3bf09e80-d0e3-11ea-9c3e-f14e6c1758fe.png">
@@ -176,7 +179,7 @@ CPUAffinity =
 
 ## Getting Started
 
-**Recommended: Most people will want to just run the .exe, check out the [Latest Release](https://github.com/ricky-davis/AstroLauncher/releases/latest) for a download of the executable.**
+**Recommended: Most people will want to just run the .exe, check out the [Latest Release](https://github.com/JoeJoeTV/AstroLauncher/releases/latest) for a download of the executable.**
 
 
 <br/>
@@ -194,7 +197,7 @@ To get a local "from-source" copy up and running follow these simple steps:
 1. Clone the AstroLauncher repository
 
 ```sh
-git clone https://github.com/ricky-davis/AstroLauncher.git
+git clone https://github.com/JoeJoeTV/AstroLauncher.git
 ```
 
 2. Install python modules using pip or pipenv
@@ -287,21 +290,21 @@ Distributed under the MIT License. See `LICENSE` for more information.
 
 If you have any questions you can join the [Astroneer discord] (discord.gg/Astroneer) and ask in the #self_host_talk channel
 
-Project Link: [https://github.com/ricky-davis/AstroLauncher](https://github.com/ricky-davis/AstroLauncher)
+Project Link: [https://github.com/JoeJoeTV/AstroLauncher](https://github.com/JoeJoeTV/AstroLauncher)
 
 <!-- MARKDOWN LINKS & IMAGES -->
 <!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
 
 [astroneer discord]: https://discord.com/invite/astroneer
-[contributors-shield]: https://img.shields.io/github/contributors/ricky-davis/AstroLauncher.svg?style=flat-square
-[contributors-url]: https://github.com/ricky-davis/AstroLauncher/graphs/contributors
-[forks-shield]: https://img.shields.io/github/forks/ricky-davis/AstroLauncher.svg?style=flat-square
-[forks-url]: https://github.com/ricky-davis/AstroLauncher/network/members
-[downloads-shield]: https://img.shields.io/github/downloads/ricky-davis/AstroLauncher/total
-[downloads-url]: https://github.com/ricky-davis/AstroLauncher/releases/latest
-[stars-shield]: https://img.shields.io/github/stars/ricky-davis/AstroLauncher.svg?style=flat-square
-[stars-url]: https://github.com/ricky-davis/AstroLauncher/stargazers
-[issues-shield]: https://img.shields.io/github/issues/ricky-davis/AstroLauncher.svg?style=flat-square
-[issues-url]: https://github.com/ricky-davis/AstroLauncher/issues
-[license-shield]: https://img.shields.io/github/license/ricky-davis/AstroLauncher.svg?style=flat-square
-[license-url]: https://github.com/ricky-davis/AstroLauncher/blob/master/LICENSE.txt
+[contributors-shield]: https://img.shields.io/github/contributors/JoeJoeTV/AstroLauncher.svg?style=flat-square
+[contributors-url]: https://github.com/JoeJoeTV/AstroLauncher/graphs/contributors
+[forks-shield]: https://img.shields.io/github/forks/JoeJoeTV/AstroLauncher.svg?style=flat-square
+[forks-url]: https://github.com/JoeJoeTV/AstroLauncher/network/members
+[downloads-shield]: https://img.shields.io/github/downloads/JoeJoeTV/AstroLauncher/total
+[downloads-url]: https://github.com/JoeJoeTV/AstroLauncher/releases/latest
+[stars-shield]: https://img.shields.io/github/stars/JoeJoeTV/AstroLauncher.svg?style=flat-square
+[stars-url]: https://github.com/JoeJoeTV/AstroLauncher/stargazers
+[issues-shield]: https://img.shields.io/github/issues/JoeJoeTV/AstroLauncher.svg?style=flat-square
+[issues-url]: https://github.com/JoeJoeTV/AstroLauncher/issues
+[license-shield]: https://img.shields.io/github/license/JoeJoeTV/AstroLauncher.svg?style=flat-square
+[license-url]: https://github.com/JoeJoeTV/AstroLauncher/blob/master/LICENSE.txt
